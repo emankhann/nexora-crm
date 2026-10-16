@@ -34,4 +34,9 @@ enum DealStage: string
     {
         return [self::New, self::Contacted, self::Qualified, self::Proposal];
     }
+
+    public function label(): string
+    {
+        return ucfirst($this->value);
+    }
 }

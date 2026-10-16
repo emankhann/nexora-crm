@@ -8,4 +8,9 @@ enum DealTemperature: string
     case Warm = 'warm';
     case New = 'new';
     case Cold = 'cold';
+
+    public function label(): string
+    {
+        return ucfirst($this->value);
+    }
 }

@@ -8,4 +8,9 @@ enum TaskType: string
     case Email = 'email';
     case Meeting = 'meeting';
     case Todo = 'todo';
+
+    public function label(): string
+    {
+        return $this === self::Todo ? 'To-do' : ucfirst($this->value);
+    }
 }
