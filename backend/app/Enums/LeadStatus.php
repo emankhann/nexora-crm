@@ -9,4 +9,9 @@ enum LeadStatus: string
     case Qualified = 'qualified';
     case Unqualified = 'unqualified';
     case Converted = 'converted';
+
+    public function label(): string
+    {
+        return ucfirst($this->value);
+    }
 }
