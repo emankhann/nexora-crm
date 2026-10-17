@@ -15,7 +15,7 @@ import { toggleTask, useCrm } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnPrimary, card, chipCls, chipCountCls, searchCls, selectCls } from "@/lib/ui";
-import { initialsForOwner, users } from "@/lib/users";
+import { getUsers, initialsForOwner } from "@/lib/users";
 import { formatDue, isSameDay } from "@/lib/utils";
 import type { TaskRecord } from "@/types";
 
@@ -159,7 +159,7 @@ export default function TasksBoard() {
               <label className="flex items-center gap-2 text-[13px] text-slate-500">
                 Assigned to
                 <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-                  {["Anyone", ...users.map((u) => u.short)].map((o) => (
+                  {["Anyone", ...getUsers().map((u) => u.short)].map((o) => (
                     <option key={o}>{o}</option>
                   ))}
                 </select>

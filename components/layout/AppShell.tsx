@@ -1,15 +1,17 @@
 "use client";
 
 import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
 import NotificationsBell from "@/components/layout/NotificationsBell";
 import CommandSearch from "@/components/layout/CommandSearch";
 import { ToastProvider } from "@/components/ui/Toast";
-import { PageSkeleton } from "@/components/ui/States";
-import { useCrm } from "@/lib/crm-store";
-import { useSessionUser } from "@/lib/session";
+import { ErrorState, PageSkeleton } from "@/components/ui/States";
+import { onUnauthorized } from "@/lib/api";
+import { loadCrm, useCrm, useCrmStatus } from "@/lib/crm-store";
+import { clearSession, useSessionUser } from "@/lib/session";
+import { btnPrimary } from "@/lib/ui";
 
 /**
  * Calls onChange when the route changes. Kept in its own component so the
@@ -36,9 +38,23 @@ const sidebarFallback = <div className="h-full w-full border-r border-line bg-in
 export default function AppShell({ children }: { children: ReactNode }) {
   const user = useSessionUser();
   const crm = useCrm();
+  const { status, error } = useCrmStatus();
+  const router = useRouter();
   const [navOpen, setNavOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [closeNav] = useState(() => () => setNavOpen(false));
+
+  // Load the user's data from the API. If the session has ended (401, now or later),
+  // forget the user and go to sign-in, coming back to this page afterwards.
+  useEffect(() => {
+    const off = onUnauthorized(() => {
+      clearSession();
+      const here = window.location.pathname + window.location.search;
+      router.replace(here === "/" || here === "/dashboard" ? "/login" : `/login?next=${encodeURIComponent(here)}`);
+    });
+    void loadCrm();
+    return off;
+  }, [router]);
 
   // Ctrl/⌘ K opens search from anywhere in the app.
   useEffect(() => {
@@ -129,7 +145,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <main className="min-w-0 flex-1 p-4 sm:p-6 lg:px-8 lg:pb-8 lg:pt-4">
-            {!ready && <PageSkeleton />}
+            {status === "error" ? (
+              <ErrorState
+                title="Couldn't load your data"
+                body={error ?? undefined}
+                action={
+                  <button type="button" className={btnPrimary} onClick={() => void loadCrm()}>
+                    Try again
+                  </button>
+                }
+              />
+            ) : (
+              !ready && <PageSkeleton />
+            )}
             {/* Always render the page so it is part of the server render; keep it hidden until the browser data is ready. */}
             <div hidden={!ready} className="space-y-5">
               {children}

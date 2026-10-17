@@ -17,7 +17,7 @@ import { downloadCsv, parseCsv } from "@/lib/csv";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, chipCls, chipCountCls, searchCls, selectCls } from "@/lib/ui";
-import { ownerOptions } from "@/lib/users";
+import { getOwnerOptions } from "@/lib/users";
 import { formatDate, isEmail, scoreTier, timeAgo } from "@/lib/utils";
 import type { LeadRecord, LeadSource, LeadStatus } from "@/types";
 
@@ -64,7 +64,12 @@ export default function LeadsTable() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const viewAll = can(user, "viewAll");
-  const [tab, setTab] = useState<TabKey>(viewAll ? "all" : "mine");
+  // Only the tab the user clicked is stored. Until then (and if it isn't one this user
+  // has), the default follows their role. The user is only known once the API data has
+  // loaded, which is after this page first renders, so the default can't be fixed up front.
+  const [chosenTab, setTab] = useState<TabKey | null>(null);
+  const tab: TabKey =
+    chosenTab && (viewAll || (chosenTab !== "all" && chosenTab !== "unassigned")) ? chosenTab : viewAll ? "all" : "mine";
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [owner, setOwner] = useState("Anyone");
@@ -311,7 +316,7 @@ export default function LeadsTable() {
                     resetPage();
                   }}
                 >
-                  {["Anyone", ...ownerOptions].map((o) => (
+                  {["Anyone", ...getOwnerOptions()].map((o) => (
                     <option key={o}>{o}</option>
                   ))}
                 </select>

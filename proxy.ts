@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { adminOnlyRoutes } from "@/lib/permissions";
-import { ROLES_COOKIE, SESSION_COOKIE, findUserById, parseRoleOverrides, withRole } from "@/lib/users";
+import { SESSION_HINT_COOKIE, roleFromKey } from "@/lib/users";
 
 /**
  * Route protection (Next.js 16 renamed middleware to proxy).
@@ -8,30 +8,29 @@ import { ROLES_COOKIE, SESSION_COOKIE, findUserById, parseRoleOverrides, withRol
  * - Signed in and visiting /login → /dashboard.
  * - Admin-only pages → /forbidden for other roles.
  *
- * This is an optimistic check on the cookie. When the API exists, every
- * request is checked again on the server before data is returned.
+ * This is an optimistic check on a small hint cookie the browser sets after
+ * signing in (it holds only the role). It is not security: the Laravel API checks
+ * the real httpOnly session on every request, and the app sends you to /login
+ * as soon as the API says the session has ended.
  */
 const PUBLIC_PATHS = ["/login", "/forgot-password"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const user = withRole(
-    findUserById(request.cookies.get(SESSION_COOKIE)?.value),
-    parseRoleOverrides(request.cookies.get(ROLES_COOKIE)?.value)
-  );
+  const role = roleFromKey(request.cookies.get(SESSION_HINT_COOKIE)?.value);
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  if (!user && !isPublic) {
+  if (!role && !isPublic) {
     const url = new URL("/login", request.url);
     if (pathname !== "/" && pathname !== "/dashboard") url.searchParams.set("next", pathname + search);
     return NextResponse.redirect(url);
   }
 
-  if (user && isPublic) {
+  if (role && isPublic) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (user && user.role !== "Admin" && adminOnlyRoutes.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+  if (role && role !== "Admin" && adminOnlyRoutes.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     const url = new URL("/forbidden", request.url);
     url.searchParams.set("from", pathname);
     return NextResponse.redirect(url);

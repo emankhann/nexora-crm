@@ -11,7 +11,7 @@ import { DEAL_STAGES, OPEN_STAGES, moveDeal, useCrm } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnPrimary, card, selectCls } from "@/lib/ui";
-import { initialsForOwner, ownerOptions } from "@/lib/users";
+import { getOwnerOptions, initialsForOwner } from "@/lib/users";
 import { daysBetween, formatCurrency, formatDate } from "@/lib/utils";
 import type { DealRecord, DealStage } from "@/types";
 
@@ -194,7 +194,7 @@ export default function PipelineBoard() {
           <label className="flex items-center gap-2 text-[13px] text-slate-500">
             Owner
             <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-              {["Anyone", ...ownerOptions.filter((o) => o !== "Unassigned")].map((o) => (
+              {["Anyone", ...getOwnerOptions().filter((o) => o !== "Unassigned")].map((o) => (
                 <option key={o}>{o}</option>
               ))}
             </select>

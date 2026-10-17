@@ -7,7 +7,7 @@ import { downloadCsv } from "@/lib/csv";
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, card, selectCls } from "@/lib/ui";
-import { users } from "@/lib/users";
+import { getUsers } from "@/lib/users";
 import { daysBetween, formatCurrency, formatDate } from "@/lib/utils";
 import type { DealStage } from "@/types";
 
@@ -74,7 +74,7 @@ export default function LiveReports() {
       return { src, count: list.length, conv, rate: list.length ? Math.round((conv / list.length) * 100) : 0 };
     }).filter((r) => r.count > 0);
 
-    const team = users
+    const team = getUsers()
       .filter((u) => canSee(user, u.short) && (owner === "Whole team" || u.short === owner))
       .map((u) => {
         const uLeads = crm.leads.filter((l) => l.owner === u.short && inPeriod(l.createdAt));
@@ -168,7 +168,7 @@ export default function LiveReports() {
           <label className="flex items-center gap-2 text-[13px] text-slate-500">
             Owner
             <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-              {["Whole team", ...users.map((u) => u.short)].map((o) => (
+              {["Whole team", ...getUsers().map((u) => u.short)].map((o) => (
                 <option key={o}>{o}</option>
               ))}
             </select>

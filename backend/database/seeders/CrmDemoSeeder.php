@@ -172,6 +172,44 @@ class CrmDemoSeeder extends Seeder
             ]);
         }
 
+        /*
+         * Earlier won deals that make up the older customers' lifetime value, spread over
+         * the past year so the revenue charts on the dashboard and reports have real history.
+         * Each customer's deals add up to the lifetime value set above.
+         */
+        $history = [
+            // customer, title, value, closed (days ago), owner
+            ['Falcon Auto', 'Showroom website', 8000, 312, $omar],
+            ['Summit Logistics', 'Shipment tracker', 18000, 268, $omar],
+            ['Indus Software', 'Sales CRM setup', 15900, 246, $huma],
+            ['Meridian Textiles', 'ERP integration', 22000, 227, $omar],
+            ['Meridian Textiles', 'Inventory module', 14000, 180, $omar],
+            ['Zenith Clinics', 'Patient portal', 11800, 169, $sana],
+            ['Falcon Auto', 'Service booking add-on', 4400, 150, $omar],
+            ['Summit Logistics', 'Driver app', 13500, 120, $omar],
+            ['Indus Software', 'Analytics add-on', 12000, 95, $huma],
+            ['Zenith Clinics', 'Appointment reminders', 8000, 75, $sana],
+            ['Crescent Bakery', 'Online ordering site', 6200, 59, $sana],
+            ['Meridian Textiles', 'Support plan', 12000, 40, $omar],
+        ];
+        foreach ($history as [$customerName, $title, $value, $daysAgo, $owner]) {
+            $closed = $at(-$daysAgo, 12);
+            Deal::create([
+                'title' => $title,
+                'company' => $customerName,
+                'value' => $value,
+                'stage' => DealStage::Won,
+                'probability' => DealStage::Won->probability(),
+                'temperature' => DealTemperature::Warm,
+                'expected_close_date' => $closed->toDateString(),
+                'next_step' => 'Delivered',
+                'owner_id' => $owner->id,
+                'customer_id' => $customers[$customerName]->id,
+                'closed_at' => $closed,
+                'created_at' => $closed->copy()->subDays(30),
+            ]);
+        }
+
         /* ---------------- Tasks and follow-ups ---------------- */
 
         $taskRows = [

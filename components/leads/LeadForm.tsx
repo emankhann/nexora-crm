@@ -8,7 +8,7 @@ import { COMPANY_SIZES, LEAD_SOURCES, LEAD_STATUSES, createLead, updateLead, use
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnGhostDanger, btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
-import { ownerOptions } from "@/lib/users";
+import { getOwnerOptions } from "@/lib/users";
 import { formatDate, isEmail, isPhone } from "@/lib/utils";
 import type { LeadRecord, LeadSource, LeadStatus } from "@/types";
 
@@ -155,7 +155,7 @@ export default function LeadForm({
             label="Owner"
             value={v.owner}
             onChange={(e) => set("owner", e.target.value)}
-            options={canReassign ? ownerOptions : [v.owner]}
+            options={canReassign ? getOwnerOptions() : [v.owner]}
             disabled={!canReassign}
             hint={canReassign ? undefined : "Ask a manager to reassign."}
           />

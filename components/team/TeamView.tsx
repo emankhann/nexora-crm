@@ -10,7 +10,7 @@ import { SelectField, TextField, type Errors } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import { changeMemberRole, inviteMember, resendInvite, revokeInvite, useCrm } from "@/lib/crm-store";
-import { setRoleOverride, useSessionUser } from "@/lib/session";
+import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, card, selectCls } from "@/lib/ui";
 import { isEmail, timeAgo } from "@/lib/utils";
 import type { MemberRecord, PermissionRow, Role } from "@/types";
@@ -109,8 +109,6 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
       return;
     }
     changeMemberRole(m.id, role, user);
-    // Demo accounts: apply the new role to their logins too.
-    if (m.userId) setRoleOverride(m.userId, role);
     toast(`${m.name} is now ${role === "Admin" ? "an" : "a"} ${role}`);
   }
 

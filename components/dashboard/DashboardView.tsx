@@ -6,14 +6,13 @@ import Avatar from "@/components/ui/Avatar";
 import PageHeader from "@/components/layout/PageHeader";
 import { priorityTone } from "@/components/tasks/TaskDetail";
 import { useToast } from "@/components/ui/Toast";
-import { OPEN_STAGES, toggleTask, useCrm } from "@/lib/crm-store";
+import { OPEN_STAGES, monthlyRevenue, toggleTask, useCrm } from "@/lib/crm-store";
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { useNow } from "@/lib/use-now";
 import { btnPrimary, card } from "@/lib/ui";
-import { users } from "@/lib/users";
+import { getUsers } from "@/lib/users";
 import { daysBetween, formatCurrency, formatDate, formatTime, isSameDay, scoreTier, timeAgo } from "@/lib/utils";
-import type { MonthRevenue } from "@/types";
 
 const attentionStyle = {
   hot: "bg-hot-bg text-hot",
@@ -26,7 +25,7 @@ function greeting() {
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
-export default function DashboardView({ revenueHistory }: { revenueHistory: MonthRevenue[] }) {
+export default function DashboardView() {
   const crm = useCrm();
   const now = useNow();
   const user = useSessionUser();
@@ -52,8 +51,8 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
     { label: "Lead conversion", value: `${conversion.toFixed(1)}%`, delta: `${converted} converted`, tone: conversion >= 15 ? ("ok" as const) : ("hot" as const) },
   ];
 
-  // Past months come from history; this month is live.
-  const revenue = [...revenueHistory.slice(0, -1), { month: revenueHistory.at(-1)?.month ?? "Now", amount: Math.max(wonThisMonth, 0) }];
+  // Revenue won in each of the last 12 months, from the won deals this user can see.
+  const revenue = monthlyRevenue(deals);
   const maxRevenue = Math.max(1, ...revenue.map((r) => r.amount));
 
   const funnel = [
@@ -95,7 +94,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
 
   // This month's results per person (admins/managers see the team, reps see themselves).
   const inMonth = (iso: string | null) => iso !== null && new Date(iso) >= monthStart;
-  const leaderboard = users
+  const leaderboard = getUsers()
     .filter((u) => (can(user, "viewAll") ? true : u.id === user.id))
     .map((u) => ({
       user: u,

@@ -6,12 +6,28 @@ Built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS 4.
 
 ## Run it locally
 
+The app has two parts: the Next.js frontend (this folder) and the Laravel API in `backend/`. Both need to run.
+
+**1. API and database** (needs PHP 8.3, Composer and MySQL):
+
+```bash
+cd backend
+composer install
+cp .env.example .env        # then set DB_DATABASE, DB_USERNAME, DB_PASSWORD
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan serve           # http://localhost:8000
+```
+
+**2. Frontend** (in a second terminal, from the project root):
+
 ```bash
 npm install
+cp .env.example .env.local  # NEXT_PUBLIC_API_URL=http://localhost:8000
 npm run dev
 ```
 
-Open http://localhost:3000. You'll be sent to the sign-in page.
+Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the browser shares the sign-in cookies with the API). You'll be sent to the sign-in page.
 
 ### Demo accounts
 
@@ -25,7 +41,7 @@ All demo accounts use the password `demo1234`. On the sign-in page, click a demo
 
 ## What's in the app
 
-- **Sign in and roles.** Sign-in shows validation, a loading state and a lockout after 5 wrong attempts. There is a forgot-password page and sign-out. `proxy.ts` sends signed-out users to `/login` and keeps non-admins out of admin pages, which show a 403 page.
+- **Sign in and roles.** Sign-in checks the user in the database, shows validation, a loading state and a 15-minute lockout after 5 wrong attempts. There is a forgot-password page and sign-out. `proxy.ts` sends signed-out users to `/login` and keeps non-admins out of admin pages, which show a 403 page.
 - **Dashboard.** Live stats, a revenue chart, the lead funnel, hot leads, your tasks due today, a "Needs attention" list and recent activity.
 - **Leads.** Create, edit and delete leads, with validation and duplicate-email checks. Assign an owner, change status in bulk, search, filter and page through results. Import and export CSV.
 - **Lead scoring.** New leads get an explainable score built from source, status, company size, job title and contact details.
@@ -39,14 +55,13 @@ All demo accounts use the password `demo1234`. On the sign-in page, click a demo
 - **Audit log.** Every create, edit, reassignment, stage move and deletion is recorded.
 - **Responsive.** On phones the sidebar becomes a drawer and tables turn into cards. Pages have empty, loading and error states.
 
-## How data works right now (frontend-first)
+## How data works
 
-The app runs entirely in the browser for now:
-
-- `lib/crm-store.ts` holds all records. It starts from the sample data in `lib/mock-data.ts` and saves changes to `localStorage`, so they survive a refresh. Every change goes through one function (`createLead`, `moveDeal`, `addFollowUp` and so on). When the database and API are added, each of those functions becomes one API call and the screens stay the same.
-- `lib/session.ts` keeps the signed-in user in a cookie, and `proxy.ts` reads that cookie to protect routes. This stands in for real authentication. The backend will replace it with hashed passwords and a signed, httpOnly session cookie.
-- `lib/permissions.ts` is the single permission table, matching the Team and roles page.
-- To start over, an admin can open the account menu at the bottom of the sidebar and choose **Reset demo data**.
+- **Sign-in** uses Laravel Sanctum: the API sets an httpOnly session cookie that JavaScript can't read, and requests that change data carry a CSRF token. `lib/api.ts` handles both. `lib/session.ts` signs in and out and keeps the signed-in user for the UI.
+- **Route protection.** `proxy.ts` redirects early using a small hint cookie (just the role) set after sign-in. The real check happens in the API on every request; if it answers 401, the app clears the session and goes to `/login`.
+- **Data.** After sign-in, `lib/crm-store.ts` loads everything the user may see in one request (`GET /api/crm`), filtered on the server by role. `lib/api-mappers.ts` converts the API's JSON into the records the screens use.
+- **Permissions.** `lib/permissions.ts` decides what the UI shows. The API enforces the same rules (`backend/app/Policies` and the Gates in `AppServiceProvider`).
+- **Saving changes.** In progress: every change goes through one store function (`createLead`, `moveDeal`, `addFollowUp` and so on), and each is being switched to its API request. Until that is finished, changes made in the UI are not saved to the database and are gone after a refresh.
 
 ## Project structure
 
@@ -61,11 +76,14 @@ components/
   leads/ customers/ pipeline/ tasks/ reports/ dashboard/ activity/ audit/
 lib/
   crm-store.ts      data and actions
-  session.ts        sign in/out
+  session.ts        sign in/out, signed-in user
   permissions.ts    who can do what
-  users.ts          demo accounts
+  api.ts            API requests (Sanctum cookies, CSRF, errors)
+  api-mappers.ts    API JSON → screen records
+  users.ts          team directory and demo accounts
   notifications.ts  reminders for the bell
   utils.ts, ui.ts, csv.ts, use-now.ts
 proxy.ts            route protection
+backend/            Laravel API and MySQL database
 types/index.ts      shared types
 ```
