@@ -122,7 +122,7 @@ export default function LeadDetailView({ id }: { id: string }) {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex w-full flex-wrap gap-2.5 sm:w-auto [&>*]:flex-auto [&>*]:whitespace-nowrap sm:[&>*]:flex-none">
             {editable && (
               <button type="button" className={btnOutline} onClick={() => open({ kind: "edit" })}>
                 Edit

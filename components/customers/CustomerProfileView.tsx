@@ -146,7 +146,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex w-full flex-wrap items-center gap-2.5 sm:w-auto [&>*]:flex-auto [&>*]:whitespace-nowrap sm:[&>*]:flex-none">
             <button type="button" className={btnOutline} onClick={() => open({ kind: "log", activity: "call" })}>
               Log call
             </button>

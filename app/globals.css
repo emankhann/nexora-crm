@@ -98,3 +98,15 @@ body {
 * {
   scrollbar-color: #26302a transparent;
 }
+
+/*
+ * Phones: iOS Safari zooms the whole page in when you tap a form field whose text is
+ * smaller than 16px. Use 16px in fields on small screens so that never happens.
+ */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
