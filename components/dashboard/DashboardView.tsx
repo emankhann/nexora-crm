@@ -199,7 +199,31 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
           {hotLeads.length === 0 ? (
             <div className="py-8 text-center text-sm text-slate-500">No leads yet.</div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Phones: one compact card per lead */}
+            <div className="flex flex-col gap-2 md:hidden">
+              {hotLeads.map(({ lead: l, value }) => {
+                const t = scoreTier(l.score);
+                return (
+                  <Link key={l.id} href={`/leads/${l.id}`} className="flex items-center gap-3 rounded-xl border border-line p-3 hover:bg-hover">
+                    <Avatar initials={l.initials} size={34} />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-[13.5px] font-bold">{l.name}</div>
+                      <div className="truncate text-xs text-slate-500">{l.company}</div>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1.5">
+                      <Badge tone={t.key}>
+                        {t.label} {l.score}
+                      </Badge>
+                      <span className={value ? "text-[13.5px] font-bold" : "text-xs text-slate-400"}>{value ? formatCurrency(value) : "No deal yet"}</span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Tablet and desktop: table */}
+            <div className="hidden overflow-x-auto md:block">
               <div className="min-w-[540px]">
                 <div className="grid grid-cols-[2.2fr_1fr_1fr_1fr_0.9fr] gap-3 border-b border-line py-2 text-xs text-slate-500">
                   <span>Lead</span>
@@ -232,6 +256,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                 })}
               </div>
             </div>
+            </>
           )}
         </div>
 
@@ -282,7 +307,38 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
               Full report
             </Link>
           </div>
-          <div className="overflow-x-auto">
+          {/* Phones: one compact card per rep */}
+          <div className="flex flex-col gap-2 md:hidden">
+            {leaderboard.map((r, i) => (
+              <div key={r.user.id} className="flex flex-col gap-2.5 rounded-xl border border-line p-3 text-[13.5px]">
+                <div className="flex items-center gap-2.5">
+                  <Avatar initials={r.user.initials} size={30} />
+                  <span className="min-w-0 flex-1">
+                    <b className="block truncate">
+                      {r.user.short}
+                      {r.user.id === user.id ? " (you)" : ""}
+                    </b>
+                    <span className="text-xs text-slate-500">{i === 0 && r.revenue > 0 && leaderboard.length > 1 ? "Top this month" : r.user.role}</span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-xs text-slate-500">Open pipeline</span>
+                    <span className="font-semibold text-slate-600">{formatCurrency(r.pipeline)}</span>
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="h-2 flex-1 rounded-full bg-subtle">
+                    <span className="block h-2 rounded-full bg-primary" style={{ width: `${(r.revenue / topRevenue) * 100}%` }} />
+                  </span>
+                  <span className="w-28 shrink-0 text-right">
+                    <b>{formatCurrency(r.revenue)}</b> <span className="text-xs text-slate-500">won</span>
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Tablet and desktop: table */}
+          <div className="hidden overflow-x-auto md:block">
             <div className="min-w-[520px]">
               <div className="grid grid-cols-[1.6fr_2fr_1fr_.8fr_.8fr] gap-3 border-b border-line py-2 text-xs text-slate-500">
                 <span>Rep</span>
