@@ -70,7 +70,7 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
       onClose={onClose}
       size="sm"
       title="Invite a team member"
-      description="They get an email with a link to set their password. Until then they show as Pending."
+      description="They show as Pending until they join. Invite emails go out once email sending is set up for Nexora."
       icon={
         <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
           <UserPlus size={20} />

@@ -1,7 +1,18 @@
+/**
+ * Text that Excel or Google Sheets would run as a formula (=…, @…, or +/- followed by
+ * anything other than a plain number or phone number) gets a leading apostrophe, so a lead
+ * named "=HYPERLINK(…)" can't run anything when someone opens the export. ("CSV injection".)
+ */
+function defuse(s: string): string {
+  if (/^[=@\t\r]/.test(s)) return `'${s}`;
+  if (/^[+-]/.test(s) && !/^[+-][\d\s().-]*$/.test(s)) return `'${s}`;
+  return s;
+}
+
 /** Turns rows into a CSV file and downloads it in the browser. */
 export function toCsv(header: string[], rows: (string | number)[][]) {
   const esc = (v: string | number) => {
-    const s = String(v ?? "");
+    const s = typeof v === "number" ? String(v) : defuse(String(v ?? ""));
     return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
   return [header, ...rows].map((r) => r.map(esc).join(",")).join("\r\n");

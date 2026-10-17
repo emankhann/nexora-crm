@@ -1,7 +1,8 @@
 // Opens every page of the app at phone, tablet and laptop sizes, saves a full-page
 // screenshot of each, and reports anything that makes the whole page scroll sideways.
 //
-// Needs the dev server running (npm run dev) and Playwright:
+// Needs the API (cd backend && php artisan serve) and the dev server (npm run dev)
+// running, and Playwright:
 //   npm install --no-save playwright
 //   node scripts/check-responsive.mjs
 // Screenshots go to responsive-screenshots/ (not committed).
@@ -71,7 +72,20 @@ async function overflowReport(page) {
 
 async function settle(page) {
   await page.waitForLoadState("networkidle").catch(() => {});
+  // App pages load their data from the API and stay hidden until it arrives.
+  if (!/\/(login|forgot-password)/.test(page.url())) {
+    await page.locator("main h1").first().waitFor({ state: "visible", timeout: 15000 });
+  }
   await page.waitForTimeout(600);
+}
+
+/** Signs in through the form as the admin demo user, like a person would. */
+async function signIn(page) {
+  await page.goto(`${BASE}/login`);
+  await page.locator("#email").fill("huma@nexora.example");
+  await page.locator("#password").fill("demo1234");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.waitForURL(/\/dashboard/, { timeout: 15000 });
 }
 
 const browser = await launch();
@@ -102,8 +116,7 @@ for (const size of SIZES) {
   await page.goto(`${BASE}/login`);
   await check("login");
 
-  // Sign in as the admin demo user (same cookie the sign-in form sets)
-  await ctx.addCookies([{ name: "nexora_user", value: "u1", url: BASE }]);
+  await signIn(page);
 
   for (const [label, target] of PAGES) {
     if (target.startsWith("first:")) {

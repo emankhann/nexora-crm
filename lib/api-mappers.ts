@@ -19,7 +19,7 @@ import type {
   TaskRecord,
   TaskType,
 } from "@/types";
-import type { DemoUser } from "@/lib/users";
+import type { SessionUser } from "@/lib/users";
 
 /**
  * Converts the API's JSON (see backend/app/Http/Resources) into the records the
@@ -216,7 +216,7 @@ const localDate = (date: string | null, time: string) => (date ? `${date}T${time
 
 /* -------------------------------- Mappers -------------------------------- */
 
-export function mapUser(u: ApiUser): DemoUser {
+export function mapUser(u: ApiUser): SessionUser {
   return { id: String(u.id), name: u.name, short: u.short, initials: u.initials, email: u.email, role: ROLE[u.role] ?? "Sales rep" };
 }
 

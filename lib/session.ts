@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { api, ApiError, ensureCsrfCookie, NetworkError } from "@/lib/api";
 import { mapUser, type ApiUser } from "@/lib/api-mappers";
-import { SESSION_HINT_COOKIE, roleKey, type DemoUser } from "@/lib/users";
+import { SESSION_HINT_COOKIE, roleKey, type SessionUser } from "@/lib/users";
 
 /**
  * Who is signed in.
@@ -14,7 +14,7 @@ import { SESSION_HINT_COOKIE, roleKey, type DemoUser } from "@/lib/users";
  * redirect early. If the API ever answers 401, the app clears both and goes to /login.
  */
 
-let current: DemoUser | null = null;
+let current: SessionUser | null = null;
 const listeners = new Set<() => void>();
 const signedOutListeners = new Set<() => void>();
 
@@ -33,7 +33,7 @@ function subscribe(cb: () => void) {
  * remember: true/false at sign-in ("Keep me signed in"); null on later page loads,
  * which reuses the choice made at sign-in.
  */
-function writeHint(user: DemoUser, remember: boolean | null) {
+function writeHint(user: SessionUser, remember: boolean | null) {
   if (remember !== null) localStorageSet("nexora_remember", remember ? "1" : "0");
   const long = remember ?? localStorageGet("nexora_remember") === "1";
   document.cookie = `${SESSION_HINT_COOKIE}=${roleKey(user.role)}; path=/; samesite=lax${long ? `; max-age=${60 * 60 * 24 * 30}` : ""}`;
@@ -56,7 +56,7 @@ function localStorageSet(key: string, value: string) {
 }
 
 /** Sets the signed-in user (from sign-in or from GET /api/crm). */
-export function setSessionUser(user: DemoUser, remember: boolean | null = null) {
+export function setSessionUser(user: SessionUser, remember: boolean | null = null) {
   current = user;
   writeHint(user, remember);
   emit();
@@ -79,7 +79,7 @@ export function onSignedOut(cb: () => void) {
 }
 
 /** The signed-in user, or null before the data has loaded / when signed out. */
-export function useSessionUser(): DemoUser | null {
+export function useSessionUser(): SessionUser | null {
   return useSyncExternalStore(
     subscribe,
     () => current,
@@ -87,7 +87,7 @@ export function useSessionUser(): DemoUser | null {
   );
 }
 
-export type SignInResult = { ok: true; user: DemoUser } | { ok: false; error: string };
+export type SignInResult = { ok: true; user: SessionUser } | { ok: false; error: string };
 
 export async function signIn(email: string, password: string, remember: boolean): Promise<SignInResult> {
   if (!email.trim() || !password) {

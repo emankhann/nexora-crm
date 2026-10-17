@@ -330,8 +330,9 @@ export default function DealForm({
               type="button"
               className="inline-flex h-10 items-center justify-center rounded-xl border border-ok-border bg-primary-soft text-[13.5px] font-bold text-ok"
               onClick={() => {
-                moveDeal(deal.id, "Won").catch(showError);
-                toast(`${deal.title} won · ${formatCurrency(deal.value)}`);
+                moveDeal(deal.id, "Won")
+                  .then(() => toast(`${deal.title} won · ${formatCurrency(deal.value)}`))
+                  .catch(showError);
                 onClose();
               }}
             >

@@ -1,5 +1,5 @@
 import type { PermissionRow, Role } from "@/types";
-import type { DemoUser } from "@/lib/users";
+import type { SessionUser } from "@/lib/users";
 
 /**
  * One place that decides who can do what. Matches the table on the
@@ -22,18 +22,18 @@ const matrix: Record<Role, Permission[]> = {
   "Sales rep": [],
 };
 
-export function can(user: Pick<DemoUser, "role"> | null, permission: Permission): boolean {
+export function can(user: Pick<SessionUser, "role"> | null, permission: Permission): boolean {
   if (!user) return false;
   return matrix[user.role].includes(permission);
 }
 
 /** Sales reps only see and change records they own. */
-export function canSee(user: DemoUser | null, owner: string): boolean {
+export function canSee(user: SessionUser | null, owner: string): boolean {
   if (!user) return false;
   return can(user, "viewAll") || owner === user.short;
 }
 
-export function canEdit(user: DemoUser | null, owner: string): boolean {
+export function canEdit(user: SessionUser | null, owner: string): boolean {
   if (!user) return false;
   return can(user, "editAny") || owner === user.short;
 }

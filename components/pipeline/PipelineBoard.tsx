@@ -163,10 +163,14 @@ export default function PipelineBoard() {
       return;
     }
     const from = deal.stage;
-    moveDeal(deal.id, stage).catch(showError);
-    toast(stage === "Won" ? `${deal.title} won · ${formatCurrency(deal.value)}` : `${deal.title} moved to ${stage}`, {
-      action: from !== "Lost" ? { label: "Undo", onClick: () => void moveDeal(deal.id, from).catch(showError) } : undefined,
-    });
+    // The card moves at once; the message waits until the server has saved it.
+    moveDeal(deal.id, stage)
+      .then(() =>
+        toast(stage === "Won" ? `${deal.title} won · ${formatCurrency(deal.value)}` : `${deal.title} moved to ${stage}`, {
+          action: from !== "Lost" ? { label: "Undo", onClick: () => void moveDeal(deal.id, from).catch(showError) } : undefined,
+        })
+      )
+      .catch(showError);
   }
 
   function onDrop(e: DragEvent, stage: DealStage) {

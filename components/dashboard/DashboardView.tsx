@@ -398,8 +398,10 @@ export default function DashboardView() {
                     type="checkbox"
                     aria-label={`Complete task: ${t.title}`}
                     onChange={() => {
-                      toggleTask(t.id).catch(showError);
-                      toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
+                      // The box ticks at once; the message waits until the server has saved it.
+                      toggleTask(t.id)
+                        .then(() => toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } }))
+                        .catch(showError);
                     }}
                     className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-primary"
                   />

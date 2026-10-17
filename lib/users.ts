@@ -9,7 +9,7 @@ import type { Role } from "@/types";
  *
  * Shared by the browser and by proxy.ts, so it must not import anything browser- or server-only.
  */
-export type DemoUser = {
+export type SessionUser = {
   /** Database id of the user, as a string. */
   id: string;
   name: string;
@@ -46,15 +46,15 @@ export function roleKey(role: Role): string {
   return KEY_BY_ROLE[role];
 }
 
-let directory: DemoUser[] = [];
+let directory: SessionUser[] = [];
 
 /** Called by the CRM store with the active team members from the API. */
-export function setDirectory(people: DemoUser[]) {
+export function setDirectory(people: SessionUser[]) {
   directory = people;
 }
 
 /** Everyone who can sign in and own records, in the order the API returned them. */
-export function getUsers(): DemoUser[] {
+export function getUsers(): SessionUser[] {
   return directory;
 }
 
@@ -63,7 +63,7 @@ export function getOwnerOptions(): string[] {
   return [...directory.map((u) => u.short), "Unassigned"];
 }
 
-export function userByShort(short: string): DemoUser | null {
+export function userByShort(short: string): SessionUser | null {
   return directory.find((u) => u.short === short) ?? null;
 }
 
