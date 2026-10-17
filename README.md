@@ -63,6 +63,17 @@ All demo accounts use the password `demo1234`. On the sign-in page, click a demo
 - **Permissions.** `lib/permissions.ts` decides what the UI shows. The API enforces the same rules (`backend/app/Policies` and the Gates in `AppServiceProvider`).
 - **Saving changes.** Every change goes through one store function (`createLead`, `moveDeal`, `addFollowUp` and so on), which sends one API request. The server checks permissions, saves to MySQL and records the history and audit log; then the store reloads, so the screens show exactly what was saved. Ticking off a task, dragging a deal and reading reminders update the screen at once and undo themselves if the server refuses. Form errors from the server (like an email that's already taken) appear under the right field.
 
+## Before going live
+
+The settings above are for running on your own computer. On a real server:
+
+- **Backend `.env`:** `APP_ENV=production`, `APP_DEBUG=false` (otherwise error pages show internal details), and a real `APP_URL`.
+- **HTTPS everywhere**, plus `SESSION_SECURE_COOKIE=true` so the session cookie is only sent over HTTPS.
+- **Domains:** set `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` to the real ones. The app and the API must share a parent domain, e.g. `app.example.com` and `api.example.com` with `SESSION_DOMAIN=.example.com`.
+- **Frontend:** set `NEXT_PUBLIC_API_URL` to the API's address and keep `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=false`.
+- **No demo data.** `php artisan db:seed` refuses to create the demo accounts in production, because their password is public. Create the first admin by hand.
+- **Email.** Team invites and password resets need a mail service set in `MAIL_*`. Until then no emails are sent.
+
 ## Project structure
 
 ```

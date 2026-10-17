@@ -8,7 +8,9 @@ use App\Enums\DealTemperature;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\DealRequest;
 use App\Http\Resources\DealResource;
+use App\Models\Customer;
 use App\Models\Deal;
+use App\Models\Lead;
 use App\Models\Task;
 use App\Services\ActivityRecorder;
 use App\Services\DealStageService;
@@ -54,6 +56,7 @@ class DealController extends Controller
     {
         Gate::authorize('create', Deal::class);
         $data = $request->validated();
+        $this->authorizeLinks($data);
         $user = $request->user();
         $stage = DealStage::from($data['stage']);
 
@@ -86,6 +89,7 @@ class DealController extends Controller
     {
         Gate::authorize('update', $deal);
         $data = $request->validated();
+        $this->authorizeLinks($data);
 
         if (array_key_exists('owner_id', $data) && (int) $data['owner_id'] !== (int) $deal->owner_id) {
             Gate::authorize('reassign');
@@ -128,6 +132,20 @@ class DealController extends Controller
         $this->stages->move($deal, DealStage::from($data['stage']), $data['lost_reason'] ?? null);
 
         return new DealResource($deal->refresh()->load('owner'));
+    }
+
+    /**
+     * A deal can only be linked to a lead or customer the user can see. Without this, a sales
+     * rep could attach a deal to another rep's customer (and add to its lifetime value when won).
+     */
+    private function authorizeLinks(array $data): void
+    {
+        if (! empty($data['lead_id'])) {
+            Gate::authorize('view', Lead::findOrFail($data['lead_id']));
+        }
+        if (! empty($data['customer_id'])) {
+            Gate::authorize('view', Customer::findOrFail($data['customer_id']));
+        }
     }
 
     public function destroy(Deal $deal): Response

@@ -236,6 +236,9 @@ class LeadController extends Controller
 
         if ($data['mode'] === 'new') {
             abort_if(Customer::where('name', $lead->company)->exists(), 422, "A customer called {$lead->company} already exists. Choose “Add to existing”.");
+        } else {
+            // Adding to an existing customer changes that customer, so it must be one you can edit.
+            Gate::authorize('update', Customer::findOrFail($data['customer_id']));
         }
 
         $user = $request->user();

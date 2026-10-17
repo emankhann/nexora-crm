@@ -12,6 +12,12 @@ import { isEmail } from "@/lib/utils";
 const input =
   "h-[46px] w-full rounded-xl border-[1.5px] border-line bg-surface px-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20 aria-[invalid=true]:border-error aria-[invalid=true]:ring-[3px] aria-[invalid=true]:ring-error/15";
 
+/**
+ * The demo-account shortcuts (and the demo password) show while developing. In production
+ * they're hidden unless NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true, e.g. for a public demo.
+ */
+const SHOW_DEMO_ACCOUNTS = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === "true";
+
 /** Only allow redirects back into this app, never to another site. */
 function safeNext(): string {
   const next = new URLSearchParams(window.location.search).get("next");
@@ -156,30 +162,34 @@ export default function LoginForm() {
         {loading ? "Signing in…" : "Sign in"}
       </button>
 
-      <div className="flex items-center gap-3 text-[13px] text-slate-500">
-        <div className="h-px flex-1 bg-line" />
-        Demo accounts, click to fill
-        <div className="h-px flex-1 bg-line" />
-      </div>
-      <div className="grid grid-cols-3 gap-2.5">
-        {DEMO_ACCOUNTS.map((d) => {
-          const selected = d.email === email.trim().toLowerCase();
-          return (
-            <button
-              key={d.email}
-              type="button"
-              onClick={() => fillDemo(d.email)}
-              className={`rounded-xl border-[1.5px] px-3 py-2.5 text-left ${selected ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-accent"}`}
-            >
-              <div className="text-[13.5px] font-bold">{d.label}</div>
-              <div className="mt-0.5 text-xs text-slate-500">{d.sub}</div>
-            </button>
-          );
-        })}
-      </div>
-      <p className="-mt-2 text-center text-xs text-slate-500">
-        Demo password: <code className="font-bold text-slate-700">{DEMO_PASSWORD}</code>
-      </p>
+      {SHOW_DEMO_ACCOUNTS && (
+        <>
+          <div className="flex items-center gap-3 text-[13px] text-slate-500">
+            <div className="h-px flex-1 bg-line" />
+            Demo accounts, click to fill
+            <div className="h-px flex-1 bg-line" />
+          </div>
+          <div className="grid grid-cols-3 gap-2.5">
+            {DEMO_ACCOUNTS.map((d) => {
+              const selected = d.email === email.trim().toLowerCase();
+              return (
+                <button
+                  key={d.email}
+                  type="button"
+                  onClick={() => fillDemo(d.email)}
+                  className={`rounded-xl border-[1.5px] px-3 py-2.5 text-left ${selected ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-accent"}`}
+                >
+                  <div className="text-[13.5px] font-bold">{d.label}</div>
+                  <div className="mt-0.5 text-xs text-slate-500">{d.sub}</div>
+                </button>
+              );
+            })}
+          </div>
+          <p className="-mt-2 text-center text-xs text-slate-500">
+            Demo password: <code className="font-bold text-slate-700">{DEMO_PASSWORD}</code>
+          </p>
+        </>
+      )}
     </form>
   );
 }

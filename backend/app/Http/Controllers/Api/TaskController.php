@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\TaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Customer;
+use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\Task;
 use App\Models\User;
@@ -173,6 +174,9 @@ class TaskController extends Controller
         }
         if (! empty($data['customer_id'])) {
             Gate::authorize('view', Customer::findOrFail($data['customer_id']));
+        }
+        if (! empty($data['deal_id'])) {
+            Gate::authorize('view', Deal::findOrFail($data['deal_id']));
         }
     }
 }

@@ -16,17 +16,6 @@ export function scoreTier(score: number) {
 
 /* ---------- ids and names ---------- */
 
-export function uid(prefix = "id") {
-  return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
-}
-
-export function initialsOf(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "?";
-  const letters = parts.length === 1 ? parts[0].slice(0, 2) : parts[0][0] + parts[parts.length - 1][0];
-  return letters.toUpperCase();
-}
-
 /* ---------- dates ---------- */
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -104,10 +93,6 @@ export function daysFromNow(days: number, hour = 10, minute = 0) {
   d.setDate(d.getDate() + days);
   d.setHours(hour, minute, 0, 0);
   return d.toISOString();
-}
-
-export function hoursAgo(hours: number) {
-  return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 }
 
 /* ---------- validation ---------- */

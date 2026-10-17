@@ -143,6 +143,34 @@ class CrmApiTest extends TestCase
         $this->assertSame('Practice Owner', $lead->fresh()->job_title);
     }
 
+    public function test_a_sales_rep_cannot_link_records_they_cannot_see(): void
+    {
+        $sana = $this->user('sana@nexora.example');
+        $othersCustomer = Customer::where('name', 'Meridian Textiles')->firstOrFail(); // Omar's
+        $othersDeal = Deal::where('title', 'Fleet tracking portal')->firstOrFail();    // Huma's
+        $ownLead = Lead::where('company', 'Harbor Dental')->firstOrFail();             // Sana's
+
+        // A deal on someone else's customer.
+        $this->actingAs($sana)->postJson('/api/deals', [
+            'title' => 'Sneaky deal', 'company' => 'Meridian Textiles', 'value' => 1000, 'stage' => 'won',
+            'expected_close_date' => now()->toDateString(), 'customer_id' => $othersCustomer->id,
+        ])->assertForbidden();
+
+        // A task on someone else's deal.
+        $this->actingAs($sana)->postJson('/api/tasks', [
+            'title' => 'Sneaky task', 'type' => 'call', 'priority' => 'low', 'due_at' => now()->addDay()->toIso8601String(),
+            'reminder' => 'none', 'deal_id' => $othersDeal->id,
+        ])->assertForbidden();
+
+        // Converting her own lead into someone else's customer.
+        $this->actingAs($sana)->postJson("/api/leads/{$ownLead->id}/convert", [
+            'mode' => 'existing', 'customer_id' => $othersCustomer->id,
+        ])->assertForbidden();
+
+        $this->assertSame(0, Deal::where('title', 'Sneaky deal')->count());
+        $this->assertNotSame('converted', $ownLead->fresh()->status->value);
+    }
+
     public function test_winning_a_deal_adds_to_the_customers_lifetime_value(): void
     {
         $deal = Deal::where('title', 'Social media retainer')->firstOrFail();

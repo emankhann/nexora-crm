@@ -196,8 +196,13 @@ export default function TasksBoard() {
                   checked={t.done}
                   disabled={!editable}
                   onChange={() => {
-                    toggleTask(t.id).catch(showError);
-                    if (!t.done) toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
+                    const completing = !t.done;
+                    // The box ticks at once; the message waits until the server has saved it.
+                    toggleTask(t.id)
+                      .then(() => {
+                        if (completing) toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
+                      })
+                      .catch(showError);
                   }}
                   className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-primary"
                 />

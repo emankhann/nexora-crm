@@ -1,7 +1,7 @@
 import type { CrmState } from "@/lib/crm-store";
 import { OPEN_STAGES } from "@/lib/crm-store";
 import { canSee } from "@/lib/permissions";
-import type { DemoUser } from "@/lib/users";
+import type { SessionUser } from "@/lib/users";
 import { daysBetween, formatCurrency, formatDue, timeAgo } from "@/lib/utils";
 
 export type Notice = {
@@ -20,7 +20,7 @@ const REMINDER_MS = { none: 0, "15m": 15 * 60e3, "1h": 60 * 60e3, "1d": 24 * 60 
  * tasks whose reminder time has passed, overdue tasks, leads/tasks
  * assigned to you in the last 3 days, and open deals past their close date.
  */
-export function buildNotices(s: CrmState, user: DemoUser): Notice[] {
+export function buildNotices(s: CrmState, user: SessionUser): Notice[] {
   const now = Date.now();
   const out: Notice[] = [];
 

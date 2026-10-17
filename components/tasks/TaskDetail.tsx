@@ -129,8 +129,10 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
                 type="button"
                 className={btnPrimary}
                 onClick={() => {
-                  toggleTask(task.id).catch(showError);
-                  toast(task.done ? "Task reopened" : "Task completed");
+                  const message = task.done ? "Task reopened" : "Task completed";
+                  toggleTask(task.id)
+                    .then(() => toast(message))
+                    .catch(showError);
                   if (!task.done) onClose();
                 }}
               >

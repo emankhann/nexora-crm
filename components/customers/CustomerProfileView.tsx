@@ -283,8 +283,10 @@ export default function CustomerProfileView({ id }: { id: string }) {
                   <input
                     type="checkbox"
                     onChange={() => {
-                      toggleTask(t.id).catch(showError);
-                      toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
+                      // The box ticks at once; the message waits until the server has saved it.
+                      toggleTask(t.id)
+                        .then(() => toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } }))
+                        .catch(showError);
                     }}
                     className="mt-0.5 h-[17px] w-[17px] shrink-0 accent-primary"
                   />
