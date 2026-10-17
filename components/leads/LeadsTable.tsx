@@ -483,7 +483,7 @@ export default function LeadsTable() {
             Showing {filtered.length === 0 ? 0 : current * PAGE_SIZE + 1}–{Math.min(filtered.length, (current + 1) * PAGE_SIZE)} of {filtered.length} leads
           </span>
           {pages > 1 && (
-            <nav aria-label="Pages" className="flex items-center gap-1.5">
+            <nav aria-label="Pages" className="flex max-w-full items-center gap-1.5 overflow-x-auto">
               <button type="button" aria-label="Previous page" disabled={current === 0} onClick={() => setPage(current - 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-surface disabled:opacity-40">
                 <ChevronLeft size={16} />
               </button>

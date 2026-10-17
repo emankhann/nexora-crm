@@ -51,7 +51,7 @@ function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: Deal
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="grid h-7 w-7 place-items-center rounded-lg bg-muted text-slate-600 hover:bg-line"
+        className="grid h-9 w-9 place-items-center rounded-lg bg-muted text-slate-600 hover:bg-line lg:h-7 lg:w-7"
       >
         <MoreHorizontal size={16} />
       </button>
@@ -234,8 +234,9 @@ export default function PipelineBoard() {
         ))}
       </div>
 
-      <div className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
-        <div className="grid min-w-[1440px] grid-cols-6 items-start gap-3.5">
+      {/* Phones and tablets: one swipeable column at a time (snaps into place). Desktop: all six columns. */}
+      <div className="-mx-4 snap-x snap-mandatory scroll-px-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0 lg:snap-none">
+        <div className="grid auto-cols-[minmax(260px,82vw)] grid-flow-col items-start gap-3.5 sm:auto-cols-[300px] lg:min-w-[1440px] lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-6">
           {DEAL_STAGES.map((stage) => {
             const column = deals.filter((d) => d.stage === stage).sort((a, b) => a.closeDate.localeCompare(b.closeDate));
             const total = column.reduce((s, d) => s + d.value, 0);
@@ -252,7 +253,7 @@ export default function PipelineBoard() {
                   if (!e.currentTarget.contains(e.relatedTarget as Node)) setOverStage(null);
                 }}
                 onDrop={(e) => onDrop(e, stage)}
-                className={`flex min-h-[200px] flex-col gap-2.5 rounded-2xl p-3 transition-shadow ${columnBg[stage]} ${isOver ? "ring-2 ring-primary ring-offset-2 ring-offset-canvas" : ""}`}
+                className={`flex min-h-[200px] snap-start flex-col gap-2.5 rounded-2xl p-3 transition-shadow ${columnBg[stage]} ${isOver ? "ring-2 ring-primary ring-offset-2 ring-offset-canvas" : ""}`}
               >
                 <div className="flex flex-col gap-0.5 px-1 pt-0.5">
                   <div className="flex items-center justify-between">

@@ -72,7 +72,7 @@ export default function Modal({
             right ? "h-full shadow-[-20px_0_50px_rgba(2,8,23,0.25)]" : "max-h-[calc(100dvh-32px)] rounded-[20px] shadow-[0_30px_70px_rgba(2,8,23,0.35)]"
           }`}
         >
-          <div className="flex items-start justify-between gap-4 border-b border-row-line px-6 pb-[18px] pt-[22px]">
+          <div className="flex items-start justify-between gap-4 border-b border-row-line px-4 pb-[18px] pt-[22px] sm:px-6">
             <div className="flex min-w-0 items-start gap-3.5">
               {icon}
               <div className="min-w-0">
@@ -89,10 +89,10 @@ export default function Modal({
               <X size={16} strokeWidth={2.2} />
             </button>
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">{children}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">{children}</div>
           {footer && (
             <div
-              className={`flex flex-wrap items-center justify-between gap-3 border-t border-row-line bg-hover px-6 py-4 ${
+              className={`flex flex-wrap items-center justify-between gap-3 border-t border-row-line bg-hover px-4 py-4 sm:px-6 ${
                 right ? "" : "rounded-b-[20px]"
               }`}
             >
