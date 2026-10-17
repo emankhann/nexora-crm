@@ -218,35 +218,38 @@ export default function TasksBoard() {
                     {t.title}
                   </button>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-slate-500">
-                    {t.leadId ? (
-                      <Link href={`/leads/${t.leadId}`} className="font-semibold text-primary">
-                        {t.contact}
-                      </Link>
-                    ) : t.customerId ? (
-                      <Link href={`/customers/${t.customerId}`} className="font-semibold text-primary">
-                        {t.contact || t.company}
-                      </Link>
-                    ) : (
-                      t.contact && <span>{t.contact}</span>
-                    )}
-                    {t.company && (
-                      <>
-                        <span>·</span>
-                        <span>{t.company}</span>
-                      </>
-                    )}
-                    <span>·</span>
-                    <span className={!t.done && b === "overdue" ? "font-semibold text-hot" : ""}>
-                      {!t.done && b === "overdue" ? `Overdue, was due ${formatDue(t.dueAt)}` : `Due ${formatDue(t.dueAt)}`}
-                    </span>
-                    {t.followUps.length > 0 && (
-                      <>
-                        <span>·</span>
-                        <span>
-                          {t.followUps.length} follow-up{t.followUps.length === 1 ? "" : "s"}
+                    {/* Only the parts this task has, each after the first starting with its own "·",
+                        so a dot never starts the line or sits alone when the line wraps. */}
+                    {[
+                      t.leadId ? (
+                        <Link key="contact" href={`/leads/${t.leadId}`} className="font-semibold text-primary">
+                          {t.contact}
+                        </Link>
+                      ) : t.customerId ? (
+                        <Link key="contact" href={`/customers/${t.customerId}`} className="font-semibold text-primary">
+                          {t.contact || t.company}
+                        </Link>
+                      ) : t.contact ? (
+                        t.contact
+                      ) : null,
+                      // Skip the company if the customer link above already shows its name.
+                      t.company && !(t.customerId && !t.leadId && !t.contact) ? t.company : null,
+                      <span key="due" className={!t.done && b === "overdue" ? "font-semibold text-hot" : ""}>
+                        {!t.done && b === "overdue" ? `Overdue, was due ${formatDue(t.dueAt)}` : `Due ${formatDue(t.dueAt)}`}
+                      </span>,
+                      t.followUps.length > 0 ? `${t.followUps.length} follow-up${t.followUps.length === 1 ? "" : "s"}` : null,
+                    ]
+                      .filter((part) => part !== null && part !== "")
+                      .map((part, i) => (
+                        <span key={i}>
+                          {i > 0 && (
+                            <span aria-hidden className="mr-2">
+                              ·
+                            </span>
+                          )}
+                          {part}
                         </span>
-                      </>
-                    )}
+                      ))}
                   </div>
                 </div>
                 <Badge tone={priorityTone[t.priority]}>{t.priority}</Badge>
