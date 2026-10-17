@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/Toast";
 import { LEAD_STATUSES, assignLeads, setLeadsStatus, useCrm } from "@/lib/crm-store";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary } from "@/lib/ui";
-import { users } from "@/lib/users";
+import { getUsers } from "@/lib/users";
 import type { LeadRecord, LeadStatus } from "@/types";
 
 function names(leads: LeadRecord[]) {
@@ -53,13 +53,13 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
   const crm = useCrm();
   const user = useSessionUser();
   const toast = useToast();
-  const [owner, setOwner] = useState(() => (leads.length === 1 ? leads[0].owner : users[1].short));
+  const [owner, setOwner] = useState(() => (leads.length === 1 ? leads[0].owner : getUsers()[0]?.short ?? "Unassigned"));
   const [query, setQuery] = useState("");
   const [notify, setNotify] = useState(true);
 
   const openCount = (short: string) => crm?.leads.filter((l) => l.owner === short && l.status !== "Converted").length ?? 0;
   const options = [
-    ...users.map((u) => ({ short: u.short, title: u.name, sub: `${u.role} · ${openCount(u.short)} open leads`, initials: u.initials })),
+    ...getUsers().map((u) => ({ short: u.short, title: u.name, sub: `${u.role} · ${openCount(u.short)} open leads`, initials: u.initials })),
     { short: "Unassigned", title: "Unassigned", sub: "Leave without an owner", initials: "–" },
   ].filter((o) => !query.trim() || o.title.toLowerCase().includes(query.trim().toLowerCase()));
 

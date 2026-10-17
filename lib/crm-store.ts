@@ -1,16 +1,21 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { api, ApiError, errorMessage } from "@/lib/api";
 import {
-  auditMock,
-  customersMock,
-  leadDetailsMock,
-  leadsMock,
-  pipelineMock,
-  tasksMock,
-} from "@/lib/mock-data";
-import { initialsForOwner, userByShort, users, type DemoUser } from "@/lib/users";
-import { daysFromNow, hoursAgo, initialsOf, uid } from "@/lib/utils";
+  mapActivity,
+  mapAudit,
+  mapCustomer,
+  mapDeal,
+  mapLead,
+  mapMember,
+  mapTask,
+  mapUser,
+  type ApiBootstrap,
+} from "@/lib/api-mappers";
+import { onSignedOut, setSessionUser } from "@/lib/session";
+import { initialsForOwner, setDirectory, userByShort, type DemoUser } from "@/lib/users";
+import { initialsOf, uid } from "@/lib/utils";
 import type {
   ActivityKind,
   ActivityRecord,
@@ -27,6 +32,7 @@ import type {
   LeadRecord,
   LeadSource,
   LeadStatus,
+  MonthRevenue,
   ScoreFactor,
   TaskRecord,
 } from "@/types";
@@ -34,10 +40,12 @@ import type {
 /**
  * Client-side CRM store.
  *
- * Frontend-first: all records live in the browser (and in localStorage so
- * changes survive a refresh). Every change goes through an action below, so
- * when the API and database are added, each action becomes one request and
- * the screens don't need to change.
+ * Holds everything the signed-in user may see, loaded from the Laravel API
+ * (GET /api/crm, see loadCrm below). Screens read it with useCrm().
+ *
+ * Every change goes through an action below. Batch 3 part 2 turns each action into
+ * an API request; until then, changes made in the UI apply in memory only and are
+ * gone after a page refresh.
  */
 
 export type CrmState = {
@@ -52,8 +60,7 @@ export type CrmState = {
   readNotices: string[];
 };
 
-const STORAGE_KEY = "nexora-crm";
-const VERSION = 2;
+const VERSION = 3;
 
 export const DEAL_STAGES: DealStage[] = ["New", "Contacted", "Qualified", "Proposal", "Won", "Lost"];
 export const OPEN_STAGES: DealStage[] = ["New", "Contacted", "Qualified", "Proposal"];
@@ -108,287 +115,105 @@ export function scoreLead(
 }
 
 /* ------------------------------------------------------------------ */
-/* Seed data, built from lib/mock-data.ts with dates relative to now.  */
-/* ------------------------------------------------------------------ */
-
-function agoToIso(text: string): string {
-  const h = text.match(/(\d+)\s*hours?/);
-  if (h) return hoursAgo(Number(h[1]));
-  const d = text.match(/(\d+)\s*days?/);
-  if (d) return daysFromNow(-Number(d[1]), 11);
-  if (/yesterday/i.test(text)) return daysFromNow(-1, 15);
-  return daysFromNow(-1, 12);
-}
-
-function buildSeed(): CrmState {
-  const leads: LeadRecord[] = leadsMock.map((l) => {
-    const extra = leadDetailsMock[l.id];
-    const base = {
-      ...l,
-      source: l.source as LeadSource,
-      phone: extra?.phone ?? "",
-      title: extra?.title ?? "",
-      companySize: l.id === "1" ? "200+" : "51–200",
-      notes: "",
-      createdAt: l.id === "1" ? daysFromNow(-10, 9) : daysFromNow(-12 - Number(l.id), 9),
-      lastActivityAt: agoToIso(l.lastActivity),
-      stageDates:
-        l.id === "1" ? [daysFromNow(-10, 9), daysFromNow(-8, 11), daysFromNow(-2, 14)] : [daysFromNow(-12 - Number(l.id), 9)],
-      customerId: null,
-    };
-    const auto = scoreLead(base);
-    return {
-      id: base.id,
-      initials: base.initials,
-      name: base.name,
-      email: base.email,
-      phone: base.phone,
-      title: base.title,
-      company: base.company,
-      companySize: base.companySize,
-      source: base.source,
-      status: base.status,
-      score: l.score,
-      factors: extra?.factors ?? auto.factors,
-      autoScore: false,
-      owner: l.owner,
-      notes: base.notes,
-      createdAt: base.createdAt,
-      lastActivityAt: base.lastActivityAt,
-      stageDates: base.stageDates,
-      customerId: null,
-    };
-  });
-
-  const customers: CustomerRecord[] = customersMock.customers.map((c) => ({
-    id: c.id,
-    initials: c.initials,
-    name: c.name,
-    industry: c.industry,
-    size: "51–200",
-    website: `${c.name.toLowerCase().replace(/[^a-z]/g, "")}.example`,
-    city: "Lahore",
-    contacts: [
-      {
-        name: c.contact,
-        title: c.id === "1" ? "Founder" : "Primary contact",
-        email: `${c.contact.split(" ").slice(-2, -1)[0]?.toLowerCase().replace(/[^a-z]/g, "") || "contact"}@${c.name
-          .toLowerCase()
-          .replace(/[^a-z]/g, "")}.example`,
-        phone: "+92 321 555 0198",
-        primary: true,
-      },
-      ...(c.id === "1"
-        ? [{ name: "Rida Farooq", title: "Finance manager", email: "rida@orbitstudios.example", phone: "", primary: false }]
-        : []),
-    ],
-    lifetimeValue: c.lifetimeValue,
-    legacyOpenDeals: c.id === "1" ? 0 : c.openDeals,
-    health: c.health,
-    owner: c.owner,
-    since: c.since,
-    leadId: null,
-  }));
-
-  const closeOffsets: Record<string, number> = { "1": 35, "2": 43, "3": 50, "4": 27, "5": -2, "6": 15, "7": -6, "8": 13, "9": 18 };
-  const deals: DealRecord[] = pipelineMock.deals.map((d) => ({
-    id: d.id,
-    title: d.title,
-    company: d.company,
-    value: d.value,
-    tag: d.tag,
-    stage: d.stage,
-    probability: STAGE_PROBABILITY[d.stage],
-    closeDate: daysFromNow(closeOffsets[d.id] ?? 20, 17),
-    owner: ownerFromInitials(d.ownerInitials),
-    next: d.next,
-    leadId: d.id === "8" ? "1" : null,
-    customerId: null,
-    lostReason: "",
-    closedAt: null,
-  }));
-  deals.push(
-    {
-      id: "10", title: "Social media retainer", company: "Orbit Studios", value: 6200, tag: "Warm", stage: "Proposal",
-      probability: 65, closeDate: daysFromNow(19, 17), owner: "Sana M.", next: "Send proposal tomorrow",
-      leadId: null, customerId: "1", lostReason: "", closedAt: null,
-    },
-    {
-      id: "11", title: "Brand video package", company: "Orbit Studios", value: 15000, tag: "Hot", stage: "Won",
-      probability: 100, closeDate: daysFromNow(-2, 12), owner: "Sana M.", next: "Customer created",
-      leadId: null, customerId: "1", lostReason: "", closedAt: daysFromNow(-2, 12),
-    },
-    {
-      id: "12", title: "Lab booking system", company: "Aster Pharma", value: 7600, tag: "Warm", stage: "Won",
-      probability: 100, closeDate: daysFromNow(-7, 12), owner: "Huma K.", next: "Customer created",
-      leadId: null, customerId: "2", lostReason: "", closedAt: daysFromNow(-7, 12),
-    },
-    {
-      id: "13", title: "Ecommerce rebuild", company: "Mint Apparel", value: 4000, tag: "Cold", stage: "Lost",
-      probability: 0, closeDate: daysFromNow(-8, 12), owner: "Huma K.", next: "Revisit next quarter",
-      leadId: null, customerId: null, lostReason: "Budget", closedAt: daysFromNow(-8, 12),
-    }
-  );
-
-  const taskDue: Record<string, string> = {
-    "1": daysFromNow(0, 17), "2": daysFromNow(0, 15, 30), "3": daysFromNow(0, 19), "4": daysFromNow(0, 18),
-    "5": daysFromNow(-3, 10), "6": daysFromNow(3, 11), "7": daysFromNow(-2, 10), "8": daysFromNow(-3, 10),
-  };
-  const tasks: TaskRecord[] = tasksMock.map((t) => ({
-    id: t.id,
-    title: t.title,
-    type: /call/i.test(t.title) ? "Call" : /email|reply/i.test(t.title) ? "Email" : /demo|kickoff/i.test(t.title) ? "Meeting" : "To-do",
-    priority: t.priority,
-    dueAt: taskDue[t.id] ?? daysFromNow(1),
-    reminder: "1h",
-    remindByEmail: true,
-    owner: ownerFromInitials(t.ownerInitials),
-    leadId: t.leadId ?? null,
-    customerId: t.company === "Orbit Studios" ? "1" : null,
-    dealId: t.id === "1" ? "8" : null,
-    contact: t.contact,
-    company: t.company,
-    notes: "",
-    done: t.done,
-    doneAt: t.done ? daysFromNow(-2, 16) : null,
-    createdAt: daysFromNow(-4, 9),
-    createdBy: "Huma K.",
-    followUps:
-      t.id === "2"
-        ? [
-            { id: "f2", at: daysFromNow(-1, 12), by: "Omar T.", outcome: "Email sent", note: "Bilal replied asking to talk today.", rescheduledTo: daysFromNow(0, 15, 30) },
-            { id: "f1", at: daysFromNow(-2, 11), by: "Omar T.", outcome: "No answer", note: "Left a voicemail.", rescheduledTo: daysFromNow(-1, 12) },
-          ]
-        : [],
-  }));
-
-  const lead1 = leadDetailsMock["1"];
-  const timelineOffsets = [hoursAgo(2), hoursAgo(5), daysFromNow(-1, 16), daysFromNow(-1, 16, 30), daysFromNow(-10, 9)];
-  const activities: ActivityRecord[] = [
-    ...(lead1?.timeline ?? []).map((e, i) => ({
-      id: `a_l1_${i}`,
-      kind: e.kind as ActivityKind,
-      title: e.title,
-      meta: e.meta,
-      at: timelineOffsets[i] ?? daysFromNow(-3),
-      by: "Huma K.",
-      leadId: "1",
-    })),
-    { id: "a_c1_1", kind: "call", title: "Call with Daniyal Ahmed (12 min)", meta: "Happy with the brand video. Interested in a monthly social retainer.", at: hoursAgo(0.2), by: "Sana M.", customerId: "1" },
-    { id: "a_c1_2", kind: "email", title: "Sent: Social media retainer proposal", meta: "Opened 3 times", at: hoursAgo(2), by: "Sana M.", customerId: "1", dealId: "10" },
-    { id: "a_c1_3", kind: "note", title: "Rida handles invoices", meta: "Send all billing to rida@orbitstudios.example, not the founder.", at: daysFromNow(-1, 13), by: "Huma K.", customerId: "1" },
-    { id: "a_c1_4", kind: "meeting", title: "Kickoff meeting at Orbit office", meta: "Agreed timeline and deliverables for the brand video.", at: daysFromNow(-3, 11), by: "Sana M.", customerId: "1" },
-    { id: "a_c1_5", kind: "converted", title: "Became a customer", meta: "Deal “Brand video package” won · $15,000", at: daysFromNow(-2, 12), by: "Sana M.", customerId: "1", dealId: "11" },
-    { id: "a_as_1", kind: "assigned", title: "Zainab Hussain assigned to Omar T.", meta: "By Huma K.", at: hoursAgo(3), by: "Huma K.", leadId: "6", assignee: "Omar T." },
-  ];
-
-  const auditOffsets = [hoursAgo(0.2), hoursAgo(1), hoursAgo(3), daysFromNow(-1, 16), daysFromNow(-1, 15), daysFromNow(-2, 10), daysFromNow(-10, 9)];
-  const audit: AuditRecord[] = auditMock.map((a, i) => ({
-    id: `au_${a.id}`,
-    at: auditOffsets[i] ?? daysFromNow(-12),
-    user: a.user,
-    action: a.action,
-    record: a.record,
-    details: a.details,
-  }));
-
-  return { version: VERSION, leads, customers, deals, tasks, activities, audit, members: seedMembers(), readNotices: [] };
-}
-
-function seedMembers(): MemberRecord[] {
-  const lastActive = [hoursAgo(0), hoursAgo(2), daysFromNow(-1, 17)];
-  return [
-    ...users.map((u, i) => ({
-      id: `m_${u.id}`,
-      userId: u.id,
-      name: u.name,
-      short: u.short,
-      initials: u.initials,
-      email: u.email,
-      role: u.role,
-      status: "Active" as const,
-      invitedAt: null,
-      lastActiveAt: lastActive[i] ?? null,
-    })),
-    {
-      id: "m_kamran",
-      userId: null,
-      name: "Kamran Shah",
-      short: "Kamran S.",
-      initials: "KS",
-      email: "kamran@nexora.example",
-      role: "Sales rep",
-      status: "Pending",
-      invitedAt: daysFromNow(-1, 11),
-      lastActiveAt: null,
-    },
-  ];
-}
-
-function ownerFromInitials(initials: string) {
-  return { HK: "Huma K.", OT: "Omar T.", SM: "Sana M." }[initials] ?? "Unassigned";
-}
-
-/* ------------------------------------------------------------------ */
 /* The store itself.                                                   */
 /* ------------------------------------------------------------------ */
 
 let state: CrmState | null = null;
 const listeners = new Set<() => void>();
 
-function load(): CrmState {
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as CrmState;
-      if (parsed.version === VERSION && Array.isArray(parsed.leads)) return parsed;
-      // Older saved data: keep the user's records and add what's new.
-      if (parsed.version === 1 && Array.isArray(parsed.leads)) return { ...parsed, version: VERSION, members: seedMembers() };
-    }
-  } catch {
-    // Storage blocked or corrupted: fall back to fresh demo data.
-  }
-  return buildSeed();
+export type CrmStatus = { status: "idle" | "loading" | "ready" | "error"; error: string | null };
+let status: CrmStatus = { status: "idle", error: null };
+
+function emit() {
+  listeners.forEach((cb) => cb());
 }
 
-function getSnapshot(): CrmState {
-  if (!state) state = load();
-  return state;
+function setStatus(next: CrmStatus) {
+  status = next;
+  emit();
 }
 
 function subscribe(cb: () => void) {
   listeners.add(cb);
-  const onStorage = (e: StorageEvent) => {
-    // Keep several open tabs in sync.
-    if (e.key === STORAGE_KEY) {
-      state = load();
-      cb();
-    }
-  };
-  window.addEventListener("storage", onStorage);
   return () => {
     listeners.delete(cb);
-    window.removeEventListener("storage", onStorage);
   };
 }
 
 function commit(next: CrmState) {
   state = next;
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Ignore quota or privacy-mode errors; the change still applies in memory.
-  }
-  listeners.forEach((cb) => cb());
+  emit();
 }
 
 function update(fn: (s: CrmState) => CrmState) {
-  commit(fn(getSnapshot()));
+  // Nothing to change before the data has loaded (screens show a skeleton until then).
+  if (state) commit(fn(state));
 }
 
-/** All CRM data, or null during server render and hydration (show a skeleton). */
+let inflight: Promise<void> | null = null;
+
+/**
+ * Loads everything the signed-in user may see (GET /api/crm) into the store.
+ * Called by the app shell on start-up; call it again to refresh after changes.
+ * A 401 (signed out) is handled by the app shell, which sends the user to /login.
+ */
+export function loadCrm(): Promise<void> {
+  if (inflight) return inflight;
+  if (!state) setStatus({ status: "loading", error: null });
+  inflight = api
+    .get<ApiBootstrap>("/crm")
+    .then((data) => {
+      setDirectory(data.members.filter((m) => m.status === "active").map(mapUser));
+      setSessionUser(mapUser(data.user));
+      state = {
+        version: VERSION,
+        leads: data.leads.map(mapLead),
+        customers: data.customers.map(mapCustomer),
+        deals: data.deals.map(mapDeal),
+        tasks: data.tasks.map(mapTask),
+        activities: data.activities.map(mapActivity),
+        audit: data.audit.map(mapAudit),
+        members: data.members.map(mapMember),
+        readNotices: data.readNotices ?? [],
+      };
+      setStatus({ status: "ready", error: null });
+    })
+    .catch((err: unknown) => {
+      if (err instanceof ApiError && err.status === 401) {
+        setStatus({ status: "idle", error: null });
+        return;
+      }
+      setStatus({ status: "error", error: errorMessage(err) });
+    })
+    .finally(() => {
+      inflight = null;
+    });
+  return inflight;
+}
+
+// Signing out (or the session ending) drops everything that belonged to that user.
+onSignedOut(() => {
+  state = null;
+  setDirectory([]);
+  setStatus({ status: "idle", error: null });
+});
+
+/** All CRM data, or null while it loads (show a skeleton). */
 export function useCrm(): CrmState | null {
-  return useSyncExternalStore(subscribe, getSnapshot, () => null);
+  return useSyncExternalStore(
+    subscribe,
+    () => state,
+    () => null
+  );
+}
+
+/** Whether the data is loading, ready, or failed to load (with a message). */
+export function useCrmStatus(): CrmStatus {
+  return useSyncExternalStore(
+    subscribe,
+    () => status,
+    () => status
+  );
 }
 
 /* ------------------------------------------------------------------ */
@@ -590,7 +415,8 @@ export type ConvertInput = {
 
 /** Turns a lead into a customer (new or existing) and optionally opens a deal. Returns the customer id. */
 export function convertLead(leadId: string, input: ConvertInput, actor: DemoUser): string | null {
-  const s0 = getSnapshot();
+  const s0 = state;
+  if (!s0) return null;
   const lead = s0.leads.find((l) => l.id === leadId);
   if (!lead) return null;
   const now = new Date().toISOString();
@@ -1041,15 +867,6 @@ export function markNoticesRead(ids: string[]) {
   update((s) => ({ ...s, readNotices: Array.from(new Set([...s.readNotices, ...ids])) }));
 }
 
-export function recordSignIn(actor: DemoUser) {
-  update((s) => ({ ...s, audit: [audit(actor, "Signed in", actor.name, `Signed in as ${actor.role}`), ...s.audit] }));
-}
-
-/** Puts the demo data back. Handy before a demo or review. */
-export function resetDemoData() {
-  commit(buildSeed());
-}
-
 /* ------------------------------------------------------------------ */
 /* Selectors                                                           */
 /* ------------------------------------------------------------------ */
@@ -1064,4 +881,19 @@ export function ownerName(short: string) {
 
 export function openDealsFor(s: CrmState, customer: CustomerRecord) {
   return s.deals.filter((d) => d.customerId === customer.id && OPEN_STAGES.includes(d.stage)).length + customer.legacyOpenDeals;
+}
+
+/** Revenue won per calendar month for the last `count` months, oldest first (from won deals' close dates). */
+export function monthlyRevenue(deals: DealRecord[], count = 12): MonthRevenue[] {
+  const now = new Date();
+  const months: MonthRevenue[] = [];
+  for (let i = count - 1; i >= 0; i--) {
+    const start = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const end = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+    const amount = deals
+      .filter((d) => d.stage === "Won" && d.closedAt && new Date(d.closedAt) >= start && new Date(d.closedAt) < end)
+      .reduce((sum, d) => sum + d.value, 0);
+    months.push({ month: start.toLocaleDateString("en-US", { month: "short" }), amount });
+  }
+  return months;
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { LEAD_SOURCES, OPEN_STAGES, useCrm } from "@/lib/crm-store";
+import { LEAD_SOURCES, OPEN_STAGES, monthlyRevenue, useCrm } from "@/lib/crm-store";
 import { canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { formatCurrency } from "@/lib/utils";
-import type { MonthRevenue } from "@/types";
 
 const card = "rounded-2xl border border-line bg-surface";
 const ranges = [
@@ -15,10 +14,10 @@ const ranges = [
 ];
 
 /**
- * Top of the Reports page. Past months come from the revenue history;
- * the current month, KPIs and lead sources are worked out live.
+ * Top of the Reports page. Revenue, KPIs and lead sources are worked out
+ * from the records this user can see.
  */
-export default function ReportsView({ history }: { history: MonthRevenue[] }) {
+export default function ReportsView() {
   const crm = useCrm();
   const user = useSessionUser();
   const [range, setRange] = useState(12);
@@ -30,7 +29,8 @@ export default function ReportsView({ history }: { history: MonthRevenue[] }) {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const won = deals.filter((d) => d.stage === "Won");
   const wonThisMonth = won.filter((d) => d.closedAt && new Date(d.closedAt) >= monthStart).reduce((s, d) => s + d.value, 0);
-  const lastMonth = history.at(-2)?.amount ?? 0;
+  const series = monthlyRevenue(deals, 12);
+  const lastMonth = series.at(-2)?.amount ?? 0;
   const change = lastMonth ? ((wonThisMonth - lastMonth) / lastMonth) * 100 : 0;
   const converted = leads.filter((l) => l.status === "Converted").length;
   const openDeals = deals.filter((d) => OPEN_STAGES.includes(d.stage));
@@ -46,10 +46,6 @@ export default function ReportsView({ history }: { history: MonthRevenue[] }) {
     { label: "Open pipeline", value: formatCurrency(openDeals.reduce((s, d) => s + d.value, 0)), note: `${openDeals.length} open deals` },
   ];
 
-  const series: MonthRevenue[] = [
-    ...history.slice(0, -1),
-    { month: now.toLocaleDateString("en-US", { month: "short" }), amount: wonThisMonth },
-  ];
   const months = series.slice(-range);
   const maxAmount = Math.max(1, ...months.map((m) => m.amount));
   const total = months.reduce((sum, m) => sum + m.amount, 0);

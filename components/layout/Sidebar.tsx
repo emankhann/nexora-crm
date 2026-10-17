@@ -12,15 +12,14 @@ import {
   FileText,
   Home,
   LogOut,
-  RotateCcw,
   ShieldCheck,
   Users,
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useCrm, resetDemoData } from "@/lib/crm-store";
+import { useCrm } from "@/lib/crm-store";
 import { can, canSee } from "@/lib/permissions";
-import { clearRoleOverrides, signOut, useSessionUser } from "@/lib/session";
+import { signOut, useSessionUser } from "@/lib/session";
 
 type NavItem = { label: string; href: string; icon: LucideIcon; count?: "leads" | "tasks" };
 
@@ -73,10 +72,10 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
     tasks: crm && user ? crm.tasks.filter((t) => !t.done && canSee(user, t.owner)).length : undefined,
   };
 
-  function handleSignOut() {
+  async function handleSignOut() {
     // Close the mobile drawer too, or it is still open when the next person signs in.
     onNavigate?.();
-    signOut();
+    await signOut();
     router.replace("/login");
   }
 
@@ -141,20 +140,6 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
               <div className="text-[13px] font-bold">{user.name}</div>
               <div className="text-xs text-slate-500">{user.email}</div>
             </div>
-            {can(user, "manageTeam") && (
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  resetDemoData();
-                  clearRoleOverrides();
-                  setMenuOpen(false);
-                }}
-                className="flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-left text-[13.5px] font-semibold hover:bg-slate-50"
-              >
-                <RotateCcw size={15} /> Reset demo data
-              </button>
-            )}
             <button
               type="button"
               role="menuitem"

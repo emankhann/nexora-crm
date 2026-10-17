@@ -10,7 +10,7 @@ import { INDUSTRIES, OPEN_STAGES, convertLead, useCrm } from "@/lib/crm-store";
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
-import { ownerOptions } from "@/lib/users";
+import { getOwnerOptions } from "@/lib/users";
 import { daysFromNow, fromInputs, parseMoney, toDateInput } from "@/lib/utils";
 import type { DealStage, LeadRecord } from "@/types";
 
@@ -131,7 +131,7 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
               label="Account owner"
               value={owner}
               onChange={(e) => setOwner(e.target.value)}
-              options={canPickOwner ? ownerOptions.filter((o) => o !== "Unassigned") : [owner]}
+              options={canPickOwner ? getOwnerOptions().filter((o) => o !== "Unassigned") : [owner]}
               disabled={!canPickOwner}
             />
           </div>

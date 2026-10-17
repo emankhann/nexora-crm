@@ -1,10 +1,11 @@
-import type { Role } from "@/types";
+import type { PermissionRow, Role } from "@/types";
 import type { DemoUser } from "@/lib/users";
 
 /**
  * One place that decides who can do what. Matches the table on the
  * Team and roles page. The UI hides what a role can't do, and proxy.ts
- * blocks admin-only pages. When the API is added, the same checks run there.
+ * blocks admin-only pages. The API enforces the same rules on every request
+ * (backend/app/Policies and the Gates in AppServiceProvider).
  */
 export type Permission =
   | "viewAll"
@@ -39,3 +40,19 @@ export function canEdit(user: DemoUser | null, owner: string): boolean {
 
 /** Routes only admins may open. proxy.ts redirects everyone else. */
 export const adminOnlyRoutes = ["/team", "/audit-log"];
+
+const row = (p: Permission) => ({
+  admin: matrix.Admin.includes(p),
+  manager: matrix.Manager.includes(p),
+  rep: matrix["Sales rep"].includes(p),
+});
+
+/** The table shown on the Team and roles page, built from the same matrix. */
+export const PERMISSION_TABLE: PermissionRow[] = [
+  { label: "View all leads and customers", ...row("viewAll") },
+  { label: "Edit and reassign leads", ...row("editAny") },
+  { label: "Delete records", ...row("delete") },
+  { label: "Export data", ...row("export") },
+  { label: "Manage team and roles", ...row("manageTeam") },
+  { label: "View audit log", ...row("viewAudit") },
+];

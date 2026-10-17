@@ -4,19 +4,13 @@ import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { recordSignIn } from "@/lib/crm-store";
+import { loadCrm } from "@/lib/crm-store";
 import { signIn } from "@/lib/session";
-import { DEMO_PASSWORD, users } from "@/lib/users";
+import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/users";
 import { isEmail } from "@/lib/utils";
 
 const input =
   "h-[46px] w-full rounded-xl border-[1.5px] border-line bg-surface px-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20 aria-[invalid=true]:border-error aria-[invalid=true]:ring-[3px] aria-[invalid=true]:ring-error/15";
-
-const demoAccounts = [
-  { userId: "u1", label: "Admin", sub: "Full access" },
-  { userId: "u2", label: "Manager", sub: "Team view" },
-  { userId: "u3", label: "Sales rep", sub: "Own leads" },
-];
 
 /** Only allow redirects back into this app, never to another site. */
 function safeNext(): string {
@@ -66,16 +60,15 @@ export default function LoginForm() {
       setError(result.error);
       return;
     }
-    recordSignIn(result.user);
+    // The server records the sign-in in the audit log. Start loading the data now.
+    void loadCrm();
     signedIn.current = true;
     router.replace(safeNext());
     router.refresh();
   }
 
-  function fillDemo(userId: string) {
-    const u = users.find((x) => x.id === userId);
-    if (!u) return;
-    setEmail(u.email);
+  function fillDemo(demoEmail: string) {
+    setEmail(demoEmail);
     setPassword(DEMO_PASSWORD);
     setError("");
     setFieldErrors({});
@@ -169,13 +162,13 @@ export default function LoginForm() {
         <div className="h-px flex-1 bg-line" />
       </div>
       <div className="grid grid-cols-3 gap-2.5">
-        {demoAccounts.map((d) => {
-          const selected = users.find((u) => u.id === d.userId)?.email === email;
+        {DEMO_ACCOUNTS.map((d) => {
+          const selected = d.email === email.trim().toLowerCase();
           return (
             <button
-              key={d.userId}
+              key={d.email}
               type="button"
-              onClick={() => fillDemo(d.userId)}
+              onClick={() => fillDemo(d.email)}
               className={`rounded-xl border-[1.5px] px-3 py-2.5 text-left ${selected ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-accent"}`}
             >
               <div className="text-[13.5px] font-bold">{d.label}</div>

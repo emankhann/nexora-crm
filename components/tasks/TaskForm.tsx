@@ -9,7 +9,7 @@ import { createTask, updateTask, useCrm, type TaskInput } from "@/lib/crm-store"
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, inputCls } from "@/lib/ui";
-import { users } from "@/lib/users";
+import { getUsers } from "@/lib/users";
 import { daysFromNow, fromInputs, toDateInput, toTimeInput } from "@/lib/utils";
 import type { ReminderOption, TaskPriority, TaskRecord, TaskType } from "@/types";
 
@@ -74,7 +74,7 @@ export default function TaskForm({
 
   const leads = crm.leads.filter((l) => canSee(user, l.owner) && l.status !== "Converted");
   const customers = crm.customers.filter((c) => canSee(user, c.owner));
-  const ownerChoices = can(user, "reassign") ? users.map((u) => u.short) : [user.short];
+  const ownerChoices = can(user, "reassign") ? getUsers().map((u) => u.short) : [user.short];
 
   function submit(e: FormEvent) {
     e.preventDefault();

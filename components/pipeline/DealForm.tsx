@@ -11,7 +11,7 @@ import { DEAL_STAGES, LOST_REASONS, OPEN_STAGES, STAGE_PROBABILITY, createDeal, 
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnGhostDanger, btnOutline, btnPrimary, inputCls, sectionLabel } from "@/lib/ui";
-import { users } from "@/lib/users";
+import { getUsers } from "@/lib/users";
 import { daysFromNow, formatCurrency, formatDate, fromInputs, parseMoney, timeAgo, toDateInput } from "@/lib/utils";
 import type { DealRecord, DealStage, DealTag } from "@/types";
 
@@ -163,7 +163,7 @@ export default function DealForm({
     onClose();
   }
 
-  const ownerChoices = can(user, "reassign") ? users.map((u) => u.short) : [user.short];
+  const ownerChoices = can(user, "reassign") ? getUsers().map((u) => u.short) : [user.short];
   const leadOptions = crm.leads.filter((l) => canSee(user, l.owner) && l.status !== "Converted");
   const customerOptions = crm.customers.filter((c) => canSee(user, c.owner));
   const activities = deal ? crm.activities.filter((a) => a.dealId === deal.id).slice(0, 5) : [];

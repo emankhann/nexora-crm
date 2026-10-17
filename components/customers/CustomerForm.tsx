@@ -9,7 +9,7 @@ import { COMPANY_SIZES, INDUSTRIES, createCustomer, updateCustomer, useCrm, type
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
-import { users } from "@/lib/users";
+import { getUsers } from "@/lib/users";
 import { fromInputs, isEmail, isPhone, toDateInput } from "@/lib/utils";
 import type { CustomerRecord, Health } from "@/types";
 
@@ -139,7 +139,7 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
               label="Account owner"
               value={v.owner}
               onChange={(e) => set("owner", e.target.value)}
-              options={canPickOwner ? users.map((u) => u.short) : [v.owner]}
+              options={canPickOwner ? getUsers().map((u) => u.short) : [v.owner]}
               disabled={!canPickOwner}
             />
             <TextField label="Customer since" type="date" value={v.since} onChange={(e) => set("since", e.target.value)} />
