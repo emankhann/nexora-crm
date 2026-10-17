@@ -1,10 +1,49 @@
 @import "tailwindcss";
 
+/*
+ * Nexora green-and-black theme.
+ * navy   = main text colour (light on dark). The name is kept so existing classes still work.
+ * canvas = page background, surface = cards and panels, ink = deepest black (sidebar, text on green).
+ * The slate scale is remapped for dark backgrounds, so text-slate-500 etc. stay readable.
+ */
 @theme {
-  --color-primary: #356DF3;
-  --color-accent: #6478F7;
-  --color-navy: #111C35;
-  --color-canvas: #F5F7FC;
-  --color-line: #E6EAF2;
+  --color-primary: #2EE07F;
+  --color-accent: #7CF5AE;
+  --color-navy: #E8F0EA;
+  --color-canvas: #0A0C0B;
+  --color-line: #1D2420;
+  --color-surface: #111513;
+  --color-ink: #050605;
+
+  --color-slate-50: #171C19;
+  --color-slate-100: #1C221E;
+  --color-slate-200: #C9D3CC;
+  --color-slate-400: #5E6A62;
+  --color-slate-500: #87948B;
+  --color-slate-600: #A2ADA5;
+  --color-slate-700: #C3CDC6;
+  --color-slate-800: #DCE5DE;
+  --color-slate-900: #F3F8F4;
+
   --font-sans: var(--font-jakarta), system-ui, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(46, 224, 127, 0.07), transparent 60%),
+    var(--color-canvas);
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(46, 224, 127, 0.3);
+  color: #ffffff;
+}
+
+* {
+  scrollbar-color: #26302a transparent;
 }

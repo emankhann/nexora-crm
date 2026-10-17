@@ -14,10 +14,10 @@ import { daysFromNow, fromInputs, toDateInput, toTimeInput } from "@/lib/utils";
 import type { ReminderOption, TaskPriority, TaskRecord, TaskType } from "@/types";
 
 const PRIORITIES: { value: TaskPriority; on: string }[] = [
-  { value: "Low", on: "border-[#14663D] bg-[#EAF8EE] text-[#14663D]" },
-  { value: "Medium", on: "border-[#26357F] bg-[#E6EAFE] text-[#26357F]" },
-  { value: "High", on: "border-[#B7791F] bg-[#FEF0CF] text-[#6B4200]" },
-  { value: "Urgent", on: "border-[#B42318] bg-[#FDE4E4] text-[#8F1D14]" },
+  { value: "Low", on: "border-[#5EEB9C] bg-[#0F2318] text-[#5EEB9C]" },
+  { value: "Medium", on: "border-[#86C5F2] bg-[#0F1C27] text-[#86C5F2]" },
+  { value: "High", on: "border-[#8A6A1F] bg-[#261E0C] text-[#F6C866]" },
+  { value: "Urgent", on: "border-[#FF8F84] bg-[#2A1312] text-[#FF8F84]" },
 ];
 const REMINDERS: { value: ReminderOption; label: string }[] = [
   { value: "1h", label: "1 hour before" },
@@ -180,7 +180,7 @@ export default function TaskForm({
                   role="radio"
                   aria-checked={priority === p.value}
                   onClick={() => setPriority(p.value)}
-                  className={`h-10 rounded-[10px] border text-[13px] font-bold ${priority === p.value ? `border-[1.5px] ${p.on}` : "border-[#D5DCEC] bg-white text-slate-700"}`}
+                  className={`h-10 rounded-[10px] border text-[13px] font-bold ${priority === p.value ? `border-[1.5px] ${p.on}` : "border-[#26302A] bg-surface text-slate-700"}`}
                 >
                   {p.value}
                 </button>
@@ -190,9 +190,9 @@ export default function TaskForm({
           <SelectField label="Type" value={type} onChange={(e) => setType(e.target.value as TaskType)} options={TYPES} />
         </div>
 
-        <div className="flex flex-col gap-3 rounded-[14px] border border-line bg-[#FAFBFE] px-4 py-3.5">
+        <div className="flex flex-col gap-3 rounded-[14px] border border-line bg-[#151B17] px-4 py-3.5">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-[#E6EAFE] text-[#26357F]">
+            <span className="grid h-[30px] w-[30px] place-items-center rounded-[9px] bg-[#0F2318] text-primary">
               <Bell size={16} />
             </span>
             <label htmlFor="task-reminder" className="flex-1 text-sm font-bold">

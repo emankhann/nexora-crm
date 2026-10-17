@@ -8,10 +8,10 @@ import { buildNotices, type Notice } from "@/lib/notifications";
 import { useSessionUser } from "@/lib/session";
 
 const kindStyle: Record<Notice["kind"], { cls: string; icon: typeof Bell }> = {
-  overdue: { cls: "bg-[#FDE4E4] text-[#B42318]", icon: Clock },
-  due: { cls: "bg-[#FEF0CF] text-[#6B4200]", icon: Clock },
-  assigned: { cls: "bg-[#E6EAFE] text-[#26357F]", icon: UserRound },
-  deal: { cls: "bg-[#FEF0CF] text-[#6B4200]", icon: AlertTriangle },
+  overdue: { cls: "bg-[#2A1312] text-[#FF8F84]", icon: Clock },
+  due: { cls: "bg-[#261E0C] text-[#F6C866]", icon: Clock },
+  assigned: { cls: "bg-[#0F1C27] text-[#86C5F2]", icon: UserRound },
+  deal: { cls: "bg-[#261E0C] text-[#F6C866]", icon: AlertTriangle },
 };
 
 export default function NotificationsBell({ dark = false }: { dark?: boolean }) {
@@ -48,14 +48,14 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
         className={
           dark
             ? "relative grid h-11 w-11 place-items-center rounded-xl text-white hover:bg-white/10"
-            : `relative grid h-10 w-10 place-items-center rounded-xl border bg-white ${
-                open ? "border-2 border-primary bg-[#F0F4FF] text-primary" : "border-[#D5DCEC] text-slate-700 hover:bg-slate-50"
+            : `relative grid h-10 w-10 place-items-center rounded-xl border bg-surface ${
+                open ? "border-2 border-primary bg-[#0F2318] text-primary" : "border-[#26302A] text-slate-700 hover:bg-slate-50"
               }`
         }
       >
         <Bell size={18} strokeWidth={2.1} />
         {unread.length > 0 && (
-          <span className="absolute -right-1.5 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full border-2 border-canvas bg-[#D92D20] px-1 text-[10.5px] font-extrabold text-white">
+          <span className="absolute -right-1.5 -top-1.5 grid h-[18px] min-w-[18px] place-items-center rounded-full border-2 border-canvas bg-[#F2554A] px-1 text-[10.5px] font-extrabold text-white">
             {unread.length > 9 ? "9+" : unread.length}
           </span>
         )}
@@ -65,7 +65,7 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
         <div
           role="dialog"
           aria-label="Reminders"
-          className="fixed inset-x-3 top-[68px] z-50 flex max-h-[70dvh] flex-col rounded-[18px] border border-line bg-white text-navy shadow-[0_24px_60px_rgba(2,8,23,0.22)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[400px]"
+          className="fixed inset-x-3 top-[68px] z-50 flex max-h-[70dvh] flex-col rounded-[18px] border border-line bg-surface text-navy shadow-[0_24px_60px_rgba(2,8,23,0.22)] sm:absolute sm:inset-x-auto sm:right-0 sm:top-12 sm:w-[400px]"
         >
           <div className="flex items-center justify-between px-[18px] pb-2.5 pt-4">
             <b className="text-base">Reminders</b>
@@ -84,7 +84,7 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
                 key={t}
                 type="button"
                 onClick={() => setTab(t)}
-                className={`h-[30px] rounded-full px-3 text-[12.5px] font-bold ${tab === t ? "bg-navy text-white" : "bg-[#EEF1FA]"}`}
+                className={`h-[30px] rounded-full px-3 text-[12.5px] font-bold ${tab === t ? "bg-primary text-ink" : "bg-[#1A201C]"}`}
               >
                 {t === "unread" ? `Unread · ${unread.length}` : "All"}
               </button>
@@ -107,7 +107,7 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
                     markNoticesRead([n.id]);
                     setOpen(false);
                   }}
-                  className={`flex gap-3 rounded-xl px-3.5 py-3 hover:bg-slate-50 ${isUnread ? "bg-[#F4F7FE]" : ""}`}
+                  className={`flex gap-3 rounded-xl px-3.5 py-3 hover:bg-slate-50 ${isUnread ? "bg-[#0F1F16]" : ""}`}
                 >
                   <span className={`grid h-[34px] w-[34px] shrink-0 place-items-center rounded-[10px] ${cls}`}>
                     <Icon size={16} />
@@ -124,7 +124,7 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
           <Link
             href="/tasks"
             onClick={() => setOpen(false)}
-            className="border-t border-[#EEF1F8] p-3 text-center text-[13px] font-bold text-primary"
+            className="border-t border-[#18201B] p-3 text-center text-[13px] font-bold text-primary"
           >
             Open all tasks
           </Link>

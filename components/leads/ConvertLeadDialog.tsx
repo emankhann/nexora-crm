@@ -80,7 +80,7 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
       title={`Convert ${lead.name} to a customer`}
       description="Notes, calls, emails, deals and open tasks move with them."
       icon={
-        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-[#EAF8EE] text-[#14663D]">
+        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-[#0F2318] text-[#5EEB9C]">
           <ArrowRight size={20} />
         </span>
       }
@@ -102,7 +102,7 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
             {(["new", "existing"] as const).map((m) => (
               <label
                 key={m}
-                className={`flex cursor-pointer gap-2.5 rounded-xl p-3 text-[13.5px] ${mode === m ? "border-[1.5px] border-primary bg-[#F0F4FF]" : "border border-[#D5DCEC]"}`}
+                className={`flex cursor-pointer gap-2.5 rounded-xl p-3 text-[13.5px] ${mode === m ? "border-[1.5px] border-primary bg-[#0F2318]" : "border border-[#26302A]"}`}
               >
                 <input type="radio" name="acct" checked={mode === m} onChange={() => setMode(m)} className="mt-0.5 accent-primary" />
                 <span>
@@ -145,7 +145,7 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
               role="switch"
               checked={createDeal}
               onChange={(e) => setCreateDeal(e.target.checked)}
-              className="h-5 w-9 cursor-pointer appearance-none rounded-full bg-[#CBD5E1] transition-colors before:block before:h-4 before:w-4 before:translate-x-0.5 before:translate-y-0.5 before:rounded-full before:bg-white before:transition-transform checked:bg-primary checked:before:translate-x-[18px]"
+              className="h-5 w-9 cursor-pointer appearance-none rounded-full bg-[#2A3A30] transition-colors before:block before:h-4 before:w-4 before:translate-x-0.5 before:translate-y-0.5 before:rounded-full before:bg-surface before:transition-transform checked:bg-primary checked:before:translate-x-[18px]"
             />
           </label>
           {createDeal && (

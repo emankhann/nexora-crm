@@ -33,7 +33,7 @@ export default function Avatar({ name, initials, size = "md" }: AvatarProps) {
   return (
     <div
       className={[
-        "flex items-center justify-center rounded-full bg-sky-100 font-semibold text-sky-700",
+        "flex items-center justify-center rounded-full bg-[#14301F] font-semibold text-[#6EEBA3] ring-1 ring-[#1F4A31]",
         numericSize ? "" : sizeClasses[size],
       ].join(" ")}
       style={style}

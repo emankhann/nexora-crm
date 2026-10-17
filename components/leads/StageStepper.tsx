@@ -18,10 +18,10 @@ export default function StageStepper({ current, dates }: { current: number; date
               <div
                 className={`grid h-[26px] w-[26px] place-items-center rounded-full text-xs font-bold ${
                   done
-                    ? "bg-primary text-white"
+                    ? "bg-primary text-ink"
                     : isCurrent
-                    ? "border-2 border-primary bg-white text-primary"
-                    : "border-2 border-[#D5DCEC] bg-white text-slate-500"
+                    ? "border-2 border-primary bg-surface text-primary"
+                    : "border-2 border-[#26302A] bg-surface text-slate-500"
                 }`}
               >
                 {done ? <Check size={14} strokeWidth={3} /> : i + 1}

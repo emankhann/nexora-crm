@@ -47,7 +47,7 @@ function ScoreBar({ score }: { score: number }) {
   return (
     <span className="flex items-center gap-2.5">
       <b className="w-6">{score}</b>
-      <span className="h-1.5 w-[84px] rounded-full bg-[#E9EDF8]">
+      <span className="h-1.5 w-[84px] rounded-full bg-[#1A211D]">
         <span className={`block h-1.5 rounded-full ${t.bar}`} style={{ width: `${score}%` }} />
       </span>
       <span className={`text-xs font-bold ${t.text}`}>{t.label}</span>
@@ -221,12 +221,12 @@ export default function LeadsTable() {
       />
 
       {!viewAll && (
-        <div className="rounded-xl bg-[#E8EDFD] px-4 py-3 text-[13.5px] text-[#26357F]">
+        <div className="rounded-xl bg-[#1A211D] px-4 py-3 text-[13.5px] text-[#6EEBA3]">
           As a <b>Sales rep</b> you see only the leads assigned to you. To hand a lead to someone else, ask your manager.
         </div>
       )}
 
-      <div className="overflow-hidden rounded-2xl border border-line bg-white">
+      <div className="overflow-hidden rounded-2xl border border-line bg-surface">
         <div className="flex flex-col gap-4 p-4 sm:p-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
@@ -336,8 +336,8 @@ export default function LeadsTable() {
         </div>
 
         {selected.size > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-[#E8EDFD] px-5 py-2.5">
-            <span className="text-[13.5px] font-semibold text-[#26357F]">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-[#1A211D] px-5 py-2.5">
+            <span className="text-[13.5px] font-semibold text-[#6EEBA3]">
               {selected.size} {selected.size === 1 ? "lead" : "leads"} selected
               <button type="button" onClick={() => setSelected(new Set())} className="ml-3 font-bold text-primary hover:underline">
                 Clear
@@ -345,17 +345,17 @@ export default function LeadsTable() {
             </span>
             <div className="flex flex-wrap gap-2">
               {can(user, "reassign") && (
-                <button type="button" onClick={() => openDialog("assign")} className="h-[34px] rounded-xl bg-white px-4 text-[13px] font-semibold hover:bg-slate-50">
+                <button type="button" onClick={() => openDialog("assign")} className="h-[34px] rounded-xl bg-surface px-4 text-[13px] font-semibold hover:bg-slate-50">
                   Assign owner
                 </button>
               )}
               {canBulkEdit && (
-                <button type="button" onClick={() => openDialog("status")} className="h-[34px] rounded-xl bg-white px-4 text-[13px] font-semibold hover:bg-slate-50">
+                <button type="button" onClick={() => openDialog("status")} className="h-[34px] rounded-xl bg-surface px-4 text-[13px] font-semibold hover:bg-slate-50">
                   Change status
                 </button>
               )}
               {can(user, "delete") && (
-                <button type="button" onClick={() => openDialog("delete")} className="h-[34px] rounded-xl bg-white px-4 text-[13px] font-semibold text-[#B42318] hover:bg-[#FEF3F2]">
+                <button type="button" onClick={() => openDialog("delete")} className="h-[34px] rounded-xl bg-surface px-4 text-[13px] font-semibold text-[#FF8F84] hover:bg-[#1F1111]">
                   Delete
                 </button>
               )}
@@ -368,7 +368,7 @@ export default function LeadsTable() {
             {visibleLeads.length === 0 ? (
               <EmptyState
                 icon={
-                  <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#E6EAFE] text-primary">
+                  <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#0F2318] text-primary">
                     <UserPlus size={28} />
                   </span>
                 }
@@ -425,7 +425,7 @@ export default function LeadsTable() {
                 {pageRows.map((l) => {
                   const isSel = selected.has(l.id);
                   return (
-                    <div key={l.id} className={`${GRID} border-t border-[#EEF1F8] py-3 text-[13.5px] ${isSel ? "bg-[#F4F7FE]" : "bg-white hover:bg-[#FAFBFE]"}`}>
+                    <div key={l.id} className={`${GRID} border-t border-[#18201B] py-3 text-[13.5px] ${isSel ? "bg-[#0F1F16]" : "bg-surface hover:bg-[#151B17]"}`}>
                       <input type="checkbox" aria-label={`Select ${l.name}`} checked={isSel} onChange={() => toggle(l.id)} className="h-[17px] w-[17px] accent-primary" />
                       <Link href={`/leads/${l.id}`} className="flex min-w-0 items-center gap-3">
                         <Avatar initials={l.initials} />
@@ -453,7 +453,7 @@ export default function LeadsTable() {
               {pageRows.map((l) => {
                 const t = scoreTier(l.score);
                 return (
-                  <Link key={l.id} href={`/leads/${l.id}`} className="flex flex-col gap-2.5 rounded-2xl border border-line bg-white p-3.5">
+                  <Link key={l.id} href={`/leads/${l.id}`} className="flex flex-col gap-2.5 rounded-2xl border border-line bg-surface p-3.5">
                     <div className="flex items-center gap-3">
                       <Avatar initials={l.initials} size={38} />
                       <span className="min-w-0 flex-1">
@@ -464,7 +464,7 @@ export default function LeadsTable() {
                     </div>
                     <div className="flex items-center gap-2.5 text-[12.5px]">
                       <b>{l.score}</b>
-                      <span className="h-1.5 flex-1 rounded-full bg-[#E9EDF8]">
+                      <span className="h-1.5 flex-1 rounded-full bg-[#1A211D]">
                         <span className={`block h-1.5 rounded-full ${t.bar}`} style={{ width: `${l.score}%` }} />
                       </span>
                       <span className="text-slate-500">
@@ -478,13 +478,13 @@ export default function LeadsTable() {
           </>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#EEF1F8] px-5 py-4 text-[13px] text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#18201B] px-5 py-4 text-[13px] text-slate-500">
           <span>
             Showing {filtered.length === 0 ? 0 : current * PAGE_SIZE + 1}–{Math.min(filtered.length, (current + 1) * PAGE_SIZE)} of {filtered.length} leads
           </span>
           {pages > 1 && (
             <nav aria-label="Pages" className="flex items-center gap-1.5">
-              <button type="button" aria-label="Previous page" disabled={current === 0} onClick={() => setPage(current - 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-white disabled:opacity-40">
+              <button type="button" aria-label="Previous page" disabled={current === 0} onClick={() => setPage(current - 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-surface disabled:opacity-40">
                 <ChevronLeft size={16} />
               </button>
               {Array.from({ length: pages }).map((_, i) => (
@@ -493,12 +493,12 @@ export default function LeadsTable() {
                   type="button"
                   aria-current={i === current ? "page" : undefined}
                   onClick={() => setPage(i)}
-                  className={`h-8 min-w-8 rounded-lg px-2 text-[13px] font-bold ${i === current ? "bg-primary text-white" : "border border-line bg-white text-navy"}`}
+                  className={`h-8 min-w-8 rounded-lg px-2 text-[13px] font-bold ${i === current ? "bg-primary text-ink" : "border border-line bg-surface text-navy"}`}
                 >
                   {i + 1}
                 </button>
               ))}
-              <button type="button" aria-label="Next page" disabled={current >= pages - 1} onClick={() => setPage(current + 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-white disabled:opacity-40">
+              <button type="button" aria-label="Next page" disabled={current >= pages - 1} onClick={() => setPage(current + 1)} className="grid h-8 w-8 place-items-center rounded-lg border border-line bg-surface disabled:opacity-40">
                 <ChevronRight size={16} />
               </button>
             </nav>

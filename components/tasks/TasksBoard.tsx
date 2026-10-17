@@ -122,7 +122,7 @@ export default function TasksBoard() {
         {stats.map((s) => (
           <div key={s.label} className={`${card} flex flex-col gap-2 px-5 py-[18px]`}>
             <div className="text-[13px] text-slate-500">{s.label}</div>
-            <div className={`text-3xl font-extrabold tracking-tight ${s.danger && s.value > 0 ? "text-[#B42318]" : ""}`}>{s.value}</div>
+            <div className={`text-3xl font-extrabold tracking-tight ${s.danger && s.value > 0 ? "text-[#FF8F84]" : ""}`}>{s.value}</div>
             <div className="text-xs text-slate-500">{s.note}</div>
           </div>
         ))}
@@ -173,7 +173,7 @@ export default function TasksBoard() {
             (tab === "today" && !query && priority === "Any" ? (
               <EmptyState
                 icon={
-                  <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#EAF8EE] text-[#14663D]">
+                  <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#0F2318] text-[#5EEB9C]">
                     <CheckCircle2 size={28} />
                   </span>
                 }
@@ -188,7 +188,7 @@ export default function TasksBoard() {
             const b = bucket(t);
             const editable = canEdit(user, t.owner);
             return (
-              <div key={t.id} className="flex flex-wrap items-start gap-3.5 border-t border-[#EEF1F8] px-4 py-4 first:border-t-0 hover:bg-[#FAFBFE] sm:px-5">
+              <div key={t.id} className="flex flex-wrap items-start gap-3.5 border-t border-[#18201B] px-4 py-4 first:border-t-0 hover:bg-[#151B17] sm:px-5">
                 <input
                   type="checkbox"
                   aria-label={`${t.done ? "Reopen" : "Complete"} task: ${t.title}`}
@@ -230,7 +230,7 @@ export default function TasksBoard() {
                       </>
                     )}
                     <span>·</span>
-                    <span className={!t.done && b === "overdue" ? "font-semibold text-[#B42318]" : ""}>
+                    <span className={!t.done && b === "overdue" ? "font-semibold text-[#FF8F84]" : ""}>
                       {!t.done && b === "overdue" ? `Overdue, was due ${formatDue(t.dueAt)}` : `Due ${formatDue(t.dueAt)}`}
                     </span>
                     {t.followUps.length > 0 && (
@@ -252,7 +252,7 @@ export default function TasksBoard() {
           })}
         </div>
 
-        <div className="border-t border-[#EEF1F8] px-5 py-4 text-[13px] text-slate-500">
+        <div className="border-t border-[#18201B] px-5 py-4 text-[13px] text-slate-500">
           Showing {visible.length} of {tasks.length} tasks
         </div>
       </div>

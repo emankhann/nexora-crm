@@ -133,7 +133,7 @@ export default function LogActivityDialog({
       }
     >
       <form id="log-activity" onSubmit={submit} noValidate className="flex flex-col gap-4">
-        <div role="tablist" aria-label="Activity type" className="flex gap-1.5 rounded-xl bg-[#F0F3FB] p-1">
+        <div role="tablist" aria-label="Activity type" className="flex gap-1.5 rounded-xl bg-[#171C19] p-1">
           {tabs.map((t) => (
             <button
               key={t.k}
@@ -141,7 +141,7 @@ export default function LogActivityDialog({
               role="tab"
               aria-selected={kind === t.k}
               onClick={() => pick(t.k)}
-              className={`h-9 flex-1 rounded-[9px] text-[13.5px] font-bold ${kind === t.k ? "bg-white text-navy shadow-[0_1px_3px_rgba(15,23,42,0.12)]" : "text-slate-600"}`}
+              className={`h-9 flex-1 rounded-[9px] text-[13.5px] font-bold ${kind === t.k ? "bg-[#26302A] text-white shadow-[0_1px_3px_rgba(0,0,0,0.4)]" : "text-slate-600"}`}
             >
               {t.label}
             </button>
@@ -173,7 +173,7 @@ export default function LogActivityDialog({
                 aria-pressed={outcome === o}
                 onClick={() => setOutcome(o)}
                 className={`h-[34px] rounded-full border px-3.5 text-[13px] font-semibold ${
-                  outcome === o ? "border-navy bg-navy text-white" : "border-[#D5DCEC] bg-white"
+                  outcome === o ? "border-primary bg-primary text-ink" : "border-[#26302A] bg-surface"
                 }`}
               >
                 {o}

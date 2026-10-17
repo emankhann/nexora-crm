@@ -18,16 +18,16 @@ import type { ActivityKind, ActivityRecord } from "@/types";
 import { formatDate, formatTime, timeAgo } from "@/lib/utils";
 
 const kindStyle: Record<ActivityKind, { icon: LucideIcon; cls: string }> = {
-  proposal: { icon: FileText, cls: "bg-[#E8EDFD] text-[#26357F]" },
-  email: { icon: Mail, cls: "bg-[#FEF0CF] text-[#6B4200]" },
-  call: { icon: Phone, cls: "bg-[#DDF3E7] text-[#128A52]" },
-  meeting: { icon: CalendarDays, cls: "bg-[#F3E8FF] text-[#6B21A8]" },
-  status: { icon: ArrowRight, cls: "bg-[#EEF1FA] text-slate-600" },
-  created: { icon: Plus, cls: "bg-[#EEF1FA] text-slate-600" },
-  note: { icon: StickyNote, cls: "bg-[#E6EAFE] text-[#26357F]" },
-  assigned: { icon: UserRound, cls: "bg-[#EEF1FA] text-slate-600" },
-  converted: { icon: CircleCheck, cls: "bg-[#EAF8EE] text-[#14663D]" },
-  deal: { icon: BriefcaseBusiness, cls: "bg-[#E8EDFD] text-[#26357F]" },
+  proposal: { icon: FileText, cls: "bg-[#1A211D] text-[#86C5F2]" },
+  email: { icon: Mail, cls: "bg-[#261E0C] text-[#F6C866]" },
+  call: { icon: Phone, cls: "bg-[#0F2318] text-[#5EEB9C]" },
+  meeting: { icon: CalendarDays, cls: "bg-[#221430] text-[#D2A8FF]" },
+  status: { icon: ArrowRight, cls: "bg-[#1A201C] text-slate-600" },
+  created: { icon: Plus, cls: "bg-[#1A201C] text-slate-600" },
+  note: { icon: StickyNote, cls: "bg-[#0F1C27] text-[#86C5F2]" },
+  assigned: { icon: UserRound, cls: "bg-[#1A201C] text-slate-600" },
+  converted: { icon: CircleCheck, cls: "bg-[#0F2318] text-[#5EEB9C]" },
+  deal: { icon: BriefcaseBusiness, cls: "bg-[#1A211D] text-[#86C5F2]" },
 };
 
 const tabs = [
@@ -64,7 +64,7 @@ export default function ActivityFeed({
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-2xl border border-line bg-white px-4 py-5 sm:px-6">
+    <section className="flex flex-col gap-4 rounded-2xl border border-line bg-surface px-4 py-5 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-base font-bold">{title}</h2>
         <div role="tablist" className="flex flex-wrap gap-1.5">
@@ -75,7 +75,7 @@ export default function ActivityFeed({
               role="tab"
               aria-selected={tab === t.key}
               onClick={() => setTab(t.key)}
-              className={`h-8 rounded-full px-3 text-[12.5px] font-bold ${tab === t.key ? "bg-navy text-white" : "bg-[#EEF1FA] text-slate-700"}`}
+              className={`h-8 rounded-full px-3 text-[12.5px] font-bold ${tab === t.key ? "bg-primary text-ink" : "bg-[#1A201C] text-slate-700"}`}
             >
               {t.label}
             </button>
@@ -97,7 +97,7 @@ export default function ActivityFeed({
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save();
             }}
             placeholder={placeholder ?? "Add a note. Mention a teammate with @"}
-            className="w-full resize-y rounded-xl border-[1.5px] border-line bg-white p-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20"
+            className="w-full resize-y rounded-xl border-[1.5px] border-line bg-surface p-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20"
           />
           <div className="flex items-center justify-between gap-3">
             <span className="hidden text-xs text-slate-500 sm:inline">Ctrl + Enter to save</span>
@@ -105,7 +105,7 @@ export default function ActivityFeed({
               type="button"
               onClick={save}
               disabled={!note.trim()}
-              className="ml-auto h-9 rounded-xl bg-primary px-4 text-[13px] font-bold text-white shadow-[0_6px_14px_rgba(53,109,243,0.25)] hover:bg-[#2D5FDB] disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto h-9 rounded-xl bg-primary px-4 text-[13px] font-bold text-ink shadow-[0_6px_14px_rgba(46,224,127,0.25)] hover:bg-[#5BEA9C] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Save note
             </button>
@@ -114,11 +114,11 @@ export default function ActivityFeed({
       )}
 
       <ol className="flex flex-col">
-        {visible.length === 0 && <li className="border-t border-[#EEF1F8] py-8 text-center text-sm text-slate-500">Nothing here yet.</li>}
+        {visible.length === 0 && <li className="border-t border-[#18201B] py-8 text-center text-sm text-slate-500">Nothing here yet.</li>}
         {visible.map((e) => {
           const { icon: Icon, cls } = kindStyle[e.kind] ?? kindStyle.note;
           return (
-            <li key={e.id} className="flex items-start gap-3.5 border-t border-[#EEF1F8] py-3.5">
+            <li key={e.id} className="flex items-start gap-3.5 border-t border-[#18201B] py-3.5">
               <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${cls}`}>
                 <Icon size={16} strokeWidth={1.8} />
               </div>
