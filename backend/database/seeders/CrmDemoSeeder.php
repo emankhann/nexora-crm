@@ -44,7 +44,7 @@ class CrmDemoSeeder extends Seeder
         $sana = $users['sana@nexora.example'];
 
         // Times of day ("due at 5 PM") are meant in the demo's local time zone, then stored in UTC.
-        $tz = config('app.demo_timezone', 'UTC');
+        $tz = config('app.local_timezone', 'UTC');
         $at = fn (int $days, int $hour = 10, int $minute = 0): Carbon => now($tz)->addDays($days)->setTime($hour, $minute)->utc();
         $scorer = new LeadScorer;
 

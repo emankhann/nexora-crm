@@ -29,6 +29,25 @@ npm run dev
 
 Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the browser shares the sign-in cookies with the API). You'll be sent to the sign-in page.
 
+**3. Reminder emails** (optional, a third terminal):
+
+```bash
+cd backend
+php artisan schedule:work   # sends task reminder emails when they're due, every minute
+```
+
+### Emails when running locally
+
+No mail service is needed. With `MAIL_MAILER=log` (the default in `.env.example`), emails are written to `backend/storage/logs/laravel.log` instead of being sent. Each email also writes one readable line with its link, so you can copy it straight from the log:
+
+```
+Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?token=…&email=…
+```
+
+- **Invite someone:** Team and roles → + Invite member, then open the invite link from the log in another browser (or a private window). They choose a password and are signed in.
+- **Forgot password:** "Forgot password?" on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
+- **Task reminders:** tasks with Email reminders on send an email when the reminder time comes, while `php artisan schedule:work` runs. To send due reminders right away: `php artisan nexora:send-task-reminders`.
+
 ### Demo accounts
 
 All demo accounts use the password `demo1234`. On the sign-in page, click a demo account to fill in its details.
@@ -41,7 +60,7 @@ All demo accounts use the password `demo1234`. On the sign-in page, click a demo
 
 ## What's in the app
 
-- **Sign in and roles.** Sign-in checks the user in the database, shows validation, a loading state and a 15-minute lockout after 5 wrong attempts. There is a forgot-password page and sign-out. `proxy.ts` sends signed-out users to `/login` and keeps non-admins out of admin pages, which show a 403 page.
+- **Sign in and roles.** Sign-in checks the user in the database, shows validation, a loading state and a 15-minute lockout after 5 wrong attempts. Forgot password sends a one-time reset link, and anyone can change their own password from the account menu (which signs them out on other devices). Admins invite people by email; the invite link lasts 7 days. `proxy.ts` sends signed-out users to `/login` and keeps non-admins out of admin pages, which show a 403 page.
 - **Dashboard.** Live stats, a revenue chart, the lead funnel, hot leads, your tasks due today, a "Needs attention" list and recent activity.
 - **Leads.** Create, edit and delete leads, with validation and duplicate-email checks. Assign an owner, change status in bulk, search, filter and page through results. Import and export CSV.
 - **Lead scoring.** New leads get an explainable score built from source, status, company size, job title and contact details.
@@ -72,7 +91,7 @@ The settings above are for running on your own computer. On a real server:
 - **Domains:** set `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` to the real ones. The app and the API must share a parent domain, e.g. `app.example.com` and `api.example.com` with `SESSION_DOMAIN=.example.com`.
 - **Frontend:** set `NEXT_PUBLIC_API_URL` to the API's address and keep `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=false`.
 - **No demo data.** `php artisan db:seed` refuses to create the demo accounts in production, because their password is public. Create the first admin by hand.
-- **Email.** Team invites and password resets need a mail service set in `MAIL_*`. Until then no emails are sent.
+- **Email.** Set `MAIL_MAILER` and the `MAIL_*` settings for a real mail service (for example Resend, Brevo or Mailgun) instead of `log`, and run `php artisan schedule:work` (or a cron entry for `php artisan schedule:run`) for task reminders.
 
 ## Project structure
 

@@ -22,6 +22,7 @@ class Task extends Model
         'due_at',
         'reminder',
         'remind_by_email',
+        'reminder_sent_at',
         'assigned_to',
         'created_by',
         'lead_id',
@@ -31,6 +32,16 @@ class Task extends Model
         'completed_at',
     ];
 
+    protected static function booted(): void
+    {
+        // Moving the due time or changing the reminder means the reminder email should go out again.
+        static::saving(function (Task $task) {
+            if ($task->isDirty(['due_at', 'reminder']) && ! $task->isDirty('reminder_sent_at')) {
+                $task->reminder_sent_at = null;
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
@@ -38,6 +49,7 @@ class Task extends Model
             'priority' => TaskPriority::class,
             'reminder' => Reminder::class,
             'remind_by_email' => 'boolean',
+            'reminder_sent_at' => 'datetime',
             'due_at' => 'datetime',
             'completed_at' => 'datetime',
         ];

@@ -69,16 +69,28 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Demo Data Time Zone
+    | Team Time Zone
     |--------------------------------------------------------------------------
     |
-    | The time zone the demo data (php artisan db:seed) is written for, so a
-    | task "due at 5 PM" is due at 5 PM local time. Like every other time,
-    | it is stored in UTC and shown in each viewer's own time zone.
+    | The sales team's local time zone. The demo data is written for it (a task
+    | "due at 5 PM" is due at 5 PM local time) and reminder emails show times in
+    | it. Times are still stored in UTC; the app shows each viewer their own time.
     |
     */
 
-    'demo_timezone' => env('DEMO_TIMEZONE', 'Asia/Karachi'),
+    'local_timezone' => env('LOCAL_TIMEZONE', env('DEMO_TIMEZONE', 'Asia/Karachi')),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Frontend URL
+    |--------------------------------------------------------------------------
+    |
+    | Where the Next.js app runs. Links in emails (accept invite, reset password)
+    | point here. FRONTEND_URL may list several origins for CORS; the first is used.
+    |
+    */
+
+    'frontend_url' => rtrim(explode(',', (string) env('FRONTEND_URL', 'http://localhost:3000'))[0], '/'),
 
     /*
     |--------------------------------------------------------------------------

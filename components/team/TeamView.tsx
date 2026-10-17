@@ -8,6 +8,7 @@ import Modal from "@/components/ui/Modal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { SelectField, TextField, type Errors } from "@/components/ui/Field";
 import { useErrorToast, useToast } from "@/components/ui/Toast";
+import EmailLogHint from "@/components/auth/EmailLogHint";
 import { errorMessage, formErrors } from "@/lib/api";
 import PageHeader from "@/components/layout/PageHeader";
 import { changeMemberRole, inviteMember, resendInvite, revokeInvite, useCrm } from "@/lib/crm-store";
@@ -70,7 +71,7 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
       onClose={onClose}
       size="sm"
       title="Invite a team member"
-      description="They show as Pending until they join. Invite emails go out once email sending is set up for Nexora."
+      description="They get an email with a link to choose their password. It works for 7 days; until they join they show as Pending."
       icon={
         <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
           <UserPlus size={20} />
@@ -96,6 +97,7 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
           onChange={(e) => setRole(e.target.value as Role)}
           options={ROLES.map((r) => ({ value: r, label: `${r} · ${roleNote[r]}` }))}
         />
+        <EmailLogHint />
       </form>
     </Modal>
   );

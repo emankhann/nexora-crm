@@ -450,6 +450,11 @@ export async function updateCustomer(id: string, input: CustomerInput): Promise<
   await mutate(() => api.put(`/customers/${id}`, customerPayload(input)));
 }
 
+/** Admins only. Open tasks go; deals stay in the pipeline and reports, no longer linked to a customer. */
+export async function deleteCustomer(id: string): Promise<void> {
+  await mutate(() => api.delete(`/customers/${id}`));
+}
+
 export async function addContact(customerId: string, contact: ContactPerson): Promise<void> {
   await mutate(() =>
     api.post(`/customers/${customerId}/contacts`, {
