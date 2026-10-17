@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { loadCrm } from "@/lib/crm-store";
 import { signIn } from "@/lib/session";
-import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/lib/users";
 import { isEmail } from "@/lib/utils";
 
 const input =
@@ -17,6 +16,23 @@ const input =
  * they're hidden unless NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=true, e.g. for a public demo.
  */
 const SHOW_DEMO_ACCOUNTS = process.env.NODE_ENV !== "production" || process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS === "true";
+
+/**
+ * Demo accounts created by the database seeder (php artisan migrate:fresh --seed).
+ * Kept inside this expression on purpose: SHOW_DEMO_ACCOUNTS is fixed at build time, so in a
+ * normal production build this is `false ? {...} : null` and the password never reaches the
+ * JavaScript sent to browsers.
+ */
+const DEMO = SHOW_DEMO_ACCOUNTS
+  ? {
+      password: "demo1234",
+      accounts: [
+        { email: "huma@nexora.example", label: "Admin", sub: "Full access" },
+        { email: "omar@nexora.example", label: "Manager", sub: "Team view" },
+        { email: "sana@nexora.example", label: "Sales rep", sub: "Own leads" },
+      ],
+    }
+  : null;
 
 /** Only allow redirects back into this app, never to another site. */
 function safeNext(): string {
@@ -74,8 +90,9 @@ export default function LoginForm() {
   }
 
   function fillDemo(demoEmail: string) {
+    if (!DEMO) return;
     setEmail(demoEmail);
-    setPassword(DEMO_PASSWORD);
+    setPassword(DEMO.password);
     setError("");
     setFieldErrors({});
   }
@@ -162,7 +179,7 @@ export default function LoginForm() {
         {loading ? "Signing in…" : "Sign in"}
       </button>
 
-      {SHOW_DEMO_ACCOUNTS && (
+      {DEMO && (
         <>
           <div className="flex items-center gap-3 text-[13px] text-slate-500">
             <div className="h-px flex-1 bg-line" />
@@ -170,7 +187,7 @@ export default function LoginForm() {
             <div className="h-px flex-1 bg-line" />
           </div>
           <div className="grid grid-cols-3 gap-2.5">
-            {DEMO_ACCOUNTS.map((d) => {
+            {DEMO.accounts.map((d) => {
               const selected = d.email === email.trim().toLowerCase();
               return (
                 <button
@@ -186,7 +203,7 @@ export default function LoginForm() {
             })}
           </div>
           <p className="-mt-2 text-center text-xs text-slate-500">
-            Demo password: <code className="font-bold text-slate-700">{DEMO_PASSWORD}</code>
+            Demo password: <code className="font-bold text-slate-700">{DEMO.password}</code>
           </p>
         </>
       )}

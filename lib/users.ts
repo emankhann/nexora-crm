@@ -27,14 +27,6 @@ export type SessionUser = {
  */
 export const SESSION_HINT_COOKIE = "nexora_session";
 
-/** Demo accounts created by the database seeder (php artisan migrate:fresh --seed). */
-export const DEMO_PASSWORD = "demo1234";
-export const DEMO_ACCOUNTS = [
-  { email: "huma@nexora.example", label: "Admin", sub: "Full access" },
-  { email: "omar@nexora.example", label: "Manager", sub: "Team view" },
-  { email: "sana@nexora.example", label: "Sales rep", sub: "Own leads" },
-];
-
 const ROLE_BY_KEY: Record<string, Role> = { admin: "Admin", manager: "Manager", sales_rep: "Sales rep" };
 const KEY_BY_ROLE: Record<Role, string> = { Admin: "admin", Manager: "manager", "Sales rep": "sales_rep" };
 
