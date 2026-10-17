@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -50,6 +50,10 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Next keeps this layout alive (hidden) while you are on the sign-in page, so close the
+  // account menu whenever it is hidden, however you leave (sign-out, Back, /login...).
+  useLayoutEffect(() => () => setMenuOpen(false), []);
+
   useEffect(() => {
     if (!menuOpen) return;
     const onDown = (e: MouseEvent) => {
@@ -70,6 +74,8 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
   };
 
   function handleSignOut() {
+    // Close the mobile drawer too, or it is still open when the next person signs in.
+    onNavigate?.();
     signOut();
     router.replace("/login");
   }
