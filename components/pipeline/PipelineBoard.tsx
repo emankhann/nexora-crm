@@ -17,12 +17,12 @@ import type { DealRecord, DealStage } from "@/types";
 
 const tagTone = { Hot: "hot", Warm: "warm", New: "cold", Cold: "cold" } as const;
 const columnBg: Record<DealStage, string> = {
-  New: "bg-[#E8ECF8]",
-  Contacted: "bg-[#E8ECF8]",
-  Qualified: "bg-[#E8ECF8]",
-  Proposal: "bg-[#E8ECF8]",
-  Won: "bg-[#E2F4E8]",
-  Lost: "bg-[#EEF0F4]",
+  New: "bg-[#1C231F]",
+  Contacted: "bg-[#1C231F]",
+  Qualified: "bg-[#1C231F]",
+  Proposal: "bg-[#1C231F]",
+  Won: "bg-[#0F2318]",
+  Lost: "bg-[#1A201C]",
 };
 
 function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: DealStage) => void; onEdit: () => void }) {
@@ -51,12 +51,12 @@ function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: Deal
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="grid h-7 w-7 place-items-center rounded-lg bg-[#F3F6FB] text-slate-600 hover:bg-[#E6EAF2]"
+        className="grid h-7 w-7 place-items-center rounded-lg bg-[#171C19] text-slate-600 hover:bg-[#1D2420]"
       >
         <MoreHorizontal size={16} />
       </button>
       {open && (
-        <div role="menu" onClick={(e) => e.stopPropagation()} className="absolute right-0 top-9 z-20 w-[200px] rounded-[14px] border border-line bg-white p-1.5 shadow-[0_18px_40px_rgba(2,8,23,0.22)]">
+        <div role="menu" onClick={(e) => e.stopPropagation()} className="absolute right-0 top-9 z-20 w-[200px] rounded-[14px] border border-line bg-surface p-1.5 shadow-[0_18px_40px_rgba(2,8,23,0.22)]">
           <div className="px-2.5 pb-1.5 pt-2 text-[11px] font-extrabold tracking-[0.06em] text-slate-500">MOVE TO</div>
           {OPEN_STAGES.map((s) => (
             <button
@@ -68,23 +68,23 @@ function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: Deal
                 setOpen(false);
                 onMove(s);
               }}
-              className={`block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold ${s === deal.stage ? "bg-[#F0F4FF] text-[#26357F]" : "hover:bg-slate-50"}`}
+              className={`block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold ${s === deal.stage ? "bg-[#0F2318] text-primary" : "hover:bg-slate-50"}`}
             >
               {s}
               {s === deal.stage ? " · current" : ""}
             </button>
           ))}
           {deal.stage !== "Won" && (
-            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Won"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-[#14663D] hover:bg-slate-50">
+            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Won"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-[#5EEB9C] hover:bg-slate-50">
               Mark as won
             </button>
           )}
           {deal.stage !== "Lost" && (
-            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Lost"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-[#B42318] hover:bg-slate-50">
+            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Lost"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-[#FF8F84] hover:bg-slate-50">
               Mark as lost…
             </button>
           )}
-          <div className="my-1 h-px bg-[#EEF1F8]" />
+          <div className="my-1 h-px bg-[#18201B]" />
           <button type="button" role="menuitem" onClick={() => { setOpen(false); onEdit(); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold hover:bg-slate-50">
             Open deal
           </button>
@@ -224,8 +224,8 @@ export default function PipelineBoard() {
         {[
           { label: "Open pipeline", value: formatCurrency(openValue), cls: "" },
           { label: "Weighted forecast", value: formatCurrency(Math.round(weighted)), cls: "" },
-          { label: "Won this month", value: formatCurrency(wonThisMonth), cls: "text-[#14663D]" },
-          { label: "Overdue to close", value: `${overdue} ${overdue === 1 ? "deal" : "deals"}`, cls: overdue ? "text-[#B42318]" : "" },
+          { label: "Won this month", value: formatCurrency(wonThisMonth), cls: "text-[#5EEB9C]" },
+          { label: "Overdue to close", value: `${overdue} ${overdue === 1 ? "deal" : "deals"}`, cls: overdue ? "text-[#FF8F84]" : "" },
         ].map((s) => (
           <div key={s.label} className={`${card} flex flex-col gap-1 px-[18px] py-4`}>
             <span className="text-[12.5px] text-slate-500">{s.label}</span>
@@ -257,7 +257,7 @@ export default function PipelineBoard() {
                 <div className="flex flex-col gap-0.5 px-1 pt-0.5">
                   <div className="flex items-center justify-between">
                     <h2 className="text-[14.5px] font-extrabold">{stage}</h2>
-                    <span className="grid h-[22px] min-w-6 place-items-center rounded-full bg-white px-[7px] text-[11.5px] font-extrabold">{column.length}</span>
+                    <span className="grid h-[22px] min-w-6 place-items-center rounded-full bg-surface px-[7px] text-[11.5px] font-extrabold">{column.length}</span>
                   </div>
                   <span className="text-xs font-semibold text-slate-600">
                     {formatCurrency(total)}
@@ -266,7 +266,7 @@ export default function PipelineBoard() {
                 </div>
 
                 {column.length === 0 && (
-                  <div className="rounded-xl border border-dashed border-[#C9D0FB] py-6 text-center text-[13px] text-slate-500">{isOver ? "Drop here" : "No deals"}</div>
+                  <div className="rounded-xl border border-dashed border-[#25503A] py-6 text-center text-[13px] text-slate-500">{isOver ? "Drop here" : "No deals"}</div>
                 )}
 
                 {column.map((d) => {
@@ -286,7 +286,7 @@ export default function PipelineBoard() {
                         setOverStage(null);
                       }}
                       onClick={() => openDetail(d.id)}
-                      className={`relative flex cursor-pointer flex-col gap-2.5 rounded-xl border border-line bg-white p-3.5 hover:border-[#C9D3F5] ${dragId === d.id ? "opacity-50" : ""} ${movable ? "active:cursor-grabbing" : ""}`}
+                      className={`relative flex cursor-pointer flex-col gap-2.5 rounded-xl border border-line bg-surface p-3.5 hover:border-[#2A3A30] ${dragId === d.id ? "opacity-50" : ""} ${movable ? "active:cursor-grabbing" : ""}`}
                     >
                       <div className="flex justify-between gap-2">
                         <div className="min-w-0">
@@ -301,22 +301,22 @@ export default function PipelineBoard() {
                       </div>
                       {OPEN_STAGES.includes(d.stage) ? (
                         <div className="flex flex-col gap-1.5">
-                          <div className="h-[5px] rounded-full bg-[#E9EDF8]">
+                          <div className="h-[5px] rounded-full bg-[#1A211D]">
                             <div className="h-[5px] rounded-full bg-primary" style={{ width: `${d.probability}%` }} />
                           </div>
                           <div className="flex justify-between text-[11.5px] font-semibold">
                             <span className="text-slate-600">{d.probability}% likely</span>
-                            <span className={late > 0 ? "text-[#B42318]" : "text-slate-600"}>{late > 0 ? `Overdue · ${formatDate(d.closeDate)}` : `Close ${formatDate(d.closeDate)}`}</span>
+                            <span className={late > 0 ? "text-[#FF8F84]" : "text-slate-600"}>{late > 0 ? `Overdue · ${formatDate(d.closeDate)}` : `Close ${formatDate(d.closeDate)}`}</span>
                           </div>
                         </div>
                       ) : (
-                        <div className={`text-xs font-semibold ${d.stage === "Won" ? "text-[#14663D]" : "text-slate-600"}`}>
+                        <div className={`text-xs font-semibold ${d.stage === "Won" ? "text-[#5EEB9C]" : "text-slate-600"}`}>
                           {d.stage} {formatDate(d.closedAt ?? d.closeDate)}
                           {d.stage === "Lost" && d.lostReason ? ` · ${d.lostReason}` : ""}
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-xs text-slate-600">
-                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#E6EAFE] text-[10px] font-extrabold text-[#26357F]">{initialsForOwner(d.owner)}</span>
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#14301F] text-[#6EEBA3] ring-1 ring-[#1F4A31] text-[10px] font-extrabold">{initialsForOwner(d.owner)}</span>
                         <span className="truncate">{d.next || d.owner}</span>
                       </div>
                     </article>

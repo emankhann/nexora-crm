@@ -9,7 +9,7 @@ export default function ForbiddenView() {
   const user = useSessionUser();
   return (
     <section className="mx-auto flex min-h-[60vh] max-w-[480px] flex-col items-center justify-center gap-4 text-center">
-      <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#FEF0CF] text-[#6B4200]">
+      <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#261E0C] text-[#F6C866]">
         <Lock size={28} aria-hidden />
       </span>
       <div className="text-[13px] font-extrabold tracking-[0.08em] text-slate-500">ERROR 403</div>

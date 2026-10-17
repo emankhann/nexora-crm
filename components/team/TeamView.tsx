@@ -24,9 +24,9 @@ const PERM_GRID = "grid grid-cols-[3fr_1fr_1fr_1fr] items-center gap-3";
 
 function Tick({ on }: { on: boolean }) {
   return on ? (
-    <Check size={18} strokeWidth={2.5} className="mx-auto text-[#128A52]" aria-label="Allowed" />
+    <Check size={18} strokeWidth={2.5} className="mx-auto text-[#5EEB9C]" aria-label="Allowed" />
   ) : (
-    <Minus size={18} className="mx-auto text-[#B8C2DC]" aria-label="Not allowed" />
+    <Minus size={18} className="mx-auto text-slate-400" aria-label="Not allowed" />
   );
 }
 
@@ -61,7 +61,7 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
       title="Invite a team member"
       description="They get an email with a link to set their password. Until then they show as Pending."
       icon={
-        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-[#E6EAFE] text-primary">
+        <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-[#0F2318] text-primary">
           <UserPlus size={20} />
         </span>
       }
@@ -166,7 +166,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
             {members.map((m) => {
               const isMe = m.userId === user.id;
               return (
-                <div key={m.id} className={`${MEMBER_GRID} border-b border-[#EEF1F8] py-3 text-[13.5px]`}>
+                <div key={m.id} className={`${MEMBER_GRID} border-b border-[#18201B] py-3 text-[13.5px]`}>
                   <div className="flex min-w-0 items-center gap-3">
                     <Avatar initials={m.initials} size={34} />
                     <span className="truncate font-bold">
@@ -204,7 +204,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
                         >
                           Resend
                         </button>
-                        <button type="button" onClick={() => setRevoke(m)} className="text-[13px] font-bold text-[#B42318] hover:underline">
+                        <button type="button" onClick={() => setRevoke(m)} className="text-[13px] font-bold text-[#FF8F84] hover:underline">
                           Cancel
                         </button>
                       </>
@@ -248,7 +248,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
                       <button type="button" onClick={() => { resendInvite(m.id, user); toast(`Invite sent again to ${m.email}`); }} className="flex items-center gap-1 text-[13px] font-bold text-primary">
                         <Mail size={14} /> Resend
                       </button>
-                      <button type="button" onClick={() => setRevoke(m)} className="text-[13px] font-bold text-[#B42318]">
+                      <button type="button" onClick={() => setRevoke(m)} className="text-[13px] font-bold text-[#FF8F84]">
                         Cancel
                       </button>
                     </span>
@@ -272,7 +272,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
               <span>Sales rep</span>
             </div>
             {permissions.map((p) => (
-              <div key={p.label} className={`${PERM_GRID} border-b border-[#EEF1F8] py-3 text-[13.5px]`}>
+              <div key={p.label} className={`${PERM_GRID} border-b border-[#18201B] py-3 text-[13.5px]`}>
                 <span>{p.label}</span>
                 <Tick on={p.admin} />
                 <Tick on={p.manager} />

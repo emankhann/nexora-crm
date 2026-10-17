@@ -9,11 +9,11 @@ type BadgeProps = {
 };
 
 const toneClasses: Record<Tone, string> = {
-  hot: "border-[#F7C9C3] bg-[#FDE4E4] text-[#8F1D14]",
-  warm: "border-[#F2D98A] bg-[#FEF0CF] text-[#6B4200]",
-  cold: "border-[#C3CFFB] bg-[#E6EAFE] text-[#26357F]",
-  ok: "border-[#BDE6CC] bg-[#EAF8EE] text-[#14663D]",
-  neutral: "border-[#D8DEEA] bg-[#F3F6FB] text-slate-600",
+  hot: "border-[#4A1F1C] bg-[#2A1312] text-[#FF8F84]",
+  warm: "border-[#4A3A15] bg-[#261E0C] text-[#F6C866]",
+  cold: "border-[#1E3346] bg-[#0F1C27] text-[#86C5F2]",
+  ok: "border-[#1D4A31] bg-[#0F2318] text-[#5EEB9C]",
+  neutral: "border-[#26302A] bg-[#171C19] text-slate-600",
 };
 
 export default function Badge({ children, tone = "ok", className = "" }: BadgeProps) {

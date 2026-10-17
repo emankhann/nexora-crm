@@ -10,7 +10,7 @@ import { DEMO_PASSWORD, users } from "@/lib/users";
 import { isEmail } from "@/lib/utils";
 
 const input =
-  "h-[46px] w-full rounded-xl border-[1.5px] border-line bg-white px-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20 aria-[invalid=true]:border-[#D92D20] aria-[invalid=true]:ring-[3px] aria-[invalid=true]:ring-[#D92D20]/15";
+  "h-[46px] w-full rounded-xl border-[1.5px] border-line bg-surface px-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20 aria-[invalid=true]:border-[#F2554A] aria-[invalid=true]:ring-[3px] aria-[invalid=true]:ring-[#F2554A]/15";
 
 const demoAccounts = [
   { userId: "u1", label: "Admin", sub: "Full access" },
@@ -69,7 +69,7 @@ export default function LoginForm() {
     <form
       onSubmit={submit}
       noValidate
-      className="flex w-full max-w-[440px] flex-col gap-5 rounded-[22px] border border-line bg-white p-6 shadow-[0_24px_60px_rgba(17,28,53,0.08)] sm:p-9"
+      className="flex w-full max-w-[440px] flex-col gap-5 rounded-[22px] border border-line bg-surface p-6 shadow-[0_24px_60px_rgba(0,0,0,0.45)] sm:p-9"
     >
       <div>
         <h2 className="text-[28px] font-extrabold tracking-tight">Welcome back</h2>
@@ -77,7 +77,7 @@ export default function LoginForm() {
       </div>
 
       {error && (
-        <div role="alert" className="flex gap-2.5 rounded-xl border border-[#F7C9C3] bg-[#FEF3F2] px-3.5 py-3 text-[13.5px] leading-snug text-[#8F1D14]">
+        <div role="alert" className="flex gap-2.5 rounded-xl border border-[#4A1F1C] bg-[#1F1111] px-3.5 py-3 text-[13.5px] leading-snug text-[#FF8F84]">
           <b className="shrink-0">!</b>
           <span>{error}</span>
         </div>
@@ -97,7 +97,7 @@ export default function LoginForm() {
           aria-invalid={fieldErrors.email || error ? true : undefined}
           className={input}
         />
-        {fieldErrors.email && <span className="text-xs font-semibold text-[#B42318]">{fieldErrors.email}</span>}
+        {fieldErrors.email && <span className="text-xs font-semibold text-[#FF8F84]">{fieldErrors.email}</span>}
       </div>
 
       <div className="flex flex-col gap-[7px]">
@@ -129,7 +129,7 @@ export default function LoginForm() {
             {show ? <EyeOff size={17} /> : <Eye size={17} />}
           </button>
         </div>
-        {fieldErrors.password && <span className="text-xs font-semibold text-[#B42318]">{fieldErrors.password}</span>}
+        {fieldErrors.password && <span className="text-xs font-semibold text-[#FF8F84]">{fieldErrors.password}</span>}
       </div>
 
       <label className="flex items-center gap-2.5 text-sm text-slate-700">
@@ -141,7 +141,7 @@ export default function LoginForm() {
         type="submit"
         disabled={loading}
         aria-busy={loading}
-        className="flex h-[46px] items-center justify-center gap-2.5 rounded-xl bg-primary text-[15px] font-bold text-white shadow-[0_8px_18px_rgba(53,109,243,0.28)] hover:bg-[#2D5FDB] disabled:cursor-progress disabled:bg-[#7EA2F7]"
+        className="flex h-[46px] items-center justify-center gap-2.5 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] hover:bg-[#5BEA9C] disabled:cursor-progress disabled:bg-[#1F5C3B]"
       >
         {loading && <Loader2 size={18} className="animate-spin" aria-hidden />}
         {loading ? "Signing in…" : "Sign in"}
@@ -160,7 +160,7 @@ export default function LoginForm() {
               key={d.userId}
               type="button"
               onClick={() => fillDemo(d.userId)}
-              className={`rounded-xl border-[1.5px] px-3 py-2.5 text-left ${selected ? "border-primary bg-[#F0F4FF]" : "border-line bg-white hover:border-accent"}`}
+              className={`rounded-xl border-[1.5px] px-3 py-2.5 text-left ${selected ? "border-primary bg-[#0F2318]" : "border-line bg-surface hover:border-accent"}`}
             >
               <div className="text-[13.5px] font-bold">{d.label}</div>
               <div className="mt-0.5 text-xs text-slate-500">{d.sub}</div>

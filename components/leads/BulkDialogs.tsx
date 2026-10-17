@@ -34,17 +34,17 @@ function RadioRow({
       aria-checked={checked}
       onClick={onSelect}
       className={`flex w-full items-center gap-3 rounded-xl border px-2.5 py-2.5 text-left ${
-        checked ? "border-primary bg-[#F0F4FF]" : "border-transparent hover:bg-slate-50"
+        checked ? "border-primary bg-[#0F2318]" : "border-transparent hover:bg-slate-50"
       }`}
     >
       {initials !== undefined && (
-        <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-[#E6EAFE] text-xs font-bold text-[#26357F]">{initials}</span>
+        <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-full bg-[#14301F] text-[#6EEBA3] ring-1 ring-[#1F4A31] text-xs font-bold">{initials}</span>
       )}
       <span className="flex min-w-0 flex-1 flex-col">
         <b className="text-sm">{title}</b>
         <span className="text-xs text-slate-500">{sub}</span>
       </span>
-      <span className={`h-[18px] w-[18px] shrink-0 rounded-full bg-white ${checked ? "border-[5px] border-primary" : "border-2 border-[#C3CBDC]"}`} />
+      <span className={`h-[18px] w-[18px] shrink-0 rounded-full bg-surface ${checked ? "border-[5px] border-primary" : "border-2 border-[#3A463E]"}`} />
     </button>
   );
 }
@@ -106,7 +106,7 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
         placeholder="Search team members"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        className="mb-2.5 h-10 w-full rounded-xl border border-transparent bg-[#F0F3FB] px-3.5 text-[13.5px] outline-none focus:border-accent focus:bg-white"
+        className="mb-2.5 h-10 w-full rounded-xl border border-transparent bg-[#171C19] px-3.5 text-[13.5px] outline-none focus:border-accent focus:bg-surface"
       />
       <div role="radiogroup" aria-label="New owner" className="flex flex-col gap-1">
         {options.map((o) => (

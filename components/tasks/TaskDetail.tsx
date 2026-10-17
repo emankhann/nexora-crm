@@ -24,9 +24,9 @@ const NEXT = [
 ];
 
 const outcomeDot: Record<string, string> = {
-  "No answer": "border-[#B42318] bg-[#FDE4E4]",
-  "Left voicemail": "border-[#B42318] bg-[#FDE4E4]",
-  Snoozed: "border-[#B7791F] bg-[#FEF0CF]",
+  "No answer": "border-[#FF8F84] bg-[#2A1312]",
+  "Left voicemail": "border-[#FF8F84] bg-[#2A1312]",
+  Snoozed: "border-[#8A6A1F] bg-[#261E0C]",
 };
 
 /** Task panel: details, quick actions and the follow-up history. */
@@ -84,10 +84,10 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
         }
       >
         <div className="flex flex-col gap-5">
-          <div className="grid grid-cols-1 gap-3 rounded-xl bg-[#F7F9FD] px-3.5 py-3 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 rounded-xl bg-[#151B17] px-3.5 py-3 sm:grid-cols-3">
             <div className="flex flex-col gap-0.5">
               <span className="text-xs font-semibold text-slate-500">Due</span>
-              <span className={`text-[13.5px] font-bold ${overdue ? "text-[#B42318]" : ""}`}>
+              <span className={`text-[13.5px] font-bold ${overdue ? "text-[#FF8F84]" : ""}`}>
                 {overdue ? "Overdue · " : ""}
                 {formatDue(task.dueAt)}
               </span>
@@ -188,7 +188,7 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
           <ol className="flex flex-col pl-1">
             {task.followUps.map((f) => (
               <li key={f.id} className="relative ml-[9px] border-l-2 border-line pb-[18px] pl-[18px]">
-                <span className={`absolute -left-[10px] top-0 h-[18px] w-[18px] rounded-full border-2 ${outcomeDot[f.outcome] ?? "border-primary bg-[#E6EAFE]"}`} />
+                <span className={`absolute -left-[10px] top-0 h-[18px] w-[18px] rounded-full border-2 ${outcomeDot[f.outcome] ?? "border-primary bg-[#0F2318]"}`} />
                 <b className="text-[13.5px]">{f.outcome}</b>
                 {f.note && <div className="mt-0.5 text-[12.5px] text-slate-600">{f.note}</div>}
                 <div className="mt-0.5 text-xs text-slate-500">
@@ -199,13 +199,13 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
             ))}
             {task.done && task.doneAt && (
               <li className="relative ml-[9px] border-l-2 border-line pb-[18px] pl-[18px]">
-                <span className="absolute -left-[10px] top-0 h-[18px] w-[18px] rounded-full border-2 border-[#14663D] bg-[#EAF8EE]" />
+                <span className="absolute -left-[10px] top-0 h-[18px] w-[18px] rounded-full border-2 border-[#5EEB9C] bg-[#0F2318]" />
                 <b className="text-[13.5px]">Completed</b>
                 <div className="mt-0.5 text-xs text-slate-500">{timeAgo(task.doneAt)}</div>
               </li>
             )}
             <li className="relative ml-[9px] border-l-2 border-transparent pl-[18px]">
-              <span className="absolute -left-[10px] top-0 h-[18px] w-[18px] rounded-full border-2 border-slate-400 bg-[#F3F6FB]" />
+              <span className="absolute -left-[10px] top-0 h-[18px] w-[18px] rounded-full border-2 border-slate-400 bg-[#171C19]" />
               <b className="text-[13.5px]">Task created by {task.createdBy}</b>
               <div className="mt-0.5 text-xs text-slate-500">
                 {timeAgo(task.createdAt)}
@@ -229,7 +229,7 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
             </button>
             <button
               type="button"
-              className="inline-flex h-10 items-center rounded-xl bg-[#B42318] px-[18px] text-[13.5px] font-bold text-white"
+              className="inline-flex h-10 items-center rounded-xl bg-[#C8322A] px-[18px] text-[13.5px] font-bold text-white"
               onClick={() => {
                 deleteTask(task.id, user);
                 toast("Task deleted");

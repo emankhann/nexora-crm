@@ -7,7 +7,7 @@ import { useSessionUser } from "@/lib/session";
 import { formatCurrency } from "@/lib/utils";
 import type { MonthRevenue } from "@/types";
 
-const card = "rounded-2xl border border-line bg-white";
+const card = "rounded-2xl border border-line bg-surface";
 const ranges = [
   { value: 12, label: "Last 12 months" },
   { value: 6, label: "Last 6 months" },
@@ -87,7 +87,7 @@ export default function ReportsView({ history }: { history: MonthRevenue[] }) {
               id="range"
               value={range}
               onChange={(event) => setRange(Number(event.target.value))}
-              className="h-[38px] rounded-[10px] border border-line bg-white px-2.5 text-[13px]"
+              className="h-[38px] rounded-[10px] border border-line bg-surface px-2.5 text-[13px]"
             >
               {ranges.map((item) => (
                 <option key={item.value} value={item.value}>
@@ -103,7 +103,7 @@ export default function ReportsView({ history }: { history: MonthRevenue[] }) {
               {months.map((month, index) => (
                 <div key={`${month.month}-${index}`} className="flex min-w-0 flex-1 flex-col gap-2">
                   <div
-                    className={`w-full rounded-md ${index === months.length - 1 ? "bg-primary" : "bg-[#C9D0FB]"}`}
+                    className={`w-full rounded-md ${index === months.length - 1 ? "bg-gradient-to-t from-[#1BA45C] to-primary shadow-[0_0_24px_rgba(46,224,127,0.35)]" : "bg-[#1E3A2A] hover:bg-[#25503A]"}`}
                     style={{ height: Math.max(4, Math.round((month.amount / maxAmount) * 200)) }}
                     title={`${month.month}: ${formatCurrency(month.amount)}`}
                   />
@@ -128,7 +128,7 @@ export default function ReportsView({ history }: { history: MonthRevenue[] }) {
                   {source.count} · {source.percent}%
                 </span>
               </div>
-              <div className="h-2 rounded-full bg-[#E9EDF8]">
+              <div className="h-2 rounded-full bg-[#1A211D]">
                 <div className="h-2 rounded-full bg-primary" style={{ width: `${source.percent}%` }} />
               </div>
             </div>

@@ -26,8 +26,8 @@ function RouteChangeListener({ onChange }: { onChange: () => void }) {
   return null;
 }
 
-/** Navy placeholder while the sidebar (which reads the URL) streams in. */
-const sidebarFallback = <div className="h-full w-full bg-navy" />;
+/** Black placeholder (matches the sidebar) while the sidebar (which reads the URL) streams in. */
+const sidebarFallback = <div className="h-full w-full border-r border-line bg-ink" />;
 
 /**
  * The signed-in frame: sidebar (drawer on mobile), top bar with search and
@@ -78,7 +78,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               aria-label="Close menu"
-              className="absolute inset-0 bg-[#020817]/55"
+              className="absolute inset-0 bg-[#000000]/55"
               onClick={() => setNavOpen(false)}
             />
             <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] shadow-[20px_0_50px_rgba(2,8,23,0.35)]">
@@ -91,7 +91,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Mobile top bar */}
-          <header className="sticky top-0 z-30 flex items-center gap-1 bg-navy px-1.5 py-2.5 lg:hidden">
+          <header className="sticky top-0 z-30 flex items-center gap-1 border-b border-line bg-ink px-1.5 py-2.5 lg:hidden">
             <button
               type="button"
               aria-label="Open menu"
@@ -101,7 +101,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             >
               <Menu size={22} />
             </button>
-            <span className="grid h-[30px] w-[30px] place-items-center rounded-[10px] bg-primary text-[15px] font-extrabold text-white">N</span>
+            <span className="grid h-[30px] w-[30px] place-items-center rounded-[10px] bg-primary text-[15px] font-extrabold text-ink">N</span>
             <b className="ml-1.5 flex-1 text-lg text-white">Nexora</b>
             <button
               type="button"
@@ -119,11 +119,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex h-10 w-[260px] items-center gap-2 rounded-xl border border-line bg-white px-3 text-[13px] text-slate-500 hover:border-[#C9D3F5]"
+              className="flex h-10 w-[260px] items-center gap-2 rounded-xl border border-line bg-surface px-3 text-[13px] text-slate-500 hover:border-[#2A3A30]"
             >
               <Search size={15} aria-hidden />
               Search or jump to
-              <kbd className="ml-auto rounded-md bg-[#EEF1FA] px-[7px] py-[3px] text-[11px] font-bold text-slate-700">Ctrl K</kbd>
+              <kbd className="ml-auto rounded-md bg-[#1A201C] px-[7px] py-[3px] text-[11px] font-bold text-slate-700">Ctrl K</kbd>
             </button>
             <NotificationsBell />
           </div>

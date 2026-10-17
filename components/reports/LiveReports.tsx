@@ -18,7 +18,7 @@ const PERIODS = [
   { value: 365, label: "Last 12 months" },
   { value: 0, label: "All time" },
 ];
-const stageBar: Partial<Record<DealStage, string>> = { Won: "bg-[#22A05A]", Lost: "bg-slate-400" };
+const stageBar: Partial<Record<DealStage, string>> = { Won: "bg-[#2EE07F]", Lost: "bg-slate-400" };
 
 /** Reports worked out live from the CRM data, with basic filters. */
 export default function LiveReports() {
@@ -210,14 +210,14 @@ export default function LiveReports() {
                     <span>Avg. chance</span>
                   </div>
                   {data.stages.map((s) => (
-                    <div key={s.stage} className="grid grid-cols-[1.1fr_.6fr_2.4fr_1fr_.9fr] items-center gap-3.5 border-t border-[#EEF1F8] py-3 text-[13.5px]">
+                    <div key={s.stage} className="grid grid-cols-[1.1fr_.6fr_2.4fr_1fr_.9fr] items-center gap-3.5 border-t border-[#18201B] py-3 text-[13.5px]">
                       <b>
                         {s.stage}
-                        {s.overdue > 0 && <span className="ml-1.5 text-xs font-semibold text-[#B42318]">{s.overdue} overdue</span>}
+                        {s.overdue > 0 && <span className="ml-1.5 text-xs font-semibold text-[#FF8F84]">{s.overdue} overdue</span>}
                       </b>
                       <span>{s.count}</span>
                       <span className="flex items-center gap-2.5">
-                        <span className="h-2.5 flex-1 rounded-full bg-[#EEF1F8]">
+                        <span className="h-2.5 flex-1 rounded-full bg-[#18201B]">
                           <span className={`block h-2.5 rounded-full ${stageBar[s.stage] ?? "bg-primary"}`} style={{ width: `${(s.value / maxStage) * 100}%` }} />
                         </span>
                         <b className="w-[72px] text-right">{formatCurrency(s.value)}</b>
@@ -243,7 +243,7 @@ export default function LiveReports() {
                   <b>{formatCurrency(d.value)}</b>
                 </div>
               ))}
-              <div className="flex flex-col gap-2 border-t border-[#EEF1F8] pt-3">
+              <div className="flex flex-col gap-2 border-t border-[#18201B] pt-3">
                 <b className="text-[13px]">Why deals were lost</b>
                 {data.lostReasons.length === 0 && <span className="text-[13px] text-slate-500">No lost deals in this period.</span>}
                 {data.lostReasons.map(([r, n]) => (
@@ -276,8 +276,8 @@ export default function LiveReports() {
                     {i > 0 && data.funnel[0].count ? ` · ${Math.round((f.count / data.funnel[0].count) * 100)}%` : ""}
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-[#E9EDF8]">
-                  <div className={`h-2 rounded-full ${i === data.funnel.length - 1 ? "bg-[#128A52]" : "bg-primary"}`} style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
+                <div className="h-2 rounded-full bg-[#1A211D]">
+                  <div className={`h-2 rounded-full ${i === data.funnel.length - 1 ? "bg-[#A6F4C5]" : "bg-primary"}`} style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
                 </div>
               </div>
             ))}
@@ -291,14 +291,14 @@ export default function LiveReports() {
               <span>Converted</span>
               <span>Rate</span>
             </div>
-            {data.bySource.length === 0 && <div className="border-t border-[#EEF1F8] py-6 text-center text-sm text-slate-500">No leads in this period.</div>}
+            {data.bySource.length === 0 && <div className="border-t border-[#18201B] py-6 text-center text-sm text-slate-500">No leads in this period.</div>}
             {data.bySource.map((r) => (
-              <div key={r.src} className="grid grid-cols-[1.4fr_.8fr_.9fr_1.4fr] items-center gap-3 border-t border-[#EEF1F8] py-3 text-[13.5px]">
+              <div key={r.src} className="grid grid-cols-[1.4fr_.8fr_.9fr_1.4fr] items-center gap-3 border-t border-[#18201B] py-3 text-[13.5px]">
                 <b>{r.src}</b>
                 <span>{r.count}</span>
                 <span>{r.conv}</span>
                 <span className="flex items-center gap-2">
-                  <span className="h-2 flex-1 rounded-full bg-[#EEF1F8]">
+                  <span className="h-2 flex-1 rounded-full bg-[#18201B]">
                     <span className="block h-2 rounded-full bg-primary" style={{ width: `${r.rate}%` }} />
                   </span>
                   <b className="w-9 text-right">{r.rate}%</b>
@@ -325,7 +325,7 @@ export default function LiveReports() {
                 <span>Tasks done</span>
               </div>
               {data.team.map((t) => (
-                <div key={t.name} className="grid grid-cols-[1.6fr_.8fr_.9fr_.9fr_1.1fr_.8fr_1.1fr_.8fr] items-center gap-3 border-b border-[#EEF1F8] py-3 text-[13.5px]">
+                <div key={t.name} className="grid grid-cols-[1.6fr_.8fr_.9fr_.9fr_1.1fr_.8fr_1.1fr_.8fr] items-center gap-3 border-b border-[#18201B] py-3 text-[13.5px]">
                   <span>
                     <b>{t.name}</b>
                     <span className="block text-xs text-slate-500">{t.role}</span>

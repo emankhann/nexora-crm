@@ -85,7 +85,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
         className={`flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium transition-colors ${
-          active ? "bg-primary text-white shadow-[0_8px_24px_rgba(53,109,243,0.25)]" : "text-slate-200 hover:bg-white/5 hover:text-white"
+          active ? "bg-primary font-semibold text-ink shadow-[0_8px_24px_rgba(46,224,127,0.22)]" : "text-[#9AA69E] hover:bg-white/5 hover:text-white"
         }`}
       >
         <span className="flex items-center gap-4">
@@ -93,16 +93,16 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
           {item.label}
         </span>
         {count !== undefined && (
-          <span className="grid h-6 min-w-6 place-items-center rounded-full bg-white/15 px-2 text-[11px] font-bold text-white">{count}</span>
+          <span className="grid h-6 min-w-6 place-items-center rounded-full bg-white/10 px-2 text-[11px] font-bold text-current">{count}</span>
         )}
       </Link>
     );
   };
 
   return (
-    <aside className="flex h-full w-full flex-col bg-navy text-slate-100">
+    <aside className="flex h-full w-full flex-col border-r border-line bg-ink text-navy">
       <div className="flex items-center gap-4 px-5 pb-7 pt-6">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-primary text-2xl font-bold leading-none text-white shadow-[0_8px_20px_rgba(53,109,243,0.35)]">
+        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-primary text-2xl font-bold leading-none text-ink shadow-[0_0_24px_rgba(46,224,127,0.45)]">
           N
         </div>
         <div className="flex-1 text-2xl font-extrabold tracking-tight text-white">Nexora</div>
@@ -130,8 +130,8 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
 
       <div ref={menuRef} className="relative mt-auto shrink-0 border-t border-white/10 bg-white/5 px-4 py-4">
         {menuOpen && user && (
-          <div role="menu" aria-label="Account" className="absolute inset-x-4 bottom-[88px] z-10 rounded-[14px] bg-white p-1.5 text-navy shadow-[0_18px_40px_rgba(2,8,23,0.35)]">
-            <div className="mb-1 border-b border-[#EEF1F8] px-3 py-2.5">
+          <div role="menu" aria-label="Account" className="absolute inset-x-4 bottom-[88px] z-10 rounded-[14px] bg-surface p-1.5 text-navy shadow-[0_18px_40px_rgba(2,8,23,0.35)]">
+            <div className="mb-1 border-b border-[#18201B] px-3 py-2.5">
               <div className="text-[13px] font-bold">{user.name}</div>
               <div className="text-xs text-slate-500">{user.email}</div>
             </div>
@@ -153,7 +153,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
               type="button"
               role="menuitem"
               onClick={handleSignOut}
-              className="flex w-full items-center gap-2.5 rounded-[10px] bg-[#FEF3F2] px-3 py-2.5 text-left text-[13.5px] font-bold text-[#B42318] hover:bg-[#FDE4E4]"
+              className="flex w-full items-center gap-2.5 rounded-[10px] bg-[#1F1111] px-3 py-2.5 text-left text-[13.5px] font-bold text-[#FF8F84] hover:bg-[#2A1312]"
             >
               <LogOut size={15} /> Sign out
             </button>
@@ -164,14 +164,14 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((v) => !v)}
-          className="flex w-full items-center gap-4 rounded-2xl bg-white/10 px-3 py-3 text-left text-white shadow-inner shadow-white/5 hover:bg-white/15"
+          className="flex w-full items-center gap-4 rounded-2xl border border-line bg-[#0E1210] px-3 py-3 text-left text-white hover:bg-[#151B17]"
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-navy">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-ink">
             {user?.initials ?? ""}
           </span>
           <span className="min-w-0 flex-1 leading-tight">
             <span className="block truncate text-base font-semibold text-white">{user?.name ?? " "}</span>
-            <span className="block text-xs text-slate-200">{user?.role ?? " "}</span>
+            <span className="block text-xs text-slate-500">{user?.role ?? " "}</span>
           </span>
           <ChevronUp size={16} className={`transition-transform ${menuOpen ? "" : "rotate-180"}`} />
         </button>
