@@ -9,7 +9,8 @@ import Modal from "@/components/ui/Modal";
 import { TextField, type Errors } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/States";
 import NotFoundView from "@/components/ui/NotFoundView";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
+import { errorMessage, formErrors } from "@/lib/api";
 import ActivityFeed from "@/components/activity/ActivityFeed";
 import CustomerForm from "@/components/customers/CustomerForm";
 import LogActivityDialog, { type ActivityKindChoice } from "@/components/leads/LogActivityDialog";
@@ -20,7 +21,7 @@ import { canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { useNow } from "@/lib/use-now";
 import { btnOutline, btnPrimary, card } from "@/lib/ui";
-import { formatCurrency, formatDate, formatDue, isEmail, timeAgo } from "@/lib/utils";
+import { formatCurrency, formatDate, formatDue, isEmail, isPhone, timeAgo } from "@/lib/utils";
 import type { DealRecord } from "@/types";
 
 const healthTone = { Healthy: "ok", Watch: "warm", "At risk": "hot" } as const;
@@ -34,19 +35,30 @@ function AddContactDialog({ open, onClose, customerId }: { open: boolean; onClos
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [errors, setErrors] = useState<Errors<"name" | "email">>({});
+  const [errors, setErrors] = useState<Errors<"name" | "title" | "email" | "phone">>({});
+  const [saving, setSaving] = useState(false);
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user) return;
-    const errs: Errors<"name" | "email"> = {};
+    if (!user || saving) return;
+    const errs: Errors<"name" | "email" | "phone"> = {};
     if (!name.trim()) errs.name = "Enter a name.";
     if (email && !isEmail(email)) errs.email = "Enter a valid email.";
+    if (!isPhone(phone)) errs.phone = "Use digits, spaces, + ( ) or -.";
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    addContact(customerId, { name: name.trim(), title: title.trim(), email: email.trim(), phone: phone.trim(), primary: false }, user);
-    toast(`${name.trim()} added`);
-    onClose();
+    setSaving(true);
+    try {
+      await addContact(customerId, { name: name.trim(), title: title.trim(), email: email.trim(), phone: phone.trim(), primary: false });
+      toast(`${name.trim()} added`);
+      onClose();
+    } catch (err) {
+      const fields = formErrors(err, { name: "name", job_title: "title", email: "email", phone: "phone" } as const);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -60,17 +72,17 @@ function AddContactDialog({ open, onClose, customerId }: { open: boolean; onClos
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="contact-form" className={btnPrimary}>
-            Add contact
+          <button type="submit" form="contact-form" className={btnPrimary} disabled={saving}>
+            {saving ? "Saving…" : "Add contact"}
           </button>
         </div>
       }
     >
       <form id="contact-form" onSubmit={submit} noValidate className="flex flex-col gap-3.5">
         <TextField label="Full name" required value={name} onChange={(e) => setName(e.target.value)} error={errors.name} />
-        <TextField label="Job title" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <TextField label="Job title" value={title} onChange={(e) => setTitle(e.target.value)} error={errors.title} />
         <TextField label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} />
-        <TextField label="Phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <TextField label="Phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={errors.phone} />
       </form>
     </Modal>
   );
@@ -81,6 +93,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
   const now = useNow();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [n, setN] = useState(0);
 
@@ -183,8 +196,8 @@ export default function CustomerProfileView({ id }: { id: string }) {
           <ActivityFeed
             activities={activities}
             placeholder={`Add a note about ${c.name}. Mention a teammate with @`}
-            onAddNote={(text) => {
-              logActivity({ kind: "note", title: text, meta: user.short, customerId: c.id }, user);
+            onAddNote={async (text) => {
+              await logActivity({ kind: "note", title: text, meta: user.short, customerId: c.id });
               toast("Note saved");
             }}
           />
@@ -270,8 +283,8 @@ export default function CustomerProfileView({ id }: { id: string }) {
                   <input
                     type="checkbox"
                     onChange={() => {
-                      toggleTask(t.id, user);
-                      toast("Task completed", { action: { label: "Undo", onClick: () => toggleTask(t.id, user) } });
+                      toggleTask(t.id).catch(showError);
+                      toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
                     }}
                     className="mt-0.5 h-[17px] w-[17px] shrink-0 accent-primary"
                   />

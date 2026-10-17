@@ -4,7 +4,8 @@ import { useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
 import { SelectField, TextAreaField, TextField, type Errors } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
-import { COMPANY_SIZES, LEAD_SOURCES, LEAD_STATUSES, createLead, updateLead, useCrm, type LeadInput } from "@/lib/crm-store";
+import { errorMessage, formErrors } from "@/lib/api";
+import { COMPANY_SIZES, LEAD_FIELDS, LEAD_SOURCES, LEAD_STATUSES, createLead, updateLead, useCrm, type LeadInput } from "@/lib/crm-store";
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnGhostDanger, btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
@@ -12,7 +13,7 @@ import { getOwnerOptions } from "@/lib/users";
 import { formatDate, isEmail, isPhone } from "@/lib/utils";
 import type { LeadRecord, LeadSource, LeadStatus } from "@/types";
 
-type Field = "name" | "email" | "phone" | "company" | "title";
+type Field = keyof LeadInput;
 
 function blank(owner: string): LeadInput {
   return { name: "", email: "", phone: "", title: "", company: "", companySize: "51–200", source: "Website", status: "New", owner, notes: "" };
@@ -27,7 +28,7 @@ function fromLead(l: LeadRecord): LeadInput {
     company: l.company,
     companySize: l.companySize,
     source: l.source,
-    status: l.status === "Converted" ? "Qualified" : l.status,
+    status: l.status,
     owner: l.owner,
     notes: l.notes,
   };
@@ -57,6 +58,8 @@ export default function LeadForm({
   const [v, setV] = useState<LeadInput>(() => (lead ? fromLead(lead) : blank(user?.short ?? "Unassigned")));
   const [errors, setErrors] = useState<Errors<Field>>({});
   const [another, setAnother] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const converted = lead?.status === "Converted";
 
   const canReassign = can(user, "reassign");
   const set = <K extends keyof LeadInput>(k: K, value: LeadInput[K]) => setV((p) => ({ ...p, [k]: value }));
@@ -73,27 +76,36 @@ export default function LeadForm({
     return e;
   }
 
-  function submit(ev: FormEvent) {
+  async function submit(ev: FormEvent) {
     ev.preventDefault();
-    if (!user) return;
+    if (!user || saving) return;
     const e = validate();
     setErrors(e);
     if (Object.keys(e).length) return;
     const clean: LeadInput = { ...v, name: v.name.trim(), email: v.email.trim().toLowerCase(), company: v.company.trim(), title: v.title.trim(), phone: v.phone.trim() };
 
-    if (lead) {
-      updateLead(lead.id, clean, user);
-      toast("Lead saved");
-      onClose();
-      return;
+    setSaving(true);
+    try {
+      if (lead) {
+        await updateLead(lead.id, clean);
+        toast("Lead saved");
+        onClose();
+        return;
+      }
+      const created = await createLead(clean);
+      toast(`${created.name} added · score ${created.score}`);
+      onCreated?.(created);
+      if (another) {
+        setV(blank(clean.owner));
+        setErrors({});
+      } else onClose();
+    } catch (err) {
+      const fields = formErrors(err, LEAD_FIELDS);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
     }
-    const created = createLead(clean, user);
-    toast(`${created.name} added · score ${created.score}`);
-    onCreated?.(created);
-    if (another) {
-      setV(blank(clean.owner));
-      setErrors({});
-    } else onClose();
   }
 
   const formId = editing ? "edit-lead-form" : "new-lead-form";
@@ -130,8 +142,8 @@ export default function LeadForm({
             <button type="button" className={btnOutline} onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" form={formId} className={btnPrimary}>
-              {editing ? "Save changes" : "Save lead"}
+            <button type="submit" form={formId} className={btnPrimary} disabled={saving}>
+              {saving ? "Saving…" : editing ? "Save changes" : "Save lead"}
             </button>
           </div>
         </>
@@ -144,13 +156,21 @@ export default function LeadForm({
           <TextField label="Company" required value={v.company} onChange={(e) => set("company", e.target.value)} error={errors.company} placeholder="e.g. Harbor Dental" />
           <TextField label="Email" required type="email" value={v.email} onChange={(e) => set("email", e.target.value)} error={errors.email} placeholder="name@company.com" />
           <TextField label="Phone" type="tel" value={v.phone} onChange={(e) => set("phone", e.target.value)} error={errors.phone} placeholder="+92 300 000 0000" />
-          <TextField label="Job title" value={v.title} onChange={(e) => set("title", e.target.value)} placeholder="e.g. Operations Director" />
-          <SelectField label="Company size" value={v.companySize} onChange={(e) => set("companySize", e.target.value)} options={COMPANY_SIZES} />
+          <TextField label="Job title" value={v.title} onChange={(e) => set("title", e.target.value)} error={errors.title} placeholder="e.g. Operations Director" />
+          <SelectField label="Company size" value={v.companySize} onChange={(e) => set("companySize", e.target.value)} options={COMPANY_SIZES} error={errors.companySize} />
         </div>
         {editing && <div className={sectionLabel}>QUALIFICATION</div>}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <SelectField label="Source" required value={v.source} onChange={(e) => set("source", e.target.value as LeadSource)} options={LEAD_SOURCES} />
-          <SelectField label="Status" value={v.status} onChange={(e) => set("status", e.target.value as LeadStatus)} options={LEAD_STATUSES} />
+          <SelectField label="Source" required value={v.source} onChange={(e) => set("source", e.target.value as LeadSource)} options={LEAD_SOURCES} error={errors.source} />
+          <SelectField
+            label="Status"
+            value={v.status}
+            onChange={(e) => set("status", e.target.value as LeadStatus)}
+            options={converted ? ["Converted"] : LEAD_STATUSES}
+            disabled={converted}
+            hint={converted ? "Converted leads keep this status." : undefined}
+            error={errors.status}
+          />
           <SelectField
             label="Owner"
             value={v.owner}
@@ -158,10 +178,11 @@ export default function LeadForm({
             options={canReassign ? getOwnerOptions() : [v.owner]}
             disabled={!canReassign}
             hint={canReassign ? undefined : "Ask a manager to reassign."}
+            error={errors.owner}
           />
         </div>
         {!editing && (
-          <TextAreaField label="Notes" value={v.notes} onChange={(e) => set("notes", e.target.value)} placeholder="How did you meet? What do they need?" />
+          <TextAreaField label="Notes" value={v.notes} onChange={(e) => set("notes", e.target.value)} error={errors.notes} placeholder="How did you meet? What do they need?" />
         )}
       </form>
     </Modal>

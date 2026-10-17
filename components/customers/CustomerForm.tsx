@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import Modal from "@/components/ui/Modal";
 import { SelectField, TextField, type Errors } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
-import { COMPANY_SIZES, INDUSTRIES, createCustomer, updateCustomer, useCrm, type CustomerInput } from "@/lib/crm-store";
+import { errorMessage, formErrors } from "@/lib/api";
+import { COMPANY_SIZES, CUSTOMER_FIELDS, INDUSTRIES, createCustomer, updateCustomer, useCrm, type CustomerInput } from "@/lib/crm-store";
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
@@ -13,7 +14,7 @@ import { getUsers } from "@/lib/users";
 import { fromInputs, isEmail, isPhone, toDateInput } from "@/lib/utils";
 import type { CustomerRecord, Health } from "@/types";
 
-type Field = "name" | "industry" | "contactName" | "contactEmail" | "contactPhone" | "website";
+type Field = keyof CustomerInput;
 
 export default function CustomerForm({ open, onClose, customer }: { open: boolean; onClose: () => void; customer?: CustomerRecord | null }) {
   const user = useSessionUser();
@@ -38,14 +39,15 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
   });
   const [health, setHealth] = useState<Health>(customer?.health ?? "Healthy");
   const [errors, setErrors] = useState<Errors<Field>>({});
+  const [saving, setSaving] = useState(false);
   const set = <K extends keyof CustomerInput>(k: K, value: CustomerInput[K]) => setV((p) => ({ ...p, [k]: value }));
 
   if (!user || !crm) return null;
   const canPickOwner = can(user, "reassign");
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user || !crm) return;
+    if (!user || !crm || saving) return;
     const errs: Errors<Field> = {};
     if (!v.name.trim()) errs.name = "Enter the company name.";
     else if (crm.customers.some((c) => c.name.toLowerCase() === v.name.trim().toLowerCase() && c.id !== customer?.id))
@@ -60,30 +62,22 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
     if (Object.keys(errs).length) return;
 
     const clean = { ...v, name: v.name.trim(), contactEmail: v.contactEmail.trim().toLowerCase(), since: fromInputs(v.since, "09:00") };
-    if (customer) {
-      updateCustomer(
-        customer.id,
-        {
-          name: clean.name,
-          industry: clean.industry,
-          size: clean.size,
-          website: clean.website,
-          city: clean.city,
-          owner: clean.owner,
-          since: clean.since,
-          health,
-          contacts: customer.contacts.map((c) =>
-            c === primary ? { ...c, name: clean.contactName, title: clean.contactTitle, email: clean.contactEmail, phone: clean.contactPhone } : c
-          ),
-        },
-        user
-      );
-      toast("Customer saved");
+    setSaving(true);
+    try {
+      if (customer) {
+        await updateCustomer(customer.id, { ...clean, health });
+        toast("Customer saved");
+      } else {
+        const created = await createCustomer(clean);
+        toast(`${created.name} added`, { action: { label: "Open", onClick: () => router.push(`/customers/${created.id}`) } });
+      }
       onClose();
-    } else {
-      const created = createCustomer(clean, user);
-      toast(`${created.name} added`, { action: { label: "Open", onClick: () => router.push(`/customers/${created.id}`) } });
-      onClose();
+    } catch (err) {
+      const fields = formErrors(err, CUSTOMER_FIELDS);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -99,8 +93,8 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="customer-form" className={btnPrimary}>
-            {customer ? "Save changes" : "Create customer"}
+          <button type="submit" form="customer-form" className={btnPrimary} disabled={saving}>
+            {saving ? "Saving…" : customer ? "Save changes" : "Create customer"}
           </button>
         </div>
       }
@@ -118,16 +112,16 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
               error={errors.industry}
               options={[{ value: "", label: "Choose…" }, ...INDUSTRIES]}
             />
-            <SelectField label="Company size" value={v.size} onChange={(e) => set("size", e.target.value)} options={COMPANY_SIZES} />
+            <SelectField label="Company size" value={v.size} onChange={(e) => set("size", e.target.value)} options={COMPANY_SIZES} error={errors.size} />
             <TextField label="Website" value={v.website} onChange={(e) => set("website", e.target.value)} error={errors.website} placeholder="orbitstudios.com" />
-            <TextField label="City" value={v.city} onChange={(e) => set("city", e.target.value)} placeholder="Lahore" />
+            <TextField label="City" value={v.city} onChange={(e) => set("city", e.target.value)} error={errors.city} placeholder="Lahore" />
           </div>
         </div>
         <div className="flex flex-col gap-3.5">
           <div className={sectionLabel}>PRIMARY CONTACT</div>
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             <TextField label="Full name" required value={v.contactName} onChange={(e) => set("contactName", e.target.value)} error={errors.contactName} />
-            <TextField label="Job title" value={v.contactTitle} onChange={(e) => set("contactTitle", e.target.value)} />
+            <TextField label="Job title" value={v.contactTitle} onChange={(e) => set("contactTitle", e.target.value)} error={errors.contactTitle} />
             <TextField label="Email" required type="email" value={v.contactEmail} onChange={(e) => set("contactEmail", e.target.value)} error={errors.contactEmail} />
             <TextField label="Phone" type="tel" value={v.contactPhone} onChange={(e) => set("contactPhone", e.target.value)} error={errors.contactPhone} />
           </div>
@@ -141,8 +135,9 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
               onChange={(e) => set("owner", e.target.value)}
               options={canPickOwner ? getUsers().map((u) => u.short) : [v.owner]}
               disabled={!canPickOwner}
+              error={errors.owner}
             />
-            <TextField label="Customer since" type="date" value={v.since} onChange={(e) => set("since", e.target.value)} />
+            <TextField label="Customer since" type="date" value={v.since} onChange={(e) => set("since", e.target.value)} error={errors.since} />
             {customer && (
               <SelectField label="Health" value={health} onChange={(e) => setHealth(e.target.value as Health)} options={["Healthy", "Watch", "At risk"]} />
             )}

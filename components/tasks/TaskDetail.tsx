@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import { addFollowUp, deleteTask, snoozeTask, toggleTask, useCrm } from "@/lib/crm-store";
 import { can, canEdit } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -39,6 +39,8 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
   const [outcome, setOutcome] = useState(OUTCOMES[0]);
   const [next, setNext] = useState("2");
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const showError = useErrorToast();
 
   if (!crm || !user) return null;
   const editable = canEdit(user, task.owner);
@@ -46,12 +48,19 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
   const lead = task.leadId ? crm.leads.find((l) => l.id === task.leadId) : null;
   const customer = task.customerId ? crm.customers.find((c) => c.id === task.customerId) : null;
 
-  function log() {
-    if (!user) return;
+  async function log() {
+    if (!user || saving) return;
     const close = next === "close";
-    addFollowUp(task.id, { outcome, note: note.trim(), rescheduledTo: close ? null : daysFromNow(Number(next), 10), closeTask: close }, user);
-    setNote("");
-    toast(close ? "Follow-up logged and task closed" : "Follow-up logged and task rescheduled");
+    setSaving(true);
+    try {
+      await addFollowUp(task.id, { outcome, note: note.trim(), rescheduledTo: close ? null : daysFromNow(Number(next), 10), closeTask: close });
+      setNote("");
+      toast(close ? "Follow-up logged and task closed" : "Follow-up logged and task rescheduled");
+    } catch (err) {
+      showError(err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -120,7 +129,7 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
                 type="button"
                 className={btnPrimary}
                 onClick={() => {
-                  toggleTask(task.id, user);
+                  toggleTask(task.id).catch(showError);
                   toast(task.done ? "Task reopened" : "Task completed");
                   if (!task.done) onClose();
                 }}
@@ -131,9 +140,17 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
                 <button
                   type="button"
                   className={btnOutline}
-                  onClick={() => {
-                    snoozeTask(task.id, daysFromNow(1, new Date(task.dueAt).getHours(), new Date(task.dueAt).getMinutes()), user);
-                    toast("Snoozed to tomorrow");
+                  disabled={saving}
+                  onClick={async () => {
+                    setSaving(true);
+                    try {
+                      await snoozeTask(task.id, daysFromNow(1, new Date(task.dueAt).getHours(), new Date(task.dueAt).getMinutes()));
+                      toast("Snoozed to tomorrow");
+                    } catch (err) {
+                      showError(err);
+                    } finally {
+                      setSaving(false);
+                    }
                   }}
                 >
                   Snooze to tomorrow
@@ -178,7 +195,7 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
                     </option>
                   ))}
                 </select>
-                <button type="button" onClick={log} className={`${btnPrimary} ml-auto h-[34px]`}>
+                <button type="button" onClick={() => void log()} disabled={saving} className={`${btnPrimary} ml-auto h-[34px]`}>
                   Log
                 </button>
               </div>
@@ -230,14 +247,22 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
             <button
               type="button"
               className="inline-flex h-10 items-center rounded-xl bg-danger px-[18px] text-[13.5px] font-bold text-white"
-              onClick={() => {
-                deleteTask(task.id, user);
-                toast("Task deleted");
-                setConfirmDelete(false);
-                onClose();
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await deleteTask(task.id);
+                  toast("Task deleted");
+                  setConfirmDelete(false);
+                  onClose();
+                } catch (err) {
+                  showError(err);
+                } finally {
+                  setSaving(false);
+                }
               }}
             >
-              Delete task
+              {saving ? "Deleting…" : "Delete task"}
             </button>
           </div>
         }

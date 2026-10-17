@@ -124,3 +124,19 @@ export function errorMessage(err: unknown): string {
   if (err instanceof ApiError || err instanceof NetworkError) return err.message;
   return "Something went wrong. Try again.";
 }
+
+/**
+ * The server's validation messages (HTTP 422) mapped onto a form's own field names,
+ * e.g. formErrors(err, { job_title: "title" }) → { title: "The job title is too long." }.
+ * Returns null when the error isn't a validation error or none of its fields are on the form,
+ * so the caller can show errorMessage(err) instead.
+ */
+export function formErrors<F extends string>(err: unknown, fields: Record<string, F>): Partial<Record<F, string>> | null {
+  if (!(err instanceof ApiError) || err.status !== 422) return null;
+  const out: Partial<Record<F, string>> = {};
+  for (const [apiField, messages] of Object.entries(err.errors)) {
+    const field = fields[apiField];
+    if (field && messages[0] && !out[field]) out[field] = messages[0];
+  }
+  return Object.keys(out).length ? out : null;
+}

@@ -8,18 +8,18 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/States";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import LeadForm from "@/components/leads/LeadForm";
 import { AssignOwnerDialog, ChangeStatusDialog } from "@/components/leads/BulkDialogs";
-import { LEAD_SOURCES, createLead, deleteLeads, useCrm } from "@/lib/crm-store";
+import { deleteLeads, importLeads, useCrm } from "@/lib/crm-store";
 import { downloadCsv, parseCsv } from "@/lib/csv";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, chipCls, chipCountCls, searchCls, selectCls } from "@/lib/ui";
 import { getOwnerOptions } from "@/lib/users";
-import { formatDate, isEmail, scoreTier, timeAgo } from "@/lib/utils";
-import type { LeadRecord, LeadSource, LeadStatus } from "@/types";
+import { formatDate, scoreTier, timeAgo } from "@/lib/utils";
+import type { LeadRecord, LeadStatus } from "@/types";
 
 export const statusTone: Record<LeadStatus, "ok" | "warm" | "cold" | "neutral"> = {
   Qualified: "ok",
@@ -59,6 +59,8 @@ export default function LeadsTable() {
   const crm = useCrm();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
+  const [importing, setImporting] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -165,51 +167,29 @@ export default function LeadsTable() {
   }
 
   async function importCsv(file: File) {
-    if (!user || !crm) return;
+    if (!user || !crm || importing) return;
+    // Quick checks here so obvious mistakes get a clear message; the server checks every row again.
     const rows = parseCsv(await file.text());
     if (rows.length < 2) {
       toast("That file has no rows to import.", { tone: "error" });
       return;
     }
     const header = rows[0].map((h) => h.trim().toLowerCase());
-    const col = (...names: string[]) => header.findIndex((h) => names.includes(h));
-    const ci = { name: col("name", "full name"), email: col("email"), company: col("company"), phone: col("phone"), title: col("job title", "title"), source: col("source") };
-    if (ci.name < 0 || ci.email < 0) {
+    if (!header.some((h) => h === "name" || h === "full name") || !header.includes("email")) {
       toast("The CSV needs at least Name and Email columns.", { tone: "error" });
       return;
     }
-    const existing = new Set(crm.leads.map((l) => l.email.toLowerCase()));
-    let added = 0;
-    let skipped = 0;
-    for (const r of rows.slice(1)) {
-      const email = (r[ci.email] ?? "").trim().toLowerCase();
-      const name = (r[ci.name] ?? "").trim();
-      if (!name || !isEmail(email) || existing.has(email)) {
-        skipped++;
-        continue;
-      }
-      const src = (r[ci.source] ?? "").trim();
-      createLead(
-        {
-          name,
-          email,
-          company: (r[ci.company] ?? "").trim() || "Unknown",
-          phone: (r[ci.phone] ?? "").trim(),
-          title: (r[ci.title] ?? "").trim(),
-          companySize: "51–200",
-          source: (LEAD_SOURCES.find((s) => s.toLowerCase() === src.toLowerCase()) ?? "Website") as LeadSource,
-          status: "New",
-          owner: user.short,
-          notes: "Imported from CSV",
-        },
-        user
-      );
-      existing.add(email);
-      added++;
+    setImporting(true);
+    try {
+      const { added, skipped } = await importLeads(file);
+      toast(`Imported ${added} ${added === 1 ? "lead" : "leads"}${skipped ? ` · skipped ${skipped} (duplicate or missing email)` : ""}`, {
+        tone: added ? "success" : "error",
+      });
+    } catch (err) {
+      showError(err);
+    } finally {
+      setImporting(false);
     }
-    toast(`Imported ${added} ${added === 1 ? "lead" : "leads"}${skipped ? ` · skipped ${skipped} (duplicate or missing email)` : ""}`, {
-      tone: added ? "success" : "error",
-    });
   }
 
   const hasFilters = query || status !== "All" || owner !== "Anyone" || tier !== "Any";
@@ -262,9 +242,15 @@ export default function LeadsTable() {
                   e.target.value = "";
                 }}
               />
-              <button type="button" className={btnOutline} onClick={() => fileRef.current?.click()} title="Columns: Name, Email, Company, Phone, Job title, Source">
+              <button
+                type="button"
+                className={btnOutline}
+                onClick={() => fileRef.current?.click()}
+                disabled={importing}
+                title="Columns: Name, Email, Company, Phone, Job title, Source"
+              >
                 <Upload size={16} />
-                Import CSV
+                {importing ? "Importing…" : "Import CSV"}
               </button>
               {can(user, "export") && (
                 <button type="button" className={btnOutline} onClick={exportCsv}>
@@ -529,8 +515,8 @@ export default function LeadsTable() {
           </>
         }
         confirmLabel={`Delete ${selected.size} ${selected.size === 1 ? "lead" : "leads"}`}
-        onConfirm={() => {
-          deleteLeads([...selected], user);
+        onConfirm={async () => {
+          await deleteLeads([...selected]);
           toast(`${selected.size} ${selected.size === 1 ? "lead" : "leads"} deleted`);
           setSelected(new Set());
         }}

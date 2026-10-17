@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import Modal from "@/components/ui/Modal";
 import { TextAreaField, TextField } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
+import { errorMessage } from "@/lib/api";
 import { createTask, logActivity } from "@/lib/crm-store";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, inputCls } from "@/lib/ui";
@@ -45,6 +46,9 @@ export default function LogActivityDialog({
   const [followUp, setFollowUp] = useState(true);
   const [fuDate, setFuDate] = useState(toDateInput(daysFromNow(2)));
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  // Problems with the whole form (time in the future, server errors), shown above the fields.
+  const [formError, setFormError] = useState("");
   // Open the user's email app (Outlook, Gmail, Mail…) with the message filled in.
   const [openMail, setOpenMail] = useState(Boolean(target.email));
 
@@ -53,13 +57,19 @@ export default function LogActivityDialog({
     setOutcome(OUTCOMES[k][0]);
   }
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || saving) return;
     if (kind === "email" && !subject.trim()) {
       setError("Add the email subject.");
       return;
     }
+    const at = date ? fromInputs(date, time || "09:00") : undefined;
+    if (at && new Date(at).getTime() > Date.now()) {
+      setFormError("The date and time can’t be in the future. To plan something, add a follow-up task.");
+      return;
+    }
+    setFormError("");
     const mins = Number(duration);
     const title =
       kind === "call"
@@ -67,20 +77,24 @@ export default function LogActivityDialog({
         : kind === "email"
           ? `Email ${outcome === "Replied" ? "reply" : "sent"}: ${subject.trim()}`
           : `Meeting${mins ? ` (${mins} min)` : ""}: ${outcome.toLowerCase()}`;
-    logActivity(
-      {
+    setSaving(true);
+    try {
+      await logActivity({
         kind,
         title,
         meta: [user.short, notes.trim()].filter(Boolean).join(" · "),
         leadId: target.leadId,
         customerId: target.customerId,
-        at: date ? fromInputs(date, time || "09:00") : undefined,
-      },
-      user
-    );
+        at,
+      });
+    } catch (err) {
+      setSaving(false);
+      setFormError(errorMessage(err));
+      return;
+    }
     if (followUp && fuDate) {
-      createTask(
-        {
+      try {
+        await createTask({
           title: `Follow up with ${target.name}`,
           type: kind === "email" ? "Email" : "Call",
           priority: outcome === "Interested" || outcome === "Replied" ? "High" : "Medium",
@@ -94,10 +108,16 @@ export default function LogActivityDialog({
           contact: target.name,
           company: target.company,
           notes: notes.trim(),
-        },
-        user
-      );
+        });
+      } catch (err) {
+        // The activity is already saved, so close and say what didn't work.
+        setSaving(false);
+        onClose();
+        toast(`${kind === "call" ? "Call" : kind === "email" ? "Email" : "Meeting"} saved, but the follow-up task wasn’t: ${errorMessage(err)}`, { tone: "error" });
+        return;
+      }
     }
+    setSaving(false);
     const sendNow = kind === "email" && openMail && target.email && outcome === "Sent";
     toast(
       `${kind === "call" ? "Call" : kind === "email" ? "Email" : "Meeting"} saved${followUp ? " · follow-up task created" : ""}${sendNow ? " · opening your email app" : ""}`
@@ -126,13 +146,18 @@ export default function LogActivityDialog({
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="log-activity" className={btnPrimary}>
-            {kind === "email" && openMail && target.email && outcome === "Sent" ? "Save and open email" : `Save ${kind}`}
+          <button type="submit" form="log-activity" className={btnPrimary} disabled={saving}>
+            {saving ? "Saving…" : kind === "email" && openMail && target.email && outcome === "Sent" ? "Save and open email" : `Save ${kind}`}
           </button>
         </div>
       }
     >
       <form id="log-activity" onSubmit={submit} noValidate className="flex flex-col gap-4">
+        {formError && (
+          <div role="alert" className="rounded-xl border border-hot-border bg-hot-soft px-3.5 py-3 text-[13.5px] text-hot">
+            {formError}
+          </div>
+        )}
         <div role="tablist" aria-label="Activity type" className="flex gap-1.5 rounded-xl bg-muted p-1">
           {tabs.map((t) => (
             <button

@@ -157,13 +157,24 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
           onClick={() => setMenuOpen((v) => !v)}
           className="flex w-full items-center gap-4 rounded-2xl border border-line bg-surface px-3 py-3 text-left text-white hover:bg-hover"
         >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-ink">
-            {user?.initials ?? ""}
-          </span>
-          <span className="min-w-0 flex-1 leading-tight">
-            <span className="block truncate text-base font-semibold text-white">{user?.name ?? " "}</span>
-            <span className="block text-xs text-slate-500">{user?.role ?? " "}</span>
-          </span>
+          {user ? (
+            <>
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-ink">{user.initials}</span>
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block truncate text-base font-semibold text-white">{user.name}</span>
+                <span className="block text-xs text-slate-500">{user.role}</span>
+              </span>
+            </>
+          ) : (
+            // Still loading (or the data couldn't load): grey placeholders instead of an empty box.
+            <>
+              <span aria-hidden className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-subtle" />
+              <span aria-label="Loading your account" className="flex min-w-0 flex-1 flex-col gap-1.5">
+                <span className="h-3.5 w-28 animate-pulse rounded bg-subtle" />
+                <span className="h-2.5 w-16 animate-pulse rounded bg-subtle" />
+              </span>
+            </>
+          )}
           <ChevronUp size={16} className={`transition-transform ${menuOpen ? "" : "rotate-180"}`} />
         </button>
       </div>

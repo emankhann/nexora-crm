@@ -5,6 +5,7 @@ import { Bell } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { SelectField, TextAreaField, TextField, type Errors } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
+import { errorMessage, formErrors } from "@/lib/api";
 import { createTask, updateTask, useCrm, type TaskInput } from "@/lib/crm-store";
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -69,6 +70,7 @@ export default function TaskForm({
   const [byEmail, setByEmail] = useState(task?.remindByEmail ?? true);
   const [notes, setNotes] = useState(task?.notes ?? "");
   const [errors, setErrors] = useState<Errors<Field>>({});
+  const [saving, setSaving] = useState(false);
 
   if (!crm || !user) return null;
 
@@ -76,9 +78,9 @@ export default function TaskForm({
   const customers = crm.customers.filter((c) => canSee(user, c.owner));
   const ownerChoices = can(user, "reassign") ? getUsers().map((u) => u.short) : [user.short];
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user || !crm) return;
+    if (!user || !crm || saving) return;
     const errs: Errors<Field> = {};
     if (!title.trim()) errs.title = "Say what needs doing.";
     if (!date) errs.date = "Pick a due date.";
@@ -105,14 +107,23 @@ export default function TaskForm({
       notes: notes.trim(),
     };
 
-    if (task) {
-      updateTask(task.id, input, user);
-      toast("Task saved");
-    } else {
-      createTask(input, user);
-      toast(owner === user.short ? "Task created" : `Task created and assigned to ${owner}`);
+    setSaving(true);
+    try {
+      if (task) {
+        await updateTask(task.id, input);
+        toast("Task saved");
+      } else {
+        await createTask(input);
+        toast(owner === user.short ? "Task created" : `Task created and assigned to ${owner}`);
+      }
+      onClose();
+    } catch (err) {
+      const fields = formErrors(err, { title: "title", due_at: "date" } as const);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
     }
-    onClose();
   }
 
   return (
@@ -126,8 +137,8 @@ export default function TaskForm({
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="task-form" className={btnPrimary}>
-            {editing ? "Save task" : "Create task"}
+          <button type="submit" form="task-form" className={btnPrimary} disabled={saving}>
+            {saving ? "Saving…" : editing ? "Save task" : "Create task"}
           </button>
         </div>
       }

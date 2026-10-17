@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Trash2 } from "lucide-react";
 import Modal from "@/components/ui/Modal";
+import { useErrorToast } from "@/components/ui/Toast";
 import { btnDanger, btnOutline } from "@/lib/ui";
 
 export default function ConfirmDialog({
@@ -15,11 +16,27 @@ export default function ConfirmDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  /** May return a promise: the dialog waits, and stays open with an error toast if it fails. */
+  onConfirm: () => void | Promise<void>;
   title: string;
   body: ReactNode;
   confirmLabel: string;
 }) {
+  const [busy, setBusy] = useState(false);
+  const showError = useErrorToast();
+
+  async function confirm() {
+    setBusy(true);
+    try {
+      await onConfirm();
+      onClose();
+    } catch (err) {
+      showError(err);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <Modal
       open={open}
@@ -37,15 +54,8 @@ export default function ConfirmDialog({
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button
-            type="button"
-            className={btnDanger}
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-          >
-            {confirmLabel}
+          <button type="button" className={btnDanger} onClick={() => void confirm()} disabled={busy}>
+            {busy ? "Working…" : confirmLabel}
           </button>
         </div>
       }

@@ -6,7 +6,8 @@ import { Check } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Modal from "@/components/ui/Modal";
 import { SelectField, TextField, type Errors } from "@/components/ui/Field";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
+import { errorMessage, formErrors } from "@/lib/api";
 import { DEAL_STAGES, LOST_REASONS, OPEN_STAGES, STAGE_PROBABILITY, createDeal, deleteDeal, moveDeal, updateDeal, useCrm, type DealInput } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -17,6 +18,9 @@ import type { DealRecord, DealStage, DealTag } from "@/types";
 
 type Field = "title" | "company" | "value" | "closeDate";
 
+/** Server validation errors for the fields that show messages; anything else is shown as a toast. */
+const SHOWN_FIELDS = { title: "title", company: "company", value: "value", expected_close_date: "closeDate" } as const;
+
 const tagTone = { Hot: "hot", Warm: "warm", New: "cold", Cold: "cold" } as const;
 
 /** Small dialog that asks why a deal was lost. */
@@ -25,6 +29,8 @@ export function LostReasonDialog({ open, onClose, deal }: { open: boolean; onClo
   const toast = useToast();
   const [reason, setReason] = useState(LOST_REASONS[0]);
   const [other, setOther] = useState("");
+  const [saving, setSaving] = useState(false);
+  const showError = useErrorToast();
   return (
     <Modal
       open={open}
@@ -39,15 +45,23 @@ export function LostReasonDialog({ open, onClose, deal }: { open: boolean; onClo
           </button>
           <button
             type="button"
-            className="inline-flex h-10 items-center rounded-xl bg-danger px-[18px] text-[13.5px] font-bold text-white"
-            onClick={() => {
-              if (!user) return;
-              moveDeal(deal.id, "Lost", user, reason === "Other" ? other.trim() || "Other" : reason);
-              toast(`${deal.title} marked as lost`);
-              onClose();
+            className="inline-flex h-10 items-center rounded-xl bg-danger px-[18px] text-[13.5px] font-bold text-white disabled:opacity-60"
+            disabled={saving}
+            onClick={async () => {
+              if (!user || saving) return;
+              setSaving(true);
+              try {
+                await moveDeal(deal.id, "Lost", reason === "Other" ? other.trim() || "Other" : reason);
+                toast(`${deal.title} marked as lost`);
+                onClose();
+              } catch (err) {
+                showError(err);
+              } finally {
+                setSaving(false);
+              }
             }}
           >
-            Mark as lost
+            {saving ? "Saving…" : "Mark as lost"}
           </button>
         </div>
       }
@@ -103,6 +117,8 @@ export default function DealForm({
   const [errors, setErrors] = useState<Errors<Field>>({});
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [lostOpen, setLostOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const showError = useErrorToast();
 
   if (!crm || !user) return null;
   const readOnly = deal ? !canEdit(user, deal.owner) : false;
@@ -120,9 +136,9 @@ export default function DealForm({
     setProbability(STAGE_PROBABILITY[s]);
   }
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || saving) return;
     const amount = parseMoney(value);
     const errs: Errors<Field> = {};
     if (!title.trim()) errs.title = "Name the deal.";
@@ -147,20 +163,29 @@ export default function DealForm({
       customerId: kind === "customer" ? id : (deal?.customerId ?? null),
     };
 
-    if (deal) {
-      if (stage === "Lost" && deal.stage !== "Lost") {
-        // Ask for a reason first; save the other fields with the old stage.
-        updateDeal(deal.id, { ...input, stage: deal.stage }, user);
-        setLostOpen(true);
-        return;
+    setSaving(true);
+    try {
+      if (deal) {
+        if (stage === "Lost" && deal.stage !== "Lost") {
+          // Ask for a reason first; save the other fields with the old stage.
+          await updateDeal(deal.id, { ...input, stage: deal.stage });
+          setLostOpen(true);
+          return;
+        }
+        await updateDeal(deal.id, input);
+        toast(stage !== deal.stage ? `${input.title} moved to ${stage}` : "Deal saved");
+      } else {
+        await createDeal(input);
+        toast(`${input.title} added to ${stage}`);
       }
-      updateDeal(deal.id, input, user);
-      toast(stage !== deal.stage ? `${input.title} moved to ${stage}` : "Deal saved");
-    } else {
-      createDeal(input, user);
-      toast(`${input.title} added to ${stage}`);
+      onClose();
+    } catch (err) {
+      const fields = formErrors(err, SHOWN_FIELDS);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
     }
-    onClose();
   }
 
   const ownerChoices = can(user, "reassign") ? getUsers().map((u) => u.short) : [user.short];
@@ -212,8 +237,8 @@ export default function DealForm({
                 {readOnly ? "Close" : "Cancel"}
               </button>
               {!readOnly && (
-                <button type="submit" form="deal-form" className={btnPrimary}>
-                  {editing ? "Save changes" : "Create deal"}
+                <button type="submit" form="deal-form" className={btnPrimary} disabled={saving}>
+                  {saving ? "Saving…" : editing ? "Save changes" : "Create deal"}
                 </button>
               )}
             </div>
@@ -305,7 +330,7 @@ export default function DealForm({
               type="button"
               className="inline-flex h-10 items-center justify-center rounded-xl border border-ok-border bg-primary-soft text-[13.5px] font-bold text-ok"
               onClick={() => {
-                moveDeal(deal.id, "Won", user);
+                moveDeal(deal.id, "Won").catch(showError);
                 toast(`${deal.title} won · ${formatCurrency(deal.value)}`);
                 onClose();
               }}
@@ -355,14 +380,22 @@ export default function DealForm({
               <button
                 type="button"
                 className="inline-flex h-10 items-center rounded-xl bg-danger px-[18px] text-[13.5px] font-bold text-white"
-                onClick={() => {
-                  deleteDeal(deal.id, user);
-                  toast(`${deal.title} deleted`);
-                  setConfirmDelete(false);
-                  onClose();
+                disabled={saving}
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    await deleteDeal(deal.id);
+                    toast(`${deal.title} deleted`);
+                    setConfirmDelete(false);
+                    onClose();
+                  } catch (err) {
+                    showError(err);
+                  } finally {
+                    setSaving(false);
+                  }
                 }}
               >
-                Delete deal
+                {saving ? "Deleting…" : "Delete deal"}
               </button>
             </div>
           }

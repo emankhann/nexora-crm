@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 import { Check, X } from "lucide-react";
+import { errorMessage } from "@/lib/api";
 
 type Toast = {
   id: number;
@@ -16,6 +17,12 @@ const ToastContext = createContext<ToastFn>(() => {});
 
 export function useToast() {
   return useContext(ToastContext);
+}
+
+/** Shows a failed request's message as an error toast. Usage: someAction().catch(showError). */
+export function useErrorToast() {
+  const toast = useContext(ToastContext);
+  return useCallback((err: unknown) => toast(errorMessage(err), { tone: "error" }), [toast]);
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
