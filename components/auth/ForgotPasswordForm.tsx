@@ -33,7 +33,7 @@ export default function ForgotPasswordForm() {
       </Link>
       {sent ? (
         <div role="status" className="flex gap-3.5">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#0F2318] text-[#5EEB9C]">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-ok">
             <Check size={18} strokeWidth={2.6} />
           </span>
           <div>
@@ -65,14 +65,14 @@ export default function ForgotPasswordForm() {
               onChange={(e) => setEmail(e.target.value)}
               aria-invalid={error ? true : undefined}
               placeholder="you@company.com"
-              className="h-[46px] w-full rounded-xl border-[1.5px] border-line px-3.5 text-sm outline-none focus:border-accent focus:ring-[3px] focus:ring-accent/20 aria-[invalid=true]:border-[#F2554A]"
+              className="h-[46px] w-full rounded-xl border-[1.5px] border-line px-3.5 text-sm outline-none focus:border-accent focus:ring-[3px] focus:ring-accent/20 aria-[invalid=true]:border-error"
             />
-            {error && <span className="text-xs font-semibold text-[#FF8F84]">{error}</span>}
+            {error && <span className="text-xs font-semibold text-hot">{error}</span>}
           </div>
           <button
             type="submit"
             disabled={loading}
-            className="flex h-[46px] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] disabled:bg-[#1F5C3B]"
+            className="flex h-[46px] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] disabled:bg-primary-disabled"
           >
             {loading && <Loader2 size={18} className="animate-spin" aria-hidden />}
             {loading ? "Sending…" : "Send reset link"}

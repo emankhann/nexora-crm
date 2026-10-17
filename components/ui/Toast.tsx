@@ -45,12 +45,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           <div
             key={t.id}
             className={`pointer-events-auto flex w-full items-center gap-3 rounded-[14px] px-4 py-3.5 shadow-[0_16px_36px_rgba(2,8,23,0.25)] ${
-              t.tone === "success" ? "border border-[#1D4A31] bg-[#0F2318] text-navy" : "border border-[#4A1F1C] bg-surface text-navy"
+              t.tone === "success" ? "border border-ok-border bg-ok-bg text-navy" : "border border-hot-border bg-surface text-navy"
             }`}
           >
             <span
               className={`grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full ${
-                t.tone === "success" ? "bg-primary text-ink" : "bg-[#2A1312] text-[#FF8F84]"
+                t.tone === "success" ? "bg-primary text-ink" : "bg-hot-bg text-hot"
               }`}
             >
               {t.tone === "success" ? <Check size={14} strokeWidth={3} /> : <span className="text-sm font-extrabold">!</span>}

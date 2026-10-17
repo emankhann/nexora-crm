@@ -18,16 +18,16 @@ import type { ActivityKind, ActivityRecord } from "@/types";
 import { formatDate, formatTime, timeAgo } from "@/lib/utils";
 
 const kindStyle: Record<ActivityKind, { icon: LucideIcon; cls: string }> = {
-  proposal: { icon: FileText, cls: "bg-[#1A211D] text-[#86C5F2]" },
-  email: { icon: Mail, cls: "bg-[#261E0C] text-[#F6C866]" },
-  call: { icon: Phone, cls: "bg-[#0F2318] text-[#5EEB9C]" },
-  meeting: { icon: CalendarDays, cls: "bg-[#221430] text-[#D2A8FF]" },
-  status: { icon: ArrowRight, cls: "bg-[#1A201C] text-slate-600" },
-  created: { icon: Plus, cls: "bg-[#1A201C] text-slate-600" },
-  note: { icon: StickyNote, cls: "bg-[#0F1C27] text-[#86C5F2]" },
-  assigned: { icon: UserRound, cls: "bg-[#1A201C] text-slate-600" },
-  converted: { icon: CircleCheck, cls: "bg-[#0F2318] text-[#5EEB9C]" },
-  deal: { icon: BriefcaseBusiness, cls: "bg-[#1A211D] text-[#86C5F2]" },
+  proposal: { icon: FileText, cls: "bg-subtle text-cold" },
+  email: { icon: Mail, cls: "bg-warm-bg text-warm" },
+  call: { icon: Phone, cls: "bg-primary-soft text-ok" },
+  meeting: { icon: CalendarDays, cls: "bg-meeting-bg text-meeting" },
+  status: { icon: ArrowRight, cls: "bg-subtle text-slate-600" },
+  created: { icon: Plus, cls: "bg-subtle text-slate-600" },
+  note: { icon: StickyNote, cls: "bg-cold-bg text-cold" },
+  assigned: { icon: UserRound, cls: "bg-subtle text-slate-600" },
+  converted: { icon: CircleCheck, cls: "bg-primary-soft text-ok" },
+  deal: { icon: BriefcaseBusiness, cls: "bg-subtle text-cold" },
 };
 
 const tabs = [
@@ -75,7 +75,7 @@ export default function ActivityFeed({
               role="tab"
               aria-selected={tab === t.key}
               onClick={() => setTab(t.key)}
-              className={`h-8 rounded-full px-3 text-[12.5px] font-bold ${tab === t.key ? "bg-primary text-ink" : "bg-[#1A201C] text-slate-700"}`}
+              className={`h-8 rounded-full px-3 text-[12.5px] font-bold ${tab === t.key ? "bg-primary text-ink" : "bg-subtle text-slate-700"}`}
             >
               {t.label}
             </button>
@@ -105,7 +105,7 @@ export default function ActivityFeed({
               type="button"
               onClick={save}
               disabled={!note.trim()}
-              className="ml-auto h-9 rounded-xl bg-primary px-4 text-[13px] font-bold text-ink shadow-[0_6px_14px_rgba(46,224,127,0.25)] hover:bg-[#5BEA9C] disabled:cursor-not-allowed disabled:opacity-50"
+              className="ml-auto h-9 rounded-xl bg-primary px-4 text-[13px] font-bold text-ink shadow-[0_6px_14px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               Save note
             </button>
@@ -114,11 +114,11 @@ export default function ActivityFeed({
       )}
 
       <ol className="flex flex-col">
-        {visible.length === 0 && <li className="border-t border-[#18201B] py-8 text-center text-sm text-slate-500">Nothing here yet.</li>}
+        {visible.length === 0 && <li className="border-t border-row-line py-8 text-center text-sm text-slate-500">Nothing here yet.</li>}
         {visible.map((e) => {
           const { icon: Icon, cls } = kindStyle[e.kind] ?? kindStyle.note;
           return (
-            <li key={e.id} className="flex items-start gap-3.5 border-t border-[#18201B] py-3.5">
+            <li key={e.id} className="flex items-start gap-3.5 border-t border-row-line py-3.5">
               <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${cls}`}>
                 <Icon size={16} strokeWidth={1.8} />
               </div>

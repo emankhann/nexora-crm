@@ -91,7 +91,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
     return (
       <EmptyState
         icon={
-          <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#261E0C] text-[#F6C866]">
+          <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-warm-bg text-warm">
             <Lock size={28} />
           </span>
         }
@@ -135,7 +135,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
       <section className={`${card} flex flex-col gap-5 px-4 py-5 sm:p-6`}>
         <div className="flex flex-wrap justify-between gap-4">
           <div className="flex min-w-0 items-center gap-4">
-            <span className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-2xl bg-[#14301F] text-[19px] font-extrabold text-[#6EEBA3] ring-1 ring-[#1F4A31]">{c.initials}</span>
+            <span className="grid h-[60px] w-[60px] shrink-0 place-items-center rounded-2xl bg-avatar text-[19px] font-extrabold text-avatar-text ring-1 ring-ok-border">{c.initials}</span>
             <div className="min-w-0">
               <h1 className="text-[22px] font-extrabold tracking-tight sm:text-2xl">{c.name}</h1>
               <div className="text-[13.5px] text-slate-500">{[c.industry, c.city, c.website].filter(Boolean).join(" · ")}</div>
@@ -163,14 +163,14 @@ export default function CustomerProfileView({ id }: { id: string }) {
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-y-4 border-t border-[#18201B] pt-[18px] lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-y-4 border-t border-row-line pt-[18px] lg:grid-cols-4">
           {[
             ["Lifetime value", formatCurrency(c.lifetimeValue)],
             ["Open deals", `${openDeals.length + c.legacyOpenDeals}${openDeals.length ? ` · ${formatCurrency(openDeals.reduce((s, d) => s + d.value, 0))}` : ""}`],
             ["Open tasks", String(tasks.length)],
             ["Last contact", lastContact ? timeAgo(lastContact.at) : "No contact yet"],
           ].map(([k, v], i) => (
-            <div key={k} className={`flex flex-col gap-1 ${i % 2 === 1 ? "border-l border-[#18201B] pl-5" : ""} ${i === 2 ? "lg:border-l lg:pl-5" : ""}`}>
+            <div key={k} className={`flex flex-col gap-1 ${i % 2 === 1 ? "border-l border-row-line pl-5" : ""} ${i === 2 ? "lg:border-l lg:pl-5" : ""}`}>
               <span className="text-[13px] text-slate-500">{k}</span>
               <b className="text-lg sm:text-[22px]">{v}</b>
             </div>
@@ -233,13 +233,13 @@ export default function CustomerProfileView({ id }: { id: string }) {
             {deals.map((d) => {
               const isOpen = OPEN_STAGES.includes(d.stage);
               return (
-                <button key={d.id} type="button" onClick={() => open({ kind: "deal", deal: d })} className="flex flex-col gap-2 rounded-xl border border-line px-3.5 py-3 text-left hover:border-[#2A3A30]">
+                <button key={d.id} type="button" onClick={() => open({ kind: "deal", deal: d })} className="flex flex-col gap-2 rounded-xl border border-line px-3.5 py-3 text-left hover:border-edge-strong">
                   <div className="flex justify-between gap-2">
                     <b className="text-[13.5px]">{d.title}</b>
                     <Badge tone={d.stage === "Won" ? "ok" : d.stage === "Lost" ? "neutral" : "cold"}>{d.stage}</Badge>
                   </div>
                   {isOpen && (
-                    <div className="h-1.5 rounded-full bg-[#1A211D]">
+                    <div className="h-1.5 rounded-full bg-subtle">
                       <div className="h-1.5 rounded-full bg-primary" style={{ width: `${d.probability}%` }} />
                     </div>
                   )}
@@ -277,7 +277,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
                   />
                   <span>
                     <b className="block">{t.title}</b>
-                    <span className={`text-xs ${overdue ? "font-semibold text-[#FF8F84]" : "text-slate-500"}`}>
+                    <span className={`text-xs ${overdue ? "font-semibold text-hot" : "text-slate-500"}`}>
                       {overdue ? "Overdue · " : ""}
                       {formatDue(t.dueAt)} · {t.owner}
                     </span>

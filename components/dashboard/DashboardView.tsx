@@ -16,9 +16,9 @@ import { daysBetween, formatCurrency, formatDate, formatTime, isSameDay, scoreTi
 import type { MonthRevenue } from "@/types";
 
 const attentionStyle = {
-  hot: "bg-[#2A1312] text-[#FF8F84]",
-  warm: "bg-[#261E0C] text-[#F6C866]",
-  cold: "bg-[#0F1C27] text-[#86C5F2]",
+  hot: "bg-hot-bg text-hot",
+  warm: "bg-warm-bg text-warm",
+  cold: "bg-cold-bg text-cold",
 } as const;
 
 function greeting() {
@@ -156,7 +156,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
             {revenue.map((r, i) => (
               <div key={r.month} className="flex min-w-0 flex-1 flex-col gap-2">
                 <div
-                  className={`w-full rounded-md ${i === revenue.length - 1 ? "bg-gradient-to-t from-[#1BA45C] to-primary shadow-[0_0_24px_rgba(46,224,127,0.35)]" : "bg-[#1E3A2A] hover:bg-[#25503A]"}`}
+                  className={`w-full rounded-md ${i === revenue.length - 1 ? "bg-gradient-to-t from-primary-deep to-primary shadow-[0_0_24px_rgba(46,224,127,0.35)]" : "bg-bar hover:bg-bar-hover"}`}
                   style={{ height: Math.max(4, Math.round((r.amount / maxRevenue) * 220)) }}
                   title={`${r.month}: ${formatCurrency(r.amount)}`}
                 />
@@ -179,8 +179,8 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                 <span>{f.name}</span>
                 <span className="font-medium text-slate-700">{f.count}</span>
               </div>
-              <div className="h-2 rounded-full bg-[#1A211D]">
-                <div className={`h-2 rounded-full ${f.won ? "bg-[#A6F4C5]" : "bg-primary"}`} style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
+              <div className="h-2 rounded-full bg-subtle">
+                <div className={`h-2 rounded-full ${f.won ? "bg-won" : "bg-primary"}`} style={{ width: `${(f.count / maxFunnel) * 100}%` }} />
               </div>
             </div>
           ))}
@@ -211,7 +211,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                 {hotLeads.map(({ lead: l, value }) => {
                   const t = scoreTier(l.score);
                   return (
-                    <Link key={l.id} href={`/leads/${l.id}`} className="grid grid-cols-[2.2fr_1fr_1fr_1fr_0.9fr] items-center gap-3 border-b border-[#18201B] py-3 text-[13.5px] hover:bg-[#151B17]">
+                    <Link key={l.id} href={`/leads/${l.id}`} className="grid grid-cols-[2.2fr_1fr_1fr_1fr_0.9fr] items-center gap-3 border-b border-row-line py-3 text-[13.5px] hover:bg-hover">
                       <div className="flex min-w-0 items-center gap-3">
                         <Avatar initials={l.initials} size={34} />
                         <div className="min-w-0">
@@ -253,7 +253,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                   <Link
                     key={d.id}
                     href={`/pipeline?deal=${d.id}`}
-                    className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 border-t border-[#18201B] py-3 first:border-t-0 hover:bg-[#151B17] sm:grid-cols-[1.6fr_1.2fr_auto]"
+                    className="grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-2 border-t border-row-line py-3 first:border-t-0 hover:bg-hover sm:grid-cols-[1.6fr_1.2fr_auto]"
                   >
                     <span className="min-w-0">
                       <b className="block truncate text-[13.5px]">{d.title}</b>
@@ -262,10 +262,10 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                       </span>
                     </span>
                     <span className="order-3 col-span-2 flex items-center gap-2.5 sm:order-none sm:col-span-1">
-                      <span className="h-1.5 flex-1 rounded-full bg-[#1A211D]">
+                      <span className="h-1.5 flex-1 rounded-full bg-subtle">
                         <span className="block h-1.5 rounded-full bg-primary" style={{ width: `${d.probability}%` }} />
                       </span>
-                      <span className={`w-[120px] shrink-0 text-xs font-semibold ${diff < 0 ? "text-[#FF8F84]" : "text-slate-600"}`}>{when}</span>
+                      <span className={`w-[120px] shrink-0 text-xs font-semibold ${diff < 0 ? "text-hot" : "text-slate-600"}`}>{when}</span>
                     </span>
                     <b className="text-right text-[14px]">{formatCurrency(d.value)}</b>
                   </Link>
@@ -292,7 +292,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                 <span>Tasks done</span>
               </div>
               {leaderboard.map((r, i) => (
-                <div key={r.user.id} className="grid grid-cols-[1.6fr_2fr_1fr_.8fr_.8fr] items-center gap-3 border-b border-[#18201B] py-3 text-[13.5px] last:border-b-0">
+                <div key={r.user.id} className="grid grid-cols-[1.6fr_2fr_1fr_.8fr_.8fr] items-center gap-3 border-b border-row-line py-3 text-[13.5px] last:border-b-0">
                   <span className="flex min-w-0 items-center gap-2.5">
                     <Avatar initials={r.user.initials} size={30} />
                     <span className="min-w-0">
@@ -304,8 +304,8 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                     </span>
                   </span>
                   <span className="flex items-center gap-2.5">
-                    <span className="h-2 flex-1 rounded-full bg-[#1A211D]">
-                      <span className="block h-2 rounded-full bg-[#2EE07F]" style={{ width: `${(r.revenue / topRevenue) * 100}%` }} />
+                    <span className="h-2 flex-1 rounded-full bg-subtle">
+                      <span className="block h-2 rounded-full bg-primary" style={{ width: `${(r.revenue / topRevenue) * 100}%` }} />
                     </span>
                     <b className="w-[76px] shrink-0 text-right">{formatCurrency(r.revenue)}</b>
                   </span>
@@ -328,7 +328,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
               </Link>
             </div>
             {myTasksToday.length === 0 && (
-              <div className="rounded-xl border-[1.5px] border-dashed border-[#25503A] px-4 py-5 text-center">
+              <div className="rounded-xl border-[1.5px] border-dashed border-bar-hover px-4 py-5 text-center">
                 <b className="text-sm">You’re all caught up</b>
                 <div className="text-[13px] text-slate-500">Nothing is due today.</div>
               </div>
@@ -348,7 +348,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
                   />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13.5px] font-semibold">{t.title}</span>
-                    <span className={`mt-0.5 block text-xs ${overdue ? "font-semibold text-[#FF8F84]" : "text-slate-500"}`}>
+                    <span className={`mt-0.5 block text-xs ${overdue ? "font-semibold text-hot" : "text-slate-500"}`}>
                       {overdue ? "Overdue · " : "Due "}
                       {isSameDay(t.dueAt) ? formatTime(t.dueAt) : timeAgo(t.dueAt)}
                       {t.contact ? ` · ${t.contact}` : ""}
@@ -395,7 +395,7 @@ export default function DashboardView({ revenueHistory }: { revenueHistory: Mont
               </div>
             )}
             {can(user, "viewAudit") && (
-              <Link href="/audit-log" className="-mx-[22px] -mb-5 rounded-b-2xl border-t border-[#18201B] px-[22px] py-3 text-center text-[13px] font-bold text-primary hover:bg-[#151B17]">
+              <Link href="/audit-log" className="-mx-[22px] -mb-5 rounded-b-2xl border-t border-row-line px-[22px] py-3 text-center text-[13px] font-bold text-primary hover:bg-hover">
                 View all activity
               </Link>
             )}

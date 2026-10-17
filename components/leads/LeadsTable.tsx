@@ -47,7 +47,7 @@ function ScoreBar({ score }: { score: number }) {
   return (
     <span className="flex items-center gap-2.5">
       <b className="w-6">{score}</b>
-      <span className="h-1.5 w-[84px] rounded-full bg-[#1A211D]">
+      <span className="h-1.5 w-[84px] rounded-full bg-subtle">
         <span className={`block h-1.5 rounded-full ${t.bar}`} style={{ width: `${score}%` }} />
       </span>
       <span className={`text-xs font-bold ${t.text}`}>{t.label}</span>
@@ -221,7 +221,7 @@ export default function LeadsTable() {
       />
 
       {!viewAll && (
-        <div className="rounded-xl bg-[#1A211D] px-4 py-3 text-[13.5px] text-[#6EEBA3]">
+        <div className="rounded-xl bg-subtle px-4 py-3 text-[13.5px] text-avatar-text">
           As a <b>Sales rep</b> you see only the leads assigned to you. To hand a lead to someone else, ask your manager.
         </div>
       )}
@@ -336,8 +336,8 @@ export default function LeadsTable() {
         </div>
 
         {selected.size > 0 && (
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-[#1A211D] px-5 py-2.5">
-            <span className="text-[13.5px] font-semibold text-[#6EEBA3]">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-subtle px-5 py-2.5">
+            <span className="text-[13.5px] font-semibold text-avatar-text">
               {selected.size} {selected.size === 1 ? "lead" : "leads"} selected
               <button type="button" onClick={() => setSelected(new Set())} className="ml-3 font-bold text-primary hover:underline">
                 Clear
@@ -355,7 +355,7 @@ export default function LeadsTable() {
                 </button>
               )}
               {can(user, "delete") && (
-                <button type="button" onClick={() => openDialog("delete")} className="h-[34px] rounded-xl bg-surface px-4 text-[13px] font-semibold text-[#FF8F84] hover:bg-[#1F1111]">
+                <button type="button" onClick={() => openDialog("delete")} className="h-[34px] rounded-xl bg-surface px-4 text-[13px] font-semibold text-hot hover:bg-hot-soft">
                   Delete
                 </button>
               )}
@@ -368,7 +368,7 @@ export default function LeadsTable() {
             {visibleLeads.length === 0 ? (
               <EmptyState
                 icon={
-                  <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#0F2318] text-primary">
+                  <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-primary-soft text-primary">
                     <UserPlus size={28} />
                   </span>
                 }
@@ -425,7 +425,7 @@ export default function LeadsTable() {
                 {pageRows.map((l) => {
                   const isSel = selected.has(l.id);
                   return (
-                    <div key={l.id} className={`${GRID} border-t border-[#18201B] py-3 text-[13.5px] ${isSel ? "bg-[#0F1F16]" : "bg-surface hover:bg-[#151B17]"}`}>
+                    <div key={l.id} className={`${GRID} border-t border-row-line py-3 text-[13.5px] ${isSel ? "bg-primary-soft" : "bg-surface hover:bg-hover"}`}>
                       <input type="checkbox" aria-label={`Select ${l.name}`} checked={isSel} onChange={() => toggle(l.id)} className="h-[17px] w-[17px] accent-primary" />
                       <Link href={`/leads/${l.id}`} className="flex min-w-0 items-center gap-3">
                         <Avatar initials={l.initials} />
@@ -464,7 +464,7 @@ export default function LeadsTable() {
                     </div>
                     <div className="flex items-center gap-2.5 text-[12.5px]">
                       <b>{l.score}</b>
-                      <span className="h-1.5 flex-1 rounded-full bg-[#1A211D]">
+                      <span className="h-1.5 flex-1 rounded-full bg-subtle">
                         <span className={`block h-1.5 rounded-full ${t.bar}`} style={{ width: `${l.score}%` }} />
                       </span>
                       <span className="text-slate-500">
@@ -478,7 +478,7 @@ export default function LeadsTable() {
           </>
         )}
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#18201B] px-5 py-4 text-[13px] text-slate-500">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-row-line px-5 py-4 text-[13px] text-slate-500">
           <span>
             Showing {filtered.length === 0 ? 0 : current * PAGE_SIZE + 1}–{Math.min(filtered.length, (current + 1) * PAGE_SIZE)} of {filtered.length} leads
           </span>

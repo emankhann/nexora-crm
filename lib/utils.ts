@@ -8,10 +8,10 @@ export function formatCurrency(value: number) {
 
 export function scoreTier(score: number) {
   if (score >= 80)
-    return { key: "hot", label: "Hot", bar: "bg-[#F2554A]", text: "text-[#FF8F84]" } as const;
+    return { key: "hot", label: "Hot", bar: "bg-error", text: "text-hot" } as const;
   if (score >= 50)
-    return { key: "warm", label: "Warm", bar: "bg-[#F5A524]", text: "text-[#F6C866]" } as const;
-  return { key: "cold", label: "Cold", bar: "bg-accent", text: "text-[#86C5F2]" } as const;
+    return { key: "warm", label: "Warm", bar: "bg-warm-bar", text: "text-warm" } as const;
+  return { key: "cold", label: "Cold", bar: "bg-accent", text: "text-cold" } as const;
 }
 
 /* ---------- ids and names ---------- */

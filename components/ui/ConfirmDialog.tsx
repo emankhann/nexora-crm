@@ -28,7 +28,7 @@ export default function ConfirmDialog({
       size="sm"
       alert
       icon={
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-[#2A1312] text-[#FF8F84]">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-[14px] bg-hot-bg text-hot">
           <Trash2 size={20} />
         </span>
       }

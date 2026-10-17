@@ -16,11 +16,11 @@ function Shell({ id, label, required, error, hint, className, children }: Base &
     <div className={`flex min-w-0 flex-col gap-[7px] ${className ?? ""}`}>
       <label htmlFor={id} className="text-[13px] font-bold text-slate-800">
         {label}
-        {required && <span className="text-[#FF8F84]"> *</span>}
+        {required && <span className="text-hot"> *</span>}
       </label>
       {children}
       {error ? (
-        <span id={`${id}-err`} className="text-xs font-semibold text-[#FF8F84]">
+        <span id={`${id}-err`} className="text-xs font-semibold text-hot">
           {error}
         </span>
       ) : hint ? (

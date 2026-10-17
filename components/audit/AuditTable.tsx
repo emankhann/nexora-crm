@@ -50,7 +50,7 @@ export default function AuditTable({ events }: { events: AuditEvent[] }) {
           placeholder="Search by record or detail"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          className="h-10 min-w-[260px] flex-1 rounded-xl border border-transparent bg-[#171C19] px-3.5 text-[13.5px] outline-none placeholder:text-slate-500 focus:border-accent focus:bg-surface"
+          className="h-10 min-w-[260px] flex-1 rounded-xl border border-transparent bg-muted px-3.5 text-[13.5px] outline-none placeholder:text-slate-500 focus:border-accent focus:bg-surface"
         />
         <label className="flex items-center gap-2 text-[13px] text-slate-500">
           User
@@ -73,13 +73,13 @@ export default function AuditTable({ events }: { events: AuditEvent[] }) {
           </div>
 
           {filtered.length === 0 && (
-            <div className="border-t border-[#18201B] px-5 py-10 text-center text-sm text-slate-500">
+            <div className="border-t border-row-line px-5 py-10 text-center text-sm text-slate-500">
               No events match your filters.
             </div>
           )}
 
           {filtered.map((event) => (
-            <div key={event.id} className={`${GRID} border-t border-[#18201B] bg-surface py-3 text-[13.5px]`}>
+            <div key={event.id} className={`${GRID} border-t border-row-line bg-surface py-3 text-[13.5px]`}>
               <span className="text-slate-500">{event.when}</span>
               <span className="font-bold">{event.user}</span>
               <span><Badge tone={actionTone[event.action]}>{event.action}</Badge></span>
@@ -90,7 +90,7 @@ export default function AuditTable({ events }: { events: AuditEvent[] }) {
         </div>
       </div>
 
-      <div className="border-t border-[#18201B] px-5 py-4 text-[13px] text-slate-500">
+      <div className="border-t border-row-line px-5 py-4 text-[13px] text-slate-500">
         Showing {filtered.length} of {events.length} events
       </div>
     </div>
