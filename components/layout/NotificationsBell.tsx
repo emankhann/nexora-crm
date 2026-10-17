@@ -72,7 +72,7 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
             <button
               type="button"
               disabled={unread.length === 0}
-              onClick={() => markNoticesRead(unread.map((n) => n.id))}
+              onClick={() => void markNoticesRead(unread.map((n) => n.id)).catch(() => {})}
               className="text-[13px] font-bold text-primary disabled:text-slate-400"
             >
               Mark all as read
@@ -104,7 +104,8 @@ export default function NotificationsBell({ dark = false }: { dark?: boolean }) 
                   key={n.id}
                   href={n.href}
                   onClick={() => {
-                    markNoticesRead([n.id]);
+                    // Not worth an error message if this fails; the notice just stays unread.
+                    void markNoticesRead([n.id]).catch(() => {});
                     setOpen(false);
                   }}
                   className={`flex gap-3 rounded-xl px-3.5 py-3 hover:bg-slate-50 ${isUnread ? "bg-primary-soft" : ""}`}

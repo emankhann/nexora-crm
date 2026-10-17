@@ -61,7 +61,7 @@ All demo accounts use the password `demo1234`. On the sign-in page, click a demo
 - **Route protection.** `proxy.ts` redirects early using a small hint cookie (just the role) set after sign-in. The real check happens in the API on every request; if it answers 401, the app clears the session and goes to `/login`.
 - **Data.** After sign-in, `lib/crm-store.ts` loads everything the user may see in one request (`GET /api/crm`), filtered on the server by role. `lib/api-mappers.ts` converts the API's JSON into the records the screens use.
 - **Permissions.** `lib/permissions.ts` decides what the UI shows. The API enforces the same rules (`backend/app/Policies` and the Gates in `AppServiceProvider`).
-- **Saving changes.** In progress: every change goes through one store function (`createLead`, `moveDeal`, `addFollowUp` and so on), and each is being switched to its API request. Until that is finished, changes made in the UI are not saved to the database and are gone after a refresh.
+- **Saving changes.** Every change goes through one store function (`createLead`, `moveDeal`, `addFollowUp` and so on), which sends one API request. The server checks permissions, saves to MySQL and records the history and audit log; then the store reloads, so the screens show exactly what was saved. Ticking off a task, dragging a deal and reading reminders update the screen at once and undo themselves if the server refuses. Form errors from the server (like an email that's already taken) appear under the right field.
 
 ## Project structure
 

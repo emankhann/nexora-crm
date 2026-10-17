@@ -128,6 +128,21 @@ class CrmApiTest extends TestCase
         $this->assertTrue($customer->contacts()->where('email', $lead->email)->exists());
     }
 
+    public function test_editing_a_converted_lead_keeps_it_converted(): void
+    {
+        $huma = $this->user('huma@nexora.example');
+        $lead = Lead::where('company', 'Harbor Dental')->firstOrFail();
+        $this->actingAs($huma)->postJson("/api/leads/{$lead->id}/convert", ['mode' => 'new', 'industry' => 'Healthcare'])->assertSuccessful();
+
+        $this->actingAs($huma)->putJson("/api/leads/{$lead->id}", [
+            'name' => 'Sara Iqbal', 'email' => $lead->email, 'company' => 'Harbor Dental',
+            'source' => 'cold_email', 'job_title' => 'Practice Owner',
+        ])->assertOk();
+
+        $this->assertSame('converted', $lead->fresh()->status->value);
+        $this->assertSame('Practice Owner', $lead->fresh()->job_title);
+    }
+
     public function test_winning_a_deal_adds_to_the_customers_lifetime_value(): void
     {
         $deal = Deal::where('title', 'Social media retainer')->firstOrFail();

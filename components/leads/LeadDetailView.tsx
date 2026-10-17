@@ -8,7 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { EmptyState } from "@/components/ui/States";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import StageStepper from "@/components/leads/StageStepper";
 import ActivityFeed from "@/components/activity/ActivityFeed";
 import LeadForm from "@/components/leads/LeadForm";
@@ -41,6 +41,7 @@ export default function LeadDetailView({ id }: { id: string }) {
   const now = useNow();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
   const router = useRouter();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [n, setN] = useState(0);
@@ -176,8 +177,8 @@ export default function LeadDetailView({ id }: { id: string }) {
           <ActivityFeed
             activities={activities}
             placeholder="Write a note about this lead. Mention a teammate with @"
-            onAddNote={(text) => {
-              logActivity({ kind: "note", title: text, meta: user.short, leadId: lead.id, customerId: lead.customerId ?? undefined }, user);
+            onAddNote={async (text) => {
+              await logActivity({ kind: "note", title: text, meta: user.short, leadId: lead.id, customerId: lead.customerId ?? undefined });
               toast("Note saved");
             }}
           />
@@ -244,8 +245,8 @@ export default function LeadDetailView({ id }: { id: string }) {
                     type="checkbox"
                     aria-label={`Complete task: ${t.title}`}
                     onChange={() => {
-                      toggleTask(t.id, user);
-                      toast("Task completed", { action: { label: "Undo", onClick: () => toggleTask(t.id, user) } });
+                      toggleTask(t.id).catch(showError);
+                      toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
                     }}
                     className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-primary"
                   />
@@ -296,8 +297,8 @@ export default function LeadDetailView({ id }: { id: string }) {
         title={`Delete ${lead.name}?`}
         body="The lead will be removed with its notes and open tasks. This can’t be undone. The deletion is recorded in the audit log."
         confirmLabel="Delete lead"
-        onConfirm={() => {
-          deleteLeads([lead.id], user);
+        onConfirm={async () => {
+          await deleteLeads([lead.id]);
           toast(`${lead.name} deleted`);
           router.push("/leads");
         }}

@@ -8,7 +8,7 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import PageHeader from "@/components/layout/PageHeader";
 import { EmptyState } from "@/components/ui/States";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import TaskForm from "@/components/tasks/TaskForm";
 import TaskDetail, { priorityTone } from "@/components/tasks/TaskDetail";
 import { toggleTask, useCrm } from "@/lib/crm-store";
@@ -47,6 +47,7 @@ export default function TasksBoard() {
   const crm = useCrm();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
   const router = useRouter();
   const params = useSearchParams();
   const [tab, setTab] = useState<TabKey>("open");
@@ -195,8 +196,8 @@ export default function TasksBoard() {
                   checked={t.done}
                   disabled={!editable}
                   onChange={() => {
-                    toggleTask(t.id, user);
-                    if (!t.done) toast("Task completed", { action: { label: "Undo", onClick: () => toggleTask(t.id, user) } });
+                    toggleTask(t.id).catch(showError);
+                    if (!t.done) toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
                   }}
                   className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-primary"
                 />

@@ -133,6 +133,9 @@ const browser = await launch();
   });
 
   await check("Expired session: API cookie gone → app sends you to /login", async () => {
+    // Let requests in flight finish first: Laravel sets its cookies again on every
+    // response, so one arriving after clearCookies() would sign the browser back in.
+    await page.waitForLoadState("networkidle");
     const hint = (await ctx.cookies()).filter((c) => c.name === "nexora_session");
     await ctx.clearCookies();
     await ctx.addCookies(hint); // the browser still "thinks" it's signed in

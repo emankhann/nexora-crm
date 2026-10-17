@@ -43,7 +43,9 @@ class CrmDemoSeeder extends Seeder
         $omar = $users['omar@nexora.example'];
         $sana = $users['sana@nexora.example'];
 
-        $at = fn (int $days, int $hour = 10, int $minute = 0): Carbon => now()->addDays($days)->setTime($hour, $minute);
+        // Times of day ("due at 5 PM") are meant in the demo's local time zone, then stored in UTC.
+        $tz = config('app.demo_timezone', 'UTC');
+        $at = fn (int $days, int $hour = 10, int $minute = 0): Carbon => now($tz)->addDays($days)->setTime($hour, $minute)->utc();
         $scorer = new LeadScorer;
 
         /* ---------------- Customers and contacts ---------------- */
@@ -102,7 +104,7 @@ class CrmDemoSeeder extends Seeder
 
         $leads = [];
         foreach ($leadRows as $i => [$name, $email, $company, $source, $status, $score, $owner, $hoursAgo, $title, $phone]) {
-            $created = now()->subDays($i === 0 ? 10 : 13 + $i)->setTime(9, 0);
+            $created = now($tz)->subDays($i === 0 ? 10 : 13 + $i)->setTime(9, 0)->utc();
             $scored = $scorer->score($source, $status, $title, '51–200', $phone, $email);
             $leads[$name] = Lead::create([
                 'name' => $name,

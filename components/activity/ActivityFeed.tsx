@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useErrorToast } from "@/components/ui/Toast";
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -48,19 +49,29 @@ export default function ActivityFeed({
 }: {
   title?: string;
   activities: ActivityRecord[];
-  onAddNote?: (text: string) => void;
+  /** Saves a note. If it returns a promise, the text is kept until the save succeeds. */
+  onAddNote?: (text: string) => void | Promise<void>;
   placeholder?: string;
 }) {
   const [tab, setTab] = useState<TabKey>("all");
   const [note, setNote] = useState("");
+  const [saving, setSaving] = useState(false);
+  const showError = useErrorToast();
   const kinds = tabs.find((t) => t.key === tab)?.kinds;
   const visible = kinds ? activities.filter((a) => (kinds as readonly string[]).includes(a.kind)) : activities;
 
-  function save() {
+  async function save() {
     const text = note.trim();
-    if (!text || !onAddNote) return;
-    onAddNote(text);
-    setNote("");
+    if (!text || !onAddNote || saving) return;
+    setSaving(true);
+    try {
+      await onAddNote(text);
+      setNote("");
+    } catch (err) {
+      showError(err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -94,7 +105,7 @@ export default function ActivityFeed({
             value={note}
             onChange={(e) => setNote(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save();
+              if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) void save();
             }}
             placeholder={placeholder ?? "Add a note. Mention a teammate with @"}
             className="w-full resize-y rounded-xl border-[1.5px] border-line bg-surface p-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20"
@@ -103,11 +114,11 @@ export default function ActivityFeed({
             <span className="hidden text-xs text-slate-500 sm:inline">Ctrl + Enter to save</span>
             <button
               type="button"
-              onClick={save}
-              disabled={!note.trim()}
+              onClick={() => void save()}
+              disabled={!note.trim() || saving}
               className="ml-auto h-9 rounded-xl bg-primary px-4 text-[13px] font-bold text-ink shadow-[0_6px_14px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Save note
+              {saving ? "Saving…" : "Save note"}
             </button>
           </div>
         </div>

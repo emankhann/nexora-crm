@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Modal from "@/components/ui/Modal";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import { LEAD_STATUSES, assignLeads, setLeadsStatus, useCrm } from "@/lib/crm-store";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary } from "@/lib/ui";
@@ -56,6 +56,8 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
   const [owner, setOwner] = useState(() => (leads.length === 1 ? leads[0].owner : getUsers()[0]?.short ?? "Unassigned"));
   const [query, setQuery] = useState("");
   const [notify, setNotify] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const showError = useErrorToast();
 
   const openCount = (short: string) => crm?.leads.filter((l) => l.owner === short && l.status !== "Converted").length ?? 0;
   const options = [
@@ -63,22 +65,32 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
     { short: "Unassigned", title: "Unassigned", sub: "Leave without an owner", initials: "–" },
   ].filter((o) => !query.trim() || o.title.toLowerCase().includes(query.trim().toLowerCase()));
 
-  function save() {
-    if (!user) return;
-    const prev = leads.map((l) => ({ id: l.id, owner: l.owner }));
-    assignLeads(
-      leads.map((l) => l.id),
-      owner,
-      user
-    );
-    toast(`${leads.length} ${leads.length === 1 ? "lead" : "leads"} assigned to ${owner}${notify && owner !== "Unassigned" ? " · they’ll be notified" : ""}`, {
-      action: {
-        label: "Undo",
-        onClick: () => prev.forEach((p) => assignLeads([p.id], p.owner, user)),
-      },
-    });
-    onDone?.();
-    onClose();
+  async function save() {
+    if (!user || saving) return;
+    // Previous owners, grouped, so Undo can put each lead back with one request per owner.
+    const prev = new Map<string, string[]>();
+    for (const l of leads) prev.set(l.owner, [...(prev.get(l.owner) ?? []), l.id]);
+    setSaving(true);
+    try {
+      await assignLeads(
+        leads.map((l) => l.id),
+        owner
+      );
+      toast(`${leads.length} ${leads.length === 1 ? "lead" : "leads"} assigned to ${owner}${notify && owner !== "Unassigned" ? " · they’ll be notified" : ""}`, {
+        action: {
+          label: "Undo",
+          onClick: () => {
+            Promise.all([...prev].map(([o, ids]) => assignLeads(ids, o))).catch(showError);
+          },
+        },
+      });
+      onDone?.();
+      onClose();
+    } catch (err) {
+      showError(err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   const label = owner === "Unassigned" ? "Unassign" : `Assign to ${owner.split(" ")[0]}`;
@@ -95,8 +107,8 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="button" className={btnPrimary} onClick={save}>
-            {label}
+          <button type="button" className={btnPrimary} onClick={() => void save()} disabled={saving}>
+            {saving ? "Saving…" : label}
           </button>
         </div>
       }
@@ -132,17 +144,25 @@ export function ChangeStatusDialog({ open, onClose, leads, onDone }: { open: boo
   const user = useSessionUser();
   const toast = useToast();
   const [status, setStatus] = useState<LeadStatus>(() => (leads.length === 1 && leads[0].status !== "Converted" ? leads[0].status : "Contacted"));
+  const [saving, setSaving] = useState(false);
+  const showError = useErrorToast();
 
-  function save() {
-    if (!user) return;
-    setLeadsStatus(
-      leads.map((l) => l.id),
-      status,
-      user
-    );
-    toast(`${leads.length} ${leads.length === 1 ? "lead" : "leads"} marked ${status}`);
-    onDone?.();
-    onClose();
+  async function save() {
+    if (!user || saving) return;
+    setSaving(true);
+    try {
+      await setLeadsStatus(
+        leads.map((l) => l.id),
+        status
+      );
+      toast(`${leads.length} ${leads.length === 1 ? "lead" : "leads"} marked ${status}`);
+      onDone?.();
+      onClose();
+    } catch (err) {
+      showError(err);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -157,8 +177,8 @@ export function ChangeStatusDialog({ open, onClose, leads, onDone }: { open: boo
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="button" className={btnPrimary} onClick={save}>
-            Set to {status}
+          <button type="button" className={btnPrimary} onClick={() => void save()} disabled={saving}>
+            {saving ? "Saving…" : `Set to ${status}`}
           </button>
         </div>
       }

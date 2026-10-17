@@ -7,7 +7,8 @@ import Avatar from "@/components/ui/Avatar";
 import Modal from "@/components/ui/Modal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { SelectField, TextField, type Errors } from "@/components/ui/Field";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
+import { errorMessage, formErrors } from "@/lib/api";
 import PageHeader from "@/components/layout/PageHeader";
 import { changeMemberRole, inviteMember, resendInvite, revokeInvite, useCrm } from "@/lib/crm-store";
 import { useSessionUser } from "@/lib/session";
@@ -37,10 +38,11 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Role>("Sales rep");
   const [errors, setErrors] = useState<Errors<"name" | "email">>({});
+  const [saving, setSaving] = useState(false);
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || saving) return;
     const errs: Errors<"name" | "email"> = {};
     if (!name.trim()) errs.name = "Enter their name.";
     if (!email.trim()) errs.email = "Enter their work email.";
@@ -48,9 +50,18 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
     else if (existing.some((m) => m.email === email.trim().toLowerCase())) errs.email = "This person is already on the team.";
     setErrors(errs);
     if (Object.keys(errs).length) return;
-    inviteMember({ name, email, role }, user);
-    toast(`Invite sent to ${email.trim().toLowerCase()}`);
-    onClose();
+    setSaving(true);
+    try {
+      await inviteMember({ name, email, role });
+      toast(`Invite sent to ${email.trim().toLowerCase()}`);
+      onClose();
+    } catch (err) {
+      const fields = formErrors(err, { name: "name", email: "email" } as const);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -70,8 +81,8 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="invite-form" className={btnPrimary}>
-            Send invite
+          <button type="submit" form="invite-form" className={btnPrimary} disabled={saving}>
+            {saving ? "Sending…" : "Send invite"}
           </button>
         </div>
       }
@@ -94,6 +105,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
   const crm = useCrm();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteKey, setInviteKey] = useState(0);
   const [revoke, setRevoke] = useState<MemberRecord | null>(null);
@@ -108,8 +120,15 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
       toast("Nexora needs at least one admin. Make someone else an admin first.", { tone: "error" });
       return;
     }
-    changeMemberRole(m.id, role, user);
-    toast(`${m.name} is now ${role === "Admin" ? "an" : "a"} ${role}`);
+    changeMemberRole(m.id, role)
+      .then(() => toast(`${m.name} is now ${role === "Admin" ? "an" : "a"} ${role}`))
+      .catch(showError);
+  }
+
+  function resend(m: MemberRecord) {
+    resendInvite(m.id)
+      .then(() => toast(`Invite sent again to ${m.email}`))
+      .catch(showError);
   }
 
   const leadCount = (short: string) => crm.leads.filter((l) => l.owner === short && l.status !== "Converted").length;
@@ -194,10 +213,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
                       <>
                         <button
                           type="button"
-                          onClick={() => {
-                            resendInvite(m.id, user);
-                            toast(`Invite sent again to ${m.email}`);
-                          }}
+                          onClick={() => resend(m)}
                           className="text-[13px] font-bold text-primary hover:underline"
                         >
                           Resend
@@ -243,7 +259,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
                   )}
                   {m.status === "Pending" && (
                     <span className="ml-auto flex gap-3">
-                      <button type="button" onClick={() => { resendInvite(m.id, user); toast(`Invite sent again to ${m.email}`); }} className="flex items-center gap-1 text-[13px] font-bold text-primary">
+                      <button type="button" onClick={() => resend(m)} className="flex items-center gap-1 text-[13px] font-bold text-primary">
                         <Mail size={14} /> Resend
                       </button>
                       <button type="button" onClick={() => setRevoke(m)} className="text-[13px] font-bold text-hot">
@@ -288,9 +304,9 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
         title="Cancel this invite?"
         body={<>{revoke?.email} won’t be able to use their invite link.</>}
         confirmLabel="Cancel invite"
-        onConfirm={() => {
+        onConfirm={async () => {
           if (revoke) {
-            revokeInvite(revoke.id, user);
+            await revokeInvite(revoke.id);
             toast(`Invite for ${revoke.email} cancelled`);
           }
         }}

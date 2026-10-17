@@ -69,6 +69,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Demo Data Time Zone
+    |--------------------------------------------------------------------------
+    |
+    | The time zone the demo data (php artisan db:seed) is written for, so a
+    | task "due at 5 PM" is due at 5 PM local time. Like every other time,
+    | it is stored in UTC and shown in each viewer's own time zone.
+    |
+    */
+
+    'demo_timezone' => env('DEMO_TIMEZONE', 'Asia/Karachi'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

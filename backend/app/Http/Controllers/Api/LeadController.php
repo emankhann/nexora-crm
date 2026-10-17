@@ -103,6 +103,11 @@ class LeadController extends Controller
         Gate::authorize('update', $lead);
         $data = $request->validated();
 
+        // A converted lead stays converted; editing its details never changes the status.
+        if ($lead->status === LeadStatus::Converted) {
+            unset($data['status']);
+        }
+
         // Changing the owner needs the reassign permission (admins and managers).
         if (array_key_exists('owner_id', $data) && (int) $data['owner_id'] !== (int) $lead->owner_id) {
             Gate::authorize('reassign');

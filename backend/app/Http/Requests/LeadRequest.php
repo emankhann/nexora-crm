@@ -37,8 +37,11 @@ class LeadRequest extends FormRequest
             'company' => ['required', 'string', 'max:150'],
             'company_size' => ['nullable', Rule::in(['1–50', '51–200', '200+', '1-50', '51-200'])],
             'source' => ['required', Rule::enum(LeadSource::class)],
-            // "converted" is only set by the convert action.
-            'status' => ['required', Rule::enum(LeadStatus::class)->except([LeadStatus::Converted])],
+            // "converted" is only set by the convert action, and a converted lead keeps it.
+            'status' => [
+                $this->route('lead')?->status === LeadStatus::Converted ? 'sometimes' : 'required',
+                Rule::enum(LeadStatus::class)->except([LeadStatus::Converted]),
+            ],
             'owner_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('status', 'active')],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];

@@ -6,7 +6,7 @@ import { MoreHorizontal } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import PageHeader from "@/components/layout/PageHeader";
 import DealForm, { LostReasonDialog } from "@/components/pipeline/DealForm";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import { DEAL_STAGES, OPEN_STAGES, moveDeal, useCrm } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -98,6 +98,7 @@ export default function PipelineBoard() {
   const crm = useCrm();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
   const router = useRouter();
   const params = useSearchParams();
   const [owner, setOwner] = useState("Anyone");
@@ -162,9 +163,9 @@ export default function PipelineBoard() {
       return;
     }
     const from = deal.stage;
-    moveDeal(deal.id, stage, user);
+    moveDeal(deal.id, stage).catch(showError);
     toast(stage === "Won" ? `${deal.title} won · ${formatCurrency(deal.value)}` : `${deal.title} moved to ${stage}`, {
-      action: from !== "Lost" ? { label: "Undo", onClick: () => moveDeal(deal.id, from, user) } : undefined,
+      action: from !== "Lost" ? { label: "Undo", onClick: () => void moveDeal(deal.id, from).catch(showError) } : undefined,
     });
   }
 

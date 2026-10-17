@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import Modal from "@/components/ui/Modal";
 import { SelectField, TextField, type Errors } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
+import { errorMessage, formErrors } from "@/lib/api";
 import { INDUSTRIES, OPEN_STAGES, convertLead, useCrm } from "@/lib/crm-store";
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -35,12 +36,13 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
   const [stage, setStage] = useState<DealStage>("Proposal");
   const [closeDate, setCloseDate] = useState(toDateInput(daysFromNow(14)));
   const [errors, setErrors] = useState<Errors<Field>>({});
+  const [saving, setSaving] = useState(false);
 
   if (!crm || !user) return null;
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || saving) return;
     const errs: Errors<Field> = {};
     if (mode === "existing" && !existingId) errs.existing = "Pick a customer.";
     const value = parseMoney(dealValue);
@@ -52,21 +54,29 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
     setErrors(errs);
     if (Object.keys(errs).length) return;
 
-    const customerId = convertLead(
-      lead.id,
-      {
+    setSaving(true);
+    try {
+      const customerId = await convertLead(lead.id, {
         mode,
         existingCustomerId: existingId,
         industry,
         owner,
         createDeal,
         deal: { title: dealTitle.trim(), value, stage, closeDate: fromInputs(closeDate, "17:00") },
-      },
-      user
-    );
-    onClose();
-    if (customerId) {
+      });
+      onClose();
       toast(`${lead.name} is now a customer`, { action: { label: "Open", onClick: () => router.push(`/customers/${customerId}`) } });
+    } catch (err) {
+      const fields = formErrors(err, {
+        customer_id: "existing",
+        "deal.title": "dealTitle",
+        "deal.value": "dealValue",
+        "deal.close_date": "closeDate",
+      } as const);
+      if (fields) setErrors(fields);
+      else toast(errorMessage(err), { tone: "error" });
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -89,8 +99,8 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
           <button type="button" className={btnOutline} onClick={onClose}>
             Cancel
           </button>
-          <button type="submit" form="convert-form" className={btnPrimary}>
-            Convert to customer
+          <button type="submit" form="convert-form" className={btnPrimary} disabled={saving}>
+            {saving ? "Converting…" : "Convert to customer"}
           </button>
         </div>
       }

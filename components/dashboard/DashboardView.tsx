@@ -5,7 +5,7 @@ import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
 import PageHeader from "@/components/layout/PageHeader";
 import { priorityTone } from "@/components/tasks/TaskDetail";
-import { useToast } from "@/components/ui/Toast";
+import { useErrorToast, useToast } from "@/components/ui/Toast";
 import { OPEN_STAGES, monthlyRevenue, toggleTask, useCrm } from "@/lib/crm-store";
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -30,6 +30,7 @@ export default function DashboardView() {
   const now = useNow();
   const user = useSessionUser();
   const toast = useToast();
+  const showError = useErrorToast();
   if (!crm || !user) return null;
 
   const leads = crm.leads.filter((l) => canSee(user, l.owner));
@@ -60,7 +61,8 @@ export default function DashboardView() {
     { name: "Contacted", count: leads.filter((l) => l.status === "Contacted").length },
     { name: "Qualified", count: leads.filter((l) => l.status === "Qualified").length },
     { name: "Proposal", count: openDeals.filter((d) => d.stage === "Proposal").length },
-    { name: "Won", count: deals.filter((d) => d.stage === "Won").length, won: true },
+    // Like the Won column on the pipeline: deals won in the last 30 days.
+    { name: "Won (30 days)", count: deals.filter((d) => d.stage === "Won" && d.closedAt && daysBetween(d.closedAt) <= 30).length, won: true },
   ];
   const maxFunnel = Math.max(1, ...funnel.map((f) => f.count));
 
@@ -396,8 +398,8 @@ export default function DashboardView() {
                     type="checkbox"
                     aria-label={`Complete task: ${t.title}`}
                     onChange={() => {
-                      toggleTask(t.id, user);
-                      toast("Task completed", { action: { label: "Undo", onClick: () => toggleTask(t.id, user) } });
+                      toggleTask(t.id).catch(showError);
+                      toast("Task completed", { action: { label: "Undo", onClick: () => void toggleTask(t.id).catch(showError) } });
                     }}
                     className="mt-0.5 h-[18px] w-[18px] shrink-0 accent-primary"
                   />
