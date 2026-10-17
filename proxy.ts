@@ -13,7 +13,9 @@ import { SESSION_HINT_COOKIE, roleFromKey } from "@/lib/users";
  * the real httpOnly session on every request, and the app sends you to /login
  * as soon as the API says the session has ended.
  */
-const PUBLIC_PATHS = ["/login", "/forgot-password"];
+const PUBLIC_PATHS = ["/login", "/forgot-password", "/reset-password", "/accept-invite"];
+/** Pages opened from an emailed link: they work even if someone is already signed in in this browser. */
+const LINK_PATHS = ["/reset-password", "/accept-invite"];
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
@@ -26,7 +28,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (role && isPublic) {
+  if (role && isPublic && !LINK_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

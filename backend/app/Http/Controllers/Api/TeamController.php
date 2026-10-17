@@ -7,12 +7,14 @@ use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Notifications\TeamInvite;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -47,6 +49,7 @@ class TeamController extends Controller
             'invited_at' => now(),
         ]);
         Audit::log('Created', $user, $user->email, "Invited as {$user->role->label()}");
+        $this->sendInvite($user, $request->user());
 
         return (new UserResource($user))->response()->setStatusCode(201);
     }
@@ -80,6 +83,8 @@ class TeamController extends Controller
         abort_unless($user->status === UserStatus::Pending, 422, 'This person has already joined.');
 
         $user->update(['invited_at' => now()]);
+        // A new link replaces the old one, so an earlier email stops working.
+        $this->sendInvite($user, request()->user());
         Audit::log('Updated', $user, $user->email, 'Invite sent again');
 
         return new UserResource($user);
@@ -91,8 +96,16 @@ class TeamController extends Controller
         abort_unless($user->status === UserStatus::Pending, 422, 'Only pending invites can be cancelled.');
 
         Audit::log('Deleted', $user, $user->email, 'Invite cancelled');
+        Password::broker('invites')->deleteToken($user);
         $user->delete();
 
         return response()->noContent();
+    }
+
+    /** Emails a join link with a fresh one-time token (valid 7 days). */
+    private function sendInvite(User $user, User $invitedBy): void
+    {
+        $token = Password::broker('invites')->createToken($user);
+        $user->notify(new TeamInvite($token, $invitedBy->name));
     }
 }

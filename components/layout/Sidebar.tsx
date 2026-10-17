@@ -11,12 +11,14 @@ import {
   ChevronUp,
   FileText,
   Home,
+  KeyRound,
   LogOut,
   ShieldCheck,
   Users,
   X,
   type LucideIcon,
 } from "lucide-react";
+import ChangePasswordDialog from "@/components/auth/ChangePasswordDialog";
 import { useCrm } from "@/lib/crm-store";
 import { can, canSee } from "@/lib/permissions";
 import { signOut, useSessionUser } from "@/lib/session";
@@ -47,6 +49,8 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
   const user = useSessionUser();
   const crm = useCrm();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordKey, setPasswordKey] = useState(0);
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Next keeps this layout alive (hidden) while you are on the sign-in page, so close the
@@ -143,6 +147,18 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
             <button
               type="button"
               role="menuitem"
+              onClick={() => {
+                setMenuOpen(false);
+                setPasswordKey((k) => k + 1);
+                setPasswordOpen(true);
+              }}
+              className="mb-1 flex w-full items-center gap-2.5 rounded-[10px] px-3 py-2.5 text-left text-[13.5px] font-semibold hover:bg-hover"
+            >
+              <KeyRound size={15} /> Change password
+            </button>
+            <button
+              type="button"
+              role="menuitem"
               onClick={handleSignOut}
               className="flex w-full items-center gap-2.5 rounded-[10px] bg-hot-soft px-3 py-2.5 text-left text-[13.5px] font-bold text-hot hover:bg-hot-bg"
             >
@@ -178,6 +194,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
           <ChevronUp size={16} className={`transition-transform ${menuOpen ? "" : "rotate-180"}`} />
         </button>
       </div>
+      {passwordOpen && <ChangePasswordDialog key={passwordKey} open onClose={() => setPasswordOpen(false)} />}
     </aside>
   );
 }

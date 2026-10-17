@@ -13,6 +13,8 @@ use App\Http\Resources\DealResource;
 use App\Http\Resources\TaskResource;
 use App\Models\Activity;
 use App\Models\Customer;
+use App\Models\Deal;
+use App\Models\Lead;
 use App\Services\ActivityRecorder;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
@@ -133,8 +135,16 @@ class CustomerController extends Controller
     public function destroy(Customer $customer): Response
     {
         Gate::authorize('delete', $customer);
-        $customer->delete();
-        Audit::log('Deleted', $customer, $customer->name, 'Customer deleted');
+
+        DB::transaction(function () use ($customer) {
+            // Open tasks for this customer go; its deals stay in the pipeline and reports,
+            // just no longer linked to a customer. The history stays in the audit log.
+            $customer->tasks()->whereNull('completed_at')->delete();
+            Deal::where('customer_id', $customer->id)->update(['customer_id' => null]);
+            Lead::where('customer_id', $customer->id)->update(['customer_id' => null]);
+            $customer->delete();
+            Audit::log('Deleted', $customer, $customer->name, 'Customer deleted; open tasks removed, deals unlinked');
+        });
 
         return response()->noContent();
     }

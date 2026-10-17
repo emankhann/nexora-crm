@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BootstrapController;
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\InviteController;
 use App\Http\Controllers\Api\DealController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\NotificationController;
@@ -21,12 +22,16 @@ use Illuminate\Support\Facades\Route;
 | Authorization: app/Policies (per record) and Gates in AppServiceProvider (per role).
 */
 
-Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
-Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:5,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login');
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('throttle:forgot-password');
+Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:reset-password');
+Route::post('/invites/check', [InviteController::class, 'check'])->middleware('throttle:invite-check');
+Route::post('/invites/accept', [InviteController::class, 'accept'])->middleware('throttle:invite-accept');
 
 Route::middleware(['auth:sanctum', 'throttle:240,1'])->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::put('/me/password', [AuthController::class, 'changePassword'])->middleware('throttle:change-password');
 
     // Everything the user may see, in one request (used by the frontend on load).
     Route::get('/crm', BootstrapController::class);

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Lock } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
@@ -9,6 +10,7 @@ import Modal from "@/components/ui/Modal";
 import { TextField, type Errors } from "@/components/ui/Field";
 import { EmptyState } from "@/components/ui/States";
 import NotFoundView from "@/components/ui/NotFoundView";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { useErrorToast, useToast } from "@/components/ui/Toast";
 import { errorMessage, formErrors } from "@/lib/api";
 import ActivityFeed from "@/components/activity/ActivityFeed";
@@ -16,8 +18,8 @@ import CustomerForm from "@/components/customers/CustomerForm";
 import LogActivityDialog, { type ActivityKindChoice } from "@/components/leads/LogActivityDialog";
 import DealForm from "@/components/pipeline/DealForm";
 import TaskForm from "@/components/tasks/TaskForm";
-import { OPEN_STAGES, addContact, logActivity, toggleTask, useCrm } from "@/lib/crm-store";
-import { canEdit, canSee } from "@/lib/permissions";
+import { OPEN_STAGES, addContact, deleteCustomer, logActivity, toggleTask, useCrm } from "@/lib/crm-store";
+import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { useNow } from "@/lib/use-now";
 import { btnOutline, btnPrimary, card } from "@/lib/ui";
@@ -26,7 +28,7 @@ import type { DealRecord } from "@/types";
 
 const healthTone = { Healthy: "ok", Watch: "warm", "At risk": "hot" } as const;
 
-type Dialog = null | { kind: "edit" } | { kind: "log"; activity: ActivityKindChoice } | { kind: "deal"; deal?: DealRecord } | { kind: "task" } | { kind: "contact" };
+type Dialog = null | { kind: "edit" } | { kind: "log"; activity: ActivityKindChoice } | { kind: "deal"; deal?: DealRecord } | { kind: "task" } | { kind: "contact" } | { kind: "delete" };
 
 function AddContactDialog({ open, onClose, customerId }: { open: boolean; onClose: () => void; customerId: string }) {
   const user = useSessionUser();
@@ -95,6 +97,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
   const toast = useToast();
   const showError = useErrorToast();
   const [dialog, setDialog] = useState<Dialog>(null);
+  const router = useRouter();
   const [n, setN] = useState(0);
 
   if (!crm || !user) return null;
@@ -319,6 +322,12 @@ export default function CustomerProfileView({ id }: { id: string }) {
               <span className="text-sm text-slate-500">This customer was added directly, not converted from a lead.</span>
             )}
           </section>
+
+          {can(user, "delete") && (
+            <button type="button" onClick={() => open({ kind: "delete" })} className="self-start text-[13px] font-bold text-hot hover:underline">
+              Delete this customer
+            </button>
+          )}
         </div>
       </div>
 
@@ -335,6 +344,18 @@ export default function CustomerProfileView({ id }: { id: string }) {
       {dialog?.kind === "deal" && <DealForm key={`d${n}`} open onClose={close} deal={dialog.deal} defaults={{ customerId: c.id }} />}
       {dialog?.kind === "task" && <TaskForm key={`t${n}`} open onClose={close} defaults={{ customerId: c.id, title: `Check in with ${primary?.name ?? c.name}` }} />}
       {dialog?.kind === "contact" && <AddContactDialog key={`c${n}`} open onClose={close} customerId={c.id} />}
+      <ConfirmDialog
+        open={dialog?.kind === "delete"}
+        onClose={close}
+        title={`Delete ${c.name}?`}
+        body="Their open tasks are deleted. Their deals stay in the pipeline and reports, but are no longer linked to a customer. This can’t be undone, and the deletion is recorded in the audit log."
+        confirmLabel="Delete customer"
+        onConfirm={async () => {
+          await deleteCustomer(c.id);
+          toast(`${c.name} deleted`);
+          router.push("/customers");
+        }}
+      />
     </>
   );
 }

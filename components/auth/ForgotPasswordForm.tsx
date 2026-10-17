@@ -3,6 +3,8 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Check, Loader2 } from "lucide-react";
+import EmailLogHint from "@/components/auth/EmailLogHint";
+import { api, errorMessage } from "@/lib/api";
 import { isEmail } from "@/lib/utils";
 
 export default function ForgotPasswordForm() {
@@ -19,11 +21,16 @@ export default function ForgotPasswordForm() {
     }
     setError("");
     setLoading(true);
-    // The backend will email a one-time link here. We always show the same
-    // message so nobody can use this form to find out which emails exist.
-    await new Promise((r) => setTimeout(r, 700));
-    setLoading(false);
-    setSent(true);
+    try {
+      // The API emails a one-time link to active accounts. It answers the same way for
+      // every email, so nobody can use this form to find out which emails have accounts.
+      await api.post("/forgot-password", { email: email.trim() });
+      setSent(true);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -32,19 +39,22 @@ export default function ForgotPasswordForm() {
         ← Back to sign in
       </Link>
       {sent ? (
-        <div role="status" className="flex gap-3.5">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-ok">
-            <Check size={18} strokeWidth={2.6} />
-          </span>
-          <div>
-            <h2 className="text-xl font-extrabold">Check your email</h2>
-            <p className="mt-1.5 text-[13.5px] leading-relaxed text-slate-600">
-              If <b>{email}</b> has an account, a reset link is on its way. It works for 30 minutes.{" "}
-              <button type="button" onClick={() => setSent(false)} className="font-bold text-primary">
-                Send again
-              </button>
-            </p>
+        <div role="status" className="flex flex-col gap-4">
+          <div className="flex gap-3.5">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-ok">
+              <Check size={18} strokeWidth={2.6} />
+            </span>
+            <div>
+              <h2 className="text-xl font-extrabold">Check your email</h2>
+              <p className="mt-1.5 text-[13.5px] leading-relaxed text-slate-600">
+                If <b>{email}</b> has an account, a reset link is on its way. It works once, for 60 minutes.{" "}
+                <button type="button" onClick={() => setSent(false)} className="font-bold text-primary">
+                  Send again
+                </button>
+              </p>
+            </div>
           </div>
+          <EmailLogHint />
         </div>
       ) : (
         <form onSubmit={submit} noValidate className="flex flex-col gap-5">
