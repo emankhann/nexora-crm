@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -28,11 +28,26 @@ export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(true);
+  // Off by default: unless you tick it, you are signed out when the browser closes.
+  const [remember, setRemember] = useState(false);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
+  const signedIn = useRef(false);
+
+  // With cacheComponents, Next keeps this page alive (hidden) after sign-in instead of
+  // unmounting it, so after sign-out it would come back still "Signing in…" with the
+  // password filled. Reset when the page is hidden after a successful sign-in.
+  useLayoutEffect(() => {
+    return () => {
+      if (!signedIn.current) return;
+      signedIn.current = false;
+      setLoading(false);
+      setPassword("");
+      setShow(false);
+    };
+  }, []);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -52,6 +67,7 @@ export default function LoginForm() {
       return;
     }
     recordSignIn(result.user);
+    signedIn.current = true;
     router.replace(safeNext());
     router.refresh();
   }
