@@ -17,12 +17,12 @@ import type { DealRecord, DealStage } from "@/types";
 
 const tagTone = { Hot: "hot", Warm: "warm", New: "cold", Cold: "cold" } as const;
 const columnBg: Record<DealStage, string> = {
-  New: "bg-[#1C231F]",
-  Contacted: "bg-[#1C231F]",
-  Qualified: "bg-[#1C231F]",
-  Proposal: "bg-[#1C231F]",
-  Won: "bg-[#0F2318]",
-  Lost: "bg-[#1A201C]",
+  New: "bg-subtle",
+  Contacted: "bg-subtle",
+  Qualified: "bg-subtle",
+  Proposal: "bg-subtle",
+  Won: "bg-primary-soft",
+  Lost: "bg-subtle",
 };
 
 function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: DealStage) => void; onEdit: () => void }) {
@@ -51,7 +51,7 @@ function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: Deal
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="grid h-7 w-7 place-items-center rounded-lg bg-[#171C19] text-slate-600 hover:bg-[#1D2420]"
+        className="grid h-7 w-7 place-items-center rounded-lg bg-muted text-slate-600 hover:bg-line"
       >
         <MoreHorizontal size={16} />
       </button>
@@ -68,23 +68,23 @@ function MoveMenu({ deal, onMove, onEdit }: { deal: DealRecord; onMove: (s: Deal
                 setOpen(false);
                 onMove(s);
               }}
-              className={`block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold ${s === deal.stage ? "bg-[#0F2318] text-primary" : "hover:bg-slate-50"}`}
+              className={`block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold ${s === deal.stage ? "bg-primary-soft text-primary" : "hover:bg-slate-50"}`}
             >
               {s}
               {s === deal.stage ? " · current" : ""}
             </button>
           ))}
           {deal.stage !== "Won" && (
-            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Won"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-[#5EEB9C] hover:bg-slate-50">
+            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Won"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-ok hover:bg-slate-50">
               Mark as won
             </button>
           )}
           {deal.stage !== "Lost" && (
-            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Lost"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-[#FF8F84] hover:bg-slate-50">
+            <button type="button" role="menuitem" onClick={() => { setOpen(false); onMove("Lost"); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold text-hot hover:bg-slate-50">
               Mark as lost…
             </button>
           )}
-          <div className="my-1 h-px bg-[#18201B]" />
+          <div className="my-1 h-px bg-row-line" />
           <button type="button" role="menuitem" onClick={() => { setOpen(false); onEdit(); }} className="block w-full rounded-[9px] px-2.5 py-2 text-left text-[13px] font-semibold hover:bg-slate-50">
             Open deal
           </button>
@@ -224,8 +224,8 @@ export default function PipelineBoard() {
         {[
           { label: "Open pipeline", value: formatCurrency(openValue), cls: "" },
           { label: "Weighted forecast", value: formatCurrency(Math.round(weighted)), cls: "" },
-          { label: "Won this month", value: formatCurrency(wonThisMonth), cls: "text-[#5EEB9C]" },
-          { label: "Overdue to close", value: `${overdue} ${overdue === 1 ? "deal" : "deals"}`, cls: overdue ? "text-[#FF8F84]" : "" },
+          { label: "Won this month", value: formatCurrency(wonThisMonth), cls: "text-ok" },
+          { label: "Overdue to close", value: `${overdue} ${overdue === 1 ? "deal" : "deals"}`, cls: overdue ? "text-hot" : "" },
         ].map((s) => (
           <div key={s.label} className={`${card} flex flex-col gap-1 px-[18px] py-4`}>
             <span className="text-[12.5px] text-slate-500">{s.label}</span>
@@ -266,7 +266,7 @@ export default function PipelineBoard() {
                 </div>
 
                 {column.length === 0 && (
-                  <div className="rounded-xl border border-dashed border-[#25503A] py-6 text-center text-[13px] text-slate-500">{isOver ? "Drop here" : "No deals"}</div>
+                  <div className="rounded-xl border border-dashed border-bar-hover py-6 text-center text-[13px] text-slate-500">{isOver ? "Drop here" : "No deals"}</div>
                 )}
 
                 {column.map((d) => {
@@ -286,7 +286,7 @@ export default function PipelineBoard() {
                         setOverStage(null);
                       }}
                       onClick={() => openDetail(d.id)}
-                      className={`relative flex cursor-pointer flex-col gap-2.5 rounded-xl border border-line bg-surface p-3.5 hover:border-[#2A3A30] ${dragId === d.id ? "opacity-50" : ""} ${movable ? "active:cursor-grabbing" : ""}`}
+                      className={`relative flex cursor-pointer flex-col gap-2.5 rounded-xl border border-line bg-surface p-3.5 hover:border-edge-strong ${dragId === d.id ? "opacity-50" : ""} ${movable ? "active:cursor-grabbing" : ""}`}
                     >
                       <div className="flex justify-between gap-2">
                         <div className="min-w-0">
@@ -301,22 +301,22 @@ export default function PipelineBoard() {
                       </div>
                       {OPEN_STAGES.includes(d.stage) ? (
                         <div className="flex flex-col gap-1.5">
-                          <div className="h-[5px] rounded-full bg-[#1A211D]">
+                          <div className="h-[5px] rounded-full bg-subtle">
                             <div className="h-[5px] rounded-full bg-primary" style={{ width: `${d.probability}%` }} />
                           </div>
                           <div className="flex justify-between text-[11.5px] font-semibold">
                             <span className="text-slate-600">{d.probability}% likely</span>
-                            <span className={late > 0 ? "text-[#FF8F84]" : "text-slate-600"}>{late > 0 ? `Overdue · ${formatDate(d.closeDate)}` : `Close ${formatDate(d.closeDate)}`}</span>
+                            <span className={late > 0 ? "text-hot" : "text-slate-600"}>{late > 0 ? `Overdue · ${formatDate(d.closeDate)}` : `Close ${formatDate(d.closeDate)}`}</span>
                           </div>
                         </div>
                       ) : (
-                        <div className={`text-xs font-semibold ${d.stage === "Won" ? "text-[#5EEB9C]" : "text-slate-600"}`}>
+                        <div className={`text-xs font-semibold ${d.stage === "Won" ? "text-ok" : "text-slate-600"}`}>
                           {d.stage} {formatDate(d.closedAt ?? d.closeDate)}
                           {d.stage === "Lost" && d.lostReason ? ` · ${d.lostReason}` : ""}
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-xs text-slate-600">
-                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#14301F] text-[#6EEBA3] ring-1 ring-[#1F4A31] text-[10px] font-extrabold">{initialsForOwner(d.owner)}</span>
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-avatar text-avatar-text ring-1 ring-ok-border text-[10px] font-extrabold">{initialsForOwner(d.owner)}</span>
                         <span className="truncate">{d.next || d.owner}</span>
                       </div>
                     </article>

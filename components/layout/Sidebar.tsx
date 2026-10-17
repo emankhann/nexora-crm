@@ -85,7 +85,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
         className={`flex min-h-11 items-center justify-between rounded-xl px-3 text-sm font-medium transition-colors ${
-          active ? "bg-primary font-semibold text-ink shadow-[0_8px_24px_rgba(46,224,127,0.22)]" : "text-[#9AA69E] hover:bg-white/5 hover:text-white"
+          active ? "bg-primary font-semibold text-ink shadow-[0_8px_24px_rgba(46,224,127,0.22)]" : "text-slate-600 hover:bg-white/5 hover:text-white"
         }`}
       >
         <span className="flex items-center gap-4">
@@ -131,7 +131,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
       <div ref={menuRef} className="relative mt-auto shrink-0 border-t border-white/10 bg-white/5 px-4 py-4">
         {menuOpen && user && (
           <div role="menu" aria-label="Account" className="absolute inset-x-4 bottom-[88px] z-10 rounded-[14px] bg-surface p-1.5 text-navy shadow-[0_18px_40px_rgba(2,8,23,0.35)]">
-            <div className="mb-1 border-b border-[#18201B] px-3 py-2.5">
+            <div className="mb-1 border-b border-row-line px-3 py-2.5">
               <div className="text-[13px] font-bold">{user.name}</div>
               <div className="text-xs text-slate-500">{user.email}</div>
             </div>
@@ -153,7 +153,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
               type="button"
               role="menuitem"
               onClick={handleSignOut}
-              className="flex w-full items-center gap-2.5 rounded-[10px] bg-[#1F1111] px-3 py-2.5 text-left text-[13.5px] font-bold text-[#FF8F84] hover:bg-[#2A1312]"
+              className="flex w-full items-center gap-2.5 rounded-[10px] bg-hot-soft px-3 py-2.5 text-left text-[13.5px] font-bold text-hot hover:bg-hot-bg"
             >
               <LogOut size={15} /> Sign out
             </button>
@@ -164,7 +164,7 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
           aria-haspopup="menu"
           aria-expanded={menuOpen}
           onClick={() => setMenuOpen((v) => !v)}
-          className="flex w-full items-center gap-4 rounded-2xl border border-line bg-[#0E1210] px-3 py-3 text-left text-white hover:bg-[#151B17]"
+          className="flex w-full items-center gap-4 rounded-2xl border border-line bg-surface px-3 py-3 text-left text-white hover:bg-hover"
         >
           <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-ink">
             {user?.initials ?? ""}

@@ -39,7 +39,7 @@ export function LostReasonDialog({ open, onClose, deal }: { open: boolean; onClo
           </button>
           <button
             type="button"
-            className="inline-flex h-10 items-center rounded-xl bg-[#C8322A] px-[18px] text-[13.5px] font-bold text-white"
+            className="inline-flex h-10 items-center rounded-xl bg-danger px-[18px] text-[13.5px] font-bold text-white"
             onClick={() => {
               if (!user) return;
               moveDeal(deal.id, "Lost", user, reason === "Other" ? other.trim() || "Other" : reason);
@@ -54,7 +54,7 @@ export function LostReasonDialog({ open, onClose, deal }: { open: boolean; onClo
     >
       <div role="radiogroup" aria-label="Reason" className="flex flex-col gap-1.5">
         {LOST_REASONS.map((r) => (
-          <label key={r} className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm font-semibold ${reason === r ? "border-primary bg-[#0F2318]" : "border-line"}`}>
+          <label key={r} className={`flex cursor-pointer items-center gap-2.5 rounded-xl border px-3 py-2.5 text-sm font-semibold ${reason === r ? "border-primary bg-primary-soft" : "border-line"}`}>
             <input type="radio" name="lost" checked={reason === r} onChange={() => setReason(r)} className="accent-primary" />
             {r}
           </label>
@@ -231,12 +231,12 @@ export default function DealForm({
                   <div key={s} className="flex flex-1 items-center gap-1.5 last:flex-none">
                     <span
                       className={`grid h-[26px] w-[26px] shrink-0 place-items-center rounded-full text-[11px] font-extrabold ${
-                        s === "Lost" ? "bg-[#2A1312] text-[#FF8F84]" : done ? "bg-primary text-ink" : current ? "border-2 border-primary bg-surface text-primary" : "border border-[#2A3A30] bg-[#171C19] text-slate-500"
+                        s === "Lost" ? "bg-hot-bg text-hot" : done ? "bg-primary text-ink" : current ? "border-2 border-primary bg-surface text-primary" : "border border-edge-strong bg-muted text-slate-500"
                       }`}
                     >
                       {done ? <Check size={13} strokeWidth={3} /> : i + 1}
                     </span>
-                    {i < arr.length - 1 && <span className={`h-[3px] flex-1 rounded-full ${i < idx ? "bg-primary" : "bg-[#1D2420]"}`} />}
+                    {i < arr.length - 1 && <span className={`h-[3px] flex-1 rounded-full ${i < idx ? "bg-primary" : "bg-line"}`} />}
                   </div>
                 );
               })}
@@ -248,7 +248,7 @@ export default function DealForm({
               <span>Proposal</span>
               <span>{deal.stage === "Lost" ? "Lost" : "Won"}</span>
             </div>
-            {deal.stage === "Lost" && deal.lostReason && <div className="text-xs font-semibold text-[#FF8F84]">Lost: {deal.lostReason}</div>}
+            {deal.stage === "Lost" && deal.lostReason && <div className="text-xs font-semibold text-hot">Lost: {deal.lostReason}</div>}
           </div>
         )}
 
@@ -303,7 +303,7 @@ export default function DealForm({
           <div className="mt-5 grid grid-cols-2 gap-2.5">
             <button
               type="button"
-              className="inline-flex h-10 items-center justify-center rounded-xl border border-[#1D4A31] bg-[#0F2318] text-[13.5px] font-bold text-[#5EEB9C]"
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-ok-border bg-primary-soft text-[13.5px] font-bold text-ok"
               onClick={() => {
                 moveDeal(deal.id, "Won", user);
                 toast(`${deal.title} won · ${formatCurrency(deal.value)}`);
@@ -312,7 +312,7 @@ export default function DealForm({
             >
               Mark as won
             </button>
-            <button type="button" className="inline-flex h-10 items-center justify-center rounded-xl border border-[#4A1F1C] bg-surface text-[13.5px] font-bold text-[#FF8F84]" onClick={() => setLostOpen(true)}>
+            <button type="button" className="inline-flex h-10 items-center justify-center rounded-xl border border-hot-border bg-surface text-[13.5px] font-bold text-hot" onClick={() => setLostOpen(true)}>
               Mark as lost
             </button>
           </div>
@@ -354,7 +354,7 @@ export default function DealForm({
               </button>
               <button
                 type="button"
-                className="inline-flex h-10 items-center rounded-xl bg-[#C8322A] px-[18px] text-[13.5px] font-bold text-white"
+                className="inline-flex h-10 items-center rounded-xl bg-danger px-[18px] text-[13.5px] font-bold text-white"
                 onClick={() => {
                   deleteDeal(deal.id, user);
                   toast(`${deal.title} deleted`);

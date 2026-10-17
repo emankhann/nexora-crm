@@ -25,6 +25,57 @@
   --color-slate-800: #DCE5DE;
   --color-slate-900: #F3F8F4;
 
+  /* Neutral surfaces and lines */
+  --color-hover: #151B17;          /* row and button hover */
+  --color-muted: #171C19;          /* quiet panels inside cards */
+  --color-row-line: #18201B;       /* dividers between rows, skeletons */
+  --color-subtle: #1A211D;         /* chips, kbd keys, progress-bar tracks */
+  --color-subtle-hover: #222A25;
+  --color-edge: #26302A;           /* input borders, stronger dividers */
+  --color-edge-strong: #2A3A30;    /* hover borders, switches */
+  --color-faint: #3A463E;          /* disabled icons and radio rings */
+
+  /* Brand green */
+  --color-primary-hover: #5BEA9C;
+  --color-primary-deep: #1BA45C;   /* bottom of the glowing chart bar */
+  --color-primary-disabled: #1F5C3B;
+  --color-primary-soft: #0F2318;   /* selected rows, active filters */
+  --color-bar: #1E3A2A;            /* chart bars for past months */
+  --color-bar-hover: #25503A;
+  --color-won: #A6F4C5;            /* won stage in funnels */
+  --color-avatar: #14301F;
+  --color-avatar-text: #6EEBA3;
+
+  /* Status: hot / error */
+  --color-hot: #FF8F84;
+  --color-hot-bg: #2A1312;
+  --color-hot-soft: #1F1111;
+  --color-hot-border: #4A1F1C;
+  --color-error: #F2554A;          /* invalid inputs, unread badge */
+  --color-danger: #C8322A;         /* delete buttons */
+  --color-danger-hover: #A92A22;
+
+  /* Status: warm */
+  --color-warm: #F6C866;
+  --color-warm-bg: #261E0C;
+  --color-warm-border: #4A3A15;
+  --color-warm-strong: #8A6A1F;
+  --color-warm-bar: #F5A524;
+
+  /* Status: cold (kept blue so it stands apart from the green brand) */
+  --color-cold: #86C5F2;
+  --color-cold-bg: #0F1C27;
+  --color-cold-border: #1E3346;
+
+  /* Status: ok / success */
+  --color-ok: #5EEB9C;
+  --color-ok-bg: #0F2318;
+  --color-ok-border: #1D4A31;
+
+  /* Meetings */
+  --color-meeting: #D2A8FF;
+  --color-meeting-bg: #221430;
+
   --font-sans: var(--font-jakarta), system-ui, sans-serif;
 }
 

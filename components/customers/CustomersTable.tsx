@@ -91,7 +91,7 @@ export default function CustomersTable() {
         {stats.map((s) => (
           <div key={s.label} className={`${card} flex flex-col gap-2 px-5 py-[18px]`}>
             <div className="text-[13px] text-slate-500">{s.label}</div>
-            <div className={`text-3xl font-extrabold tracking-tight ${s.danger ? "text-[#FF8F84]" : ""}`}>{s.value}</div>
+            <div className={`text-3xl font-extrabold tracking-tight ${s.danger ? "text-hot" : ""}`}>{s.value}</div>
             <div className="text-xs text-slate-500">{s.note}</div>
           </div>
         ))}
@@ -139,7 +139,7 @@ export default function CustomersTable() {
           <div className="border-t border-line">
             <EmptyState
               icon={
-                <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#0F2318] text-primary">
+                <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-primary-soft text-primary">
                   <Building2 size={28} />
                 </span>
               }
@@ -165,10 +165,10 @@ export default function CustomersTable() {
                   <div
                     key={c.id}
                     onClick={() => router.push(`/customers/${c.id}`)}
-                    className={`${GRID} cursor-pointer border-t border-[#18201B] bg-surface py-3 text-[13.5px] hover:bg-[#151B17]`}
+                    className={`${GRID} cursor-pointer border-t border-row-line bg-surface py-3 text-[13.5px] hover:bg-hover`}
                   >
                     <Link href={`/customers/${c.id}`} onClick={(e) => e.stopPropagation()} className="flex min-w-0 items-center gap-3">
-                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-[#14301F] text-[#6EEBA3] ring-1 ring-[#1F4A31] text-xs font-bold">{c.initials}</div>
+                      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-avatar text-avatar-text ring-1 ring-ok-border text-xs font-bold">{c.initials}</div>
                       <span className="truncate font-bold hover:text-primary">{c.name}</span>
                     </Link>
                     <span className="truncate">{c.contacts[0]?.name ?? "–"}</span>
@@ -187,7 +187,7 @@ export default function CustomersTable() {
             <div className="flex flex-col gap-2.5 border-t border-line bg-canvas p-3 md:hidden">
               {filtered.map((c) => (
                 <Link key={c.id} href={`/customers/${c.id}`} className="flex items-center gap-3 rounded-2xl border border-line bg-surface p-3.5">
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] bg-[#14301F] text-[#6EEBA3] ring-1 ring-[#1F4A31] text-xs font-bold">{c.initials}</div>
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-[10px] bg-avatar text-avatar-text ring-1 ring-ok-border text-xs font-bold">{c.initials}</div>
                   <span className="min-w-0 flex-1">
                     <b className="block truncate text-[15px]">{c.name}</b>
                     <span className="text-[12.5px] text-slate-500">
@@ -201,7 +201,7 @@ export default function CustomersTable() {
           </>
         )}
 
-        <div className="border-t border-[#18201B] px-5 py-4 text-[13px] text-slate-500">
+        <div className="border-t border-row-line px-5 py-4 text-[13px] text-slate-500">
           Showing {filtered.length} of {customers.length} customers
         </div>
       </div>

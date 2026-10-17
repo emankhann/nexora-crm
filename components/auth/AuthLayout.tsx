@@ -22,19 +22,19 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
             <br />
             One place.
           </h1>
-          <p className="text-[17px] leading-relaxed text-[#A2ADA5]">
+          <p className="text-[17px] leading-relaxed text-slate-600">
             Nexora helps your sales team capture leads, score them, turn them into customers and close deals, with a clear record of
             everything that happens.
           </p>
           <div className="flex flex-col gap-[18px]">
             {features.map(({ icon: Icon, title, text }) => (
               <div key={title} className="flex items-start gap-3.5">
-                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white/10 text-primary">
+                <div className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-white/10 text-accent">
                   <Icon size={18} strokeWidth={1.8} />
                 </div>
                 <div>
                   <div className="text-[15px] font-bold">{title}</div>
-                  <div className="mt-0.5 text-sm text-[#87948B]">{text}</div>
+                  <div className="mt-0.5 text-sm text-slate-500">{text}</div>
                 </div>
               </div>
             ))}

@@ -17,7 +17,7 @@ function Highlight({ text, q }: { text: string; q: string }) {
   return (
     <>
       {text.slice(0, i)}
-      <mark className="rounded-[3px] bg-[#261E0C] px-px text-inherit">{text.slice(i, i + q.length)}</mark>
+      <mark className="rounded-[3px] bg-warm-bg px-px text-inherit">{text.slice(i, i + q.length)}</mark>
       {text.slice(i + q.length)}
     </>
   );
@@ -90,11 +90,11 @@ export default function CommandSearch({ open, onClose }: { open: boolean; onClos
         close();
       }}
       onClick={(e) => e.target === ref.current && close()}
-      className="mx-auto mb-auto mt-[12vh] w-[calc(100%-32px)] max-w-[640px] overflow-hidden rounded-[20px] bg-surface p-0 text-navy shadow-[0_30px_70px_rgba(2,8,23,0.35)] backdrop:bg-[#000000]/50"
+      className="mx-auto mb-auto mt-[12vh] w-[calc(100%-32px)] max-w-[640px] overflow-hidden rounded-[20px] bg-surface p-0 text-navy shadow-[0_30px_70px_rgba(2,8,23,0.35)] backdrop:bg-black/50"
     >
       {open && (
         <div>
-          <div className="flex items-center gap-3 border-b border-[#18201B] px-[18px] py-4">
+          <div className="flex items-center gap-3 border-b border-row-line px-[18px] py-4">
             <Search size={20} className="text-slate-500" aria-hidden />
             <input
               autoFocus
@@ -122,7 +122,7 @@ export default function CommandSearch({ open, onClose }: { open: boolean; onClos
               placeholder="Search leads, customers, deals and tasks"
               className="min-w-0 flex-1 bg-transparent text-[17px] font-semibold outline-none placeholder:font-normal placeholder:text-slate-500"
             />
-            <kbd className="rounded-md bg-[#1A201C] px-[7px] py-[3px] text-[11px] font-bold text-slate-700">Esc</kbd>
+            <kbd className="rounded-md bg-subtle px-[7px] py-[3px] text-[11px] font-bold text-slate-700">Esc</kbd>
           </div>
           <div id="search-results" role="listbox" className="max-h-[min(460px,60dvh)] overflow-y-auto px-2 pb-2 pt-1.5">
             {results.length === 0 && <div className="px-4 py-10 text-center text-sm text-slate-500">Nothing matches “{q}”.</div>}
@@ -140,7 +140,7 @@ export default function CommandSearch({ open, onClose }: { open: boolean; onClos
                     onMouseEnter={() => setActive(i)}
                     onClick={() => go(r)}
                     className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-left text-[13.5px] ${
-                      i === active ? "bg-[#0F2318] outline outline-2 -outline-offset-2 outline-primary" : ""
+                      i === active ? "bg-primary-soft outline outline-2 -outline-offset-2 outline-primary" : ""
                     }`}
                   >
                     <span className="min-w-0 flex-1">
@@ -149,13 +149,13 @@ export default function CommandSearch({ open, onClose }: { open: boolean; onClos
                       </b>
                       <span className="block truncate text-xs text-slate-500">{r.sub}</span>
                     </span>
-                    <span className="rounded-full border border-[#26302A] bg-[#171C19] px-2 py-[3px] text-[11px] font-bold text-slate-600">{r.badge}</span>
+                    <span className="rounded-full border border-edge bg-muted px-2 py-[3px] text-[11px] font-bold text-slate-600">{r.badge}</span>
                   </button>
                 </div>
               );
             })}
           </div>
-          <div className="hidden gap-4 border-t border-[#18201B] bg-[#151B17] px-[18px] py-2.5 text-xs text-slate-500 sm:flex">
+          <div className="hidden gap-4 border-t border-row-line bg-hover px-[18px] py-2.5 text-xs text-slate-500 sm:flex">
             <span>↑ ↓ to move</span>
             <span>Enter to open</span>
             <span>Esc to close</span>

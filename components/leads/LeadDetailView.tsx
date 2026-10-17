@@ -53,7 +53,7 @@ export default function LeadDetailView({ id }: { id: string }) {
     return (
       <EmptyState
         icon={
-          <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-[#261E0C] text-[#F6C866]">
+          <span className="grid h-16 w-16 place-items-center rounded-[20px] bg-warm-bg text-warm">
             <Lock size={28} />
           </span>
         }
@@ -166,7 +166,7 @@ export default function LeadDetailView({ id }: { id: string }) {
                   <span>{f.label}</span>
                   <span className="text-primary">+{f.points}</span>
                 </div>
-                <div className="h-1.5 rounded-full bg-[#1A211D]">
+                <div className="h-1.5 rounded-full bg-subtle">
                   <div className="h-1.5 rounded-full bg-primary" style={{ width: `${(f.points / maxPoints) * 100}%` }} />
                 </div>
               </div>
@@ -212,13 +212,13 @@ export default function LeadDetailView({ id }: { id: string }) {
             </div>
             {deals.length === 0 && <div className="text-sm text-slate-500">No deal linked to this lead yet. Converting can create one.</div>}
             {deals.map((d) => (
-              <Link key={d.id} href={`/pipeline?deal=${d.id}`} className="flex flex-col gap-2.5 rounded-xl bg-[#171C19] p-4 hover:bg-[#1A211D]">
+              <Link key={d.id} href={`/pipeline?deal=${d.id}`} className="flex flex-col gap-2.5 rounded-xl bg-muted p-4 hover:bg-subtle">
                 <div className="text-[13.5px] font-bold">{d.title}</div>
                 <div className="flex items-center justify-between">
                   <span className="text-2xl font-extrabold tracking-tight">{formatCurrency(d.value)}</span>
                   <Badge tone={d.stage === "Won" ? "ok" : d.stage === "Lost" ? "neutral" : "cold"}>{d.stage}</Badge>
                 </div>
-                <div className="h-1.5 rounded-full bg-[#26302A]">
+                <div className="h-1.5 rounded-full bg-edge">
                   <div className="h-1.5 rounded-full bg-primary" style={{ width: `${d.probability}%` }} />
                 </div>
                 <div className="text-xs text-slate-500">
@@ -251,7 +251,7 @@ export default function LeadDetailView({ id }: { id: string }) {
                   />
                   <span>
                     <span className="block text-[13.5px] font-semibold">{t.title}</span>
-                    <span className={`mt-0.5 block text-xs ${overdue ? "font-semibold text-[#FF8F84]" : "text-slate-500"}`}>
+                    <span className={`mt-0.5 block text-xs ${overdue ? "font-semibold text-hot" : "text-slate-500"}`}>
                       {overdue ? "Overdue · " : ""}
                       {formatDue(t.dueAt)} · {t.owner}
                     </span>
@@ -262,7 +262,7 @@ export default function LeadDetailView({ id }: { id: string }) {
           </div>
 
           {can(user, "delete") && (
-            <button type="button" onClick={() => open({ kind: "delete" })} className="self-start text-[13px] font-bold text-[#FF8F84] hover:underline">
+            <button type="button" onClick={() => open({ kind: "delete" })} className="self-start text-[13px] font-bold text-hot hover:underline">
               Delete this lead
             </button>
           )}

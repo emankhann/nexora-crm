@@ -21,7 +21,7 @@ export default function StageStepper({ current, dates }: { current: number; date
                     ? "bg-primary text-ink"
                     : isCurrent
                     ? "border-2 border-primary bg-surface text-primary"
-                    : "border-2 border-[#26302A] bg-surface text-slate-500"
+                    : "border-2 border-edge bg-surface text-slate-500"
                 }`}
               >
                 {done ? <Check size={14} strokeWidth={3} /> : i + 1}

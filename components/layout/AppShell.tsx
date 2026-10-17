@@ -78,7 +78,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               aria-label="Close menu"
-              className="absolute inset-0 bg-[#000000]/55"
+              className="absolute inset-0 bg-black/55"
               onClick={() => setNavOpen(false)}
             />
             <div className="absolute inset-y-0 left-0 w-[300px] max-w-[85vw] shadow-[20px_0_50px_rgba(2,8,23,0.35)]">
@@ -119,11 +119,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex h-10 w-[260px] items-center gap-2 rounded-xl border border-line bg-surface px-3 text-[13px] text-slate-500 hover:border-[#2A3A30]"
+              className="flex h-10 w-[260px] items-center gap-2 rounded-xl border border-line bg-surface px-3 text-[13px] text-slate-500 hover:border-edge-strong"
             >
               <Search size={15} aria-hidden />
               Search or jump to
-              <kbd className="ml-auto rounded-md bg-[#1A201C] px-[7px] py-[3px] text-[11px] font-bold text-slate-700">Ctrl K</kbd>
+              <kbd className="ml-auto rounded-md bg-subtle px-[7px] py-[3px] text-[11px] font-bold text-slate-700">Ctrl K</kbd>
             </button>
             <NotificationsBell />
           </div>
