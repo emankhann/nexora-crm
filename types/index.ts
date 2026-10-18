@@ -61,7 +61,9 @@ export type LeadRecord = {
   factors: ScoreFactor[];
   /** true when the score is worked out by Nexora's rules (new leads). */
   autoScore: boolean;
-  /** Short owner name such as "Huma K.", or "Unassigned". */
+  /** Database id of the owner, or "" when nobody owns it. Use this for comparisons. */
+  ownerId: string;
+  /** Owner's short name for display, such as "Huma K.", or "Unassigned". Never compare by it: two people can share it. */
   owner: string;
   notes: string;
   createdAt: string;
@@ -83,7 +85,10 @@ export type ActivityRecord = {
   customerId?: string;
   dealId?: string;
   taskId?: string;
-  /** For "assigned" events: the short name of the person who received it. */
+  /** Id of the person who did it ("" for the system). */
+  byId: string;
+  /** For "assigned" events: the id and short name of the person who received it. */
+  assigneeId?: string;
   assignee?: string;
 };
 
@@ -108,6 +113,9 @@ export type CustomerRecord = {
   /** Open deals from before Nexora (seed data). New deals are counted live. */
   legacyOpenDeals: number;
   health: Health;
+  /** Database id of the owner, or "" when nobody owns it. */
+  ownerId: string;
+  /** Owner's short name, for display only. */
   owner: string;
   since: string;
   leadId: string | null;
@@ -122,6 +130,9 @@ export type DealRecord = {
   stage: DealStage;
   probability: number;
   closeDate: string;
+  /** Database id of the owner, or "" when nobody owns it. */
+  ownerId: string;
+  /** Owner's short name, for display only. */
   owner: string;
   next: string;
   leadId: string | null;
@@ -151,6 +162,9 @@ export type TaskRecord = {
   dueAt: string;
   reminder: ReminderOption;
   remindByEmail: boolean;
+  /** Database id of the assignee, or "" when nobody is assigned. */
+  ownerId: string;
+  /** Assignee's short name, for display only. */
   owner: string;
   leadId: string | null;
   customerId: string | null;
@@ -161,6 +175,9 @@ export type TaskRecord = {
   done: boolean;
   doneAt: string | null;
   createdAt: string;
+  /** Id of the person who created it ("" if unknown). Use this for comparisons. */
+  createdById: string;
+  /** Creator's short name, for display only. */
   createdBy: string;
   followUps: FollowUp[];
 };

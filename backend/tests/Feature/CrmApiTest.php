@@ -64,6 +64,33 @@ class CrmApiTest extends TestCase
         $this->assertSame([$sana->id], array_values(array_unique(array_column($leads, 'ownerId'))));
     }
 
+    public function test_people_with_the_same_short_name_are_kept_apart_by_id(): void
+    {
+        $sana = $this->user('sana@nexora.example');
+        $twin = User::factory()->create(['name' => 'Sana Mughal', 'email' => 'twin@nexora.example', 'role' => $sana->role, 'status' => $sana->status]);
+        $this->assertSame($sana->shortName(), $twin->shortName());
+
+        $lead = $this->actingAs($this->user('huma@nexora.example'))->postJson('/api/leads', [
+            'name' => 'Twin Check',
+            'email' => 'twin-check@example.com',
+            'company' => 'Twin Ltd',
+            'source' => 'website',
+            'status' => 'new',
+            'owner_id' => $twin->id,
+        ])->assertCreated()->json('data');
+        $this->assertSame($twin->id, $lead['ownerId']);
+
+        $crm = $this->actingAs($this->user('huma@nexora.example'))->getJson('/api/crm')->assertOk();
+        // The frontend compares people by these ids, never by short name.
+        $this->assertArrayHasKey('createdById', $crm->json('tasks.0'));
+        $this->assertArrayHasKey('byId', $crm->json('activities.0'));
+
+        $this->actingAs($sana);
+        $this->assertNotContains($lead['id'], array_column($this->getJson('/api/crm')->json('leads'), 'id'));
+        $this->actingAs($twin);
+        $this->assertContains($lead['id'], array_column($this->getJson('/api/crm')->json('leads'), 'id'));
+    }
+
     public function test_admins_receive_every_lead(): void
     {
         $leads = $this->actingAs($this->user('huma@nexora.example'))->getJson('/api/crm')->json('leads');

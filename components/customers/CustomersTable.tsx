@@ -12,6 +12,7 @@ import { openDealsFor, useCrm } from "@/lib/crm-store";
 import { downloadCsv } from "@/lib/csv";
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
+import { ANY_OWNER, getOwnerOptions } from "@/lib/users";
 import { btnOutline, btnPrimary, card, searchCls, selectCls } from "@/lib/ui";
 import { daysBetween, formatCurrency, formatDate } from "@/lib/utils";
 
@@ -29,13 +30,14 @@ export default function CustomersTable() {
   const [query, setQuery] = useState("");
   const [industry, setIndustry] = useState("All");
   const [health, setHealth] = useState("Any");
-  const [owner, setOwner] = useState("Anyone");
+  const [owner, setOwner] = useState(ANY_OWNER);
   const [formOpen, setFormOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
 
-  const customers = useMemo(() => (crm && user ? crm.customers.filter((c) => canSee(user, c.owner)) : []), [crm, user]);
+  const customers = useMemo(() => (crm && user ? crm.customers.filter((c) => canSee(user, c.ownerId)) : []), [crm, user]);
   const industries = useMemo(() => Array.from(new Set(customers.map((c) => c.industry))).sort(), [customers]);
-  const owners = useMemo(() => Array.from(new Set(customers.map((c) => c.owner))), [customers]);
+  // Only people who own at least one of these customers, in team order.
+  const owners = useMemo(() => getOwnerOptions().filter((o) => customers.some((c) => c.ownerId === o.value)), [customers]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -44,7 +46,7 @@ export default function CustomersTable() {
         (!q || [c.name, ...c.contacts.map((p) => p.name)].some((v) => v.toLowerCase().includes(q))) &&
         (industry === "All" || c.industry === industry) &&
         (health === "Any" || c.health === health) &&
-        (owner === "Anyone" || c.owner === owner)
+        (owner === ANY_OWNER || c.ownerId === owner)
     );
   }, [customers, query, industry, health, owner]);
 
@@ -107,7 +109,7 @@ export default function CustomersTable() {
             onChange={(e) => setQuery(e.target.value)}
             className={`${searchCls} basis-full sm:basis-auto`}
           />
-          <label className="flex items-center gap-2 text-[13px] text-slate-500">
+          <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
             Industry
             <select className={selectCls} value={industry} onChange={(e) => setIndustry(e.target.value)}>
               {["All", ...industries].map((o) => (
@@ -115,7 +117,7 @@ export default function CustomersTable() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2 text-[13px] text-slate-500">
+          <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
             Health
             <select className={selectCls} value={health} onChange={(e) => setHealth(e.target.value)}>
               {["Any", "Healthy", "Watch", "At risk"].map((o) => (
@@ -124,11 +126,14 @@ export default function CustomersTable() {
             </select>
           </label>
           {can(user, "viewAll") && (
-            <label className="flex items-center gap-2 text-[13px] text-slate-500">
+            <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
               Owner
               <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-                {["Anyone", ...owners].map((o) => (
-                  <option key={o}>{o}</option>
+                <option value={ANY_OWNER}>Anyone</option>
+                {owners.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             </label>

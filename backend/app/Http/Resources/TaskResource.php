@@ -24,6 +24,7 @@ class TaskResource extends JsonResource
             'assignedTo' => $this->assigned_to,
             'ownerName' => $this->assignee?->shortName(),
             'createdBy' => $this->creator?->shortName(),
+            'createdById' => $this->created_by,
             'leadId' => $this->lead_id,
             'customerId' => $this->customer_id,
             'dealId' => $this->deal_id,

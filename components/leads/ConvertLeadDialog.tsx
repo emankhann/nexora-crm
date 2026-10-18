@@ -11,7 +11,7 @@ import { INDUSTRIES, OPEN_STAGES, convertLead, useCrm } from "@/lib/crm-store";
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
-import { getOwnerOptions } from "@/lib/users";
+import { getOwnerOptions, NO_OWNER, ownerOption } from "@/lib/users";
 import { daysFromNow, fromInputs, parseMoney, toDateInput } from "@/lib/utils";
 import type { DealStage, LeadRecord } from "@/types";
 
@@ -29,7 +29,7 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
   const [mode, setMode] = useState<"new" | "existing">(match ? "existing" : "new");
   const [existingId, setExistingId] = useState(match?.id ?? "");
   const [industry, setIndustry] = useState(INDUSTRIES[0]);
-  const [owner, setOwner] = useState(lead.owner === "Unassigned" ? (user?.short ?? "Unassigned") : lead.owner);
+  const [ownerId, setOwnerId] = useState(lead.ownerId === NO_OWNER ? (user?.id ?? NO_OWNER) : lead.ownerId);
   const [createDeal, setCreateDeal] = useState(!existingDeal);
   const [dealTitle, setDealTitle] = useState("");
   const [dealValue, setDealValue] = useState("");
@@ -60,7 +60,7 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
         mode,
         existingCustomerId: existingId,
         industry,
-        owner,
+        ownerId,
         createDeal,
         deal: { title: dealTitle.trim(), value, stage, closeDate: fromInputs(closeDate, "17:00") },
       });
@@ -139,9 +139,9 @@ export default function ConvertLeadDialog({ open, onClose, lead }: { open: boole
             )}
             <SelectField
               label="Account owner"
-              value={owner}
-              onChange={(e) => setOwner(e.target.value)}
-              options={canPickOwner ? getOwnerOptions().filter((o) => o !== "Unassigned") : [owner]}
+              value={ownerId}
+              onChange={(e) => setOwnerId(e.target.value)}
+              options={canPickOwner ? getOwnerOptions({ unassigned: false }) : [ownerOption(ownerId)]}
               disabled={!canPickOwner}
             />
           </div>

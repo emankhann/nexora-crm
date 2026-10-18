@@ -23,8 +23,8 @@ export default function ReportsView() {
   const [range, setRange] = useState(12);
   if (!crm || !user) return null;
 
-  const leads = crm.leads.filter((l) => canSee(user, l.owner));
-  const deals = crm.deals.filter((d) => canSee(user, d.owner));
+  const leads = crm.leads.filter((l) => canSee(user, l.ownerId));
+  const deals = crm.deals.filter((d) => canSee(user, d.ownerId));
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
   const won = deals.filter((d) => d.stage === "Won");

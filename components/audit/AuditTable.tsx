@@ -52,13 +52,13 @@ export default function AuditTable({ events }: { events: AuditEvent[] }) {
           onChange={(event) => setQuery(event.target.value)}
           className="h-10 min-w-0 flex-1 basis-full rounded-xl sm:min-w-[260px] sm:basis-auto border border-transparent bg-muted px-3.5 text-[13.5px] outline-none placeholder:text-slate-500 focus:border-accent focus:bg-surface"
         />
-        <label className="flex items-center gap-2 text-[13px] text-slate-500">
+        <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
           User
           <select className={selectCls} value={user} onChange={(event) => setUser(event.target.value)}>
             {["Anyone", ...users].map((option) => <option key={option}>{option}</option>)}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-[13px] text-slate-500">
+        <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
           Action
           <select className={selectCls} value={action} onChange={(event) => setAction(event.target.value)}>
             {["Any", ...actions].map((option) => <option key={option}>{option}</option>)}

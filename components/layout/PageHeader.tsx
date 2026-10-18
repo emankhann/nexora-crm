@@ -27,7 +27,7 @@ export default function PageHeader({
           <p className="mt-1.5 text-sm text-slate-500">{supportingText}</p>
         ) : null}
       </div>
-      {children ? <div className="flex flex-wrap items-center gap-2.5">{children}</div> : action ? <div>{action}</div> : null}
+      {children ? <div className="flex min-w-0 max-w-full flex-wrap items-center gap-2.5">{children}</div> : action ? <div>{action}</div> : null}
     </header>
   );
 }

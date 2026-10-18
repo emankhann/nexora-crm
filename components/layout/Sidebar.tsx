@@ -72,8 +72,8 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
   }, [menuOpen]);
 
   const counts = {
-    leads: crm && user ? crm.leads.filter((l) => l.status !== "Converted" && canSee(user, l.owner)).length : undefined,
-    tasks: crm && user ? crm.tasks.filter((t) => !t.done && canSee(user, t.owner)).length : undefined,
+    leads: crm && user ? crm.leads.filter((l) => l.status !== "Converted" && canSee(user, l.ownerId)).length : undefined,
+    tasks: crm && user ? crm.tasks.filter((t) => !t.done && canSee(user, t.ownerId)).length : undefined,
   };
 
   async function handleSignOut() {

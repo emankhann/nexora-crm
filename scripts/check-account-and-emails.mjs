@@ -195,11 +195,14 @@ await check("A task whose reminder time has come sends one reminder email", asyn
   });
   assert(task.status === 201, `creating the task returned ${task.status}`);
   const line = `Email link for ${me.email} (Task reminder): ${BASE}/tasks?open=${task.json.data.id}`;
+  // Count only what this run adds: the log outlives `migrate:fresh`, which reuses task ids,
+  // so an older run may already have logged a reminder for a task with this same id.
   const count = () => readFileSync(LOG, "utf8").split(line).length - 1;
+  const before = count();
   execFileSync("php", ["artisan", "nexora:send-task-reminders"], { cwd: BACKEND, stdio: "pipe" });
-  assert(count() === 1, `expected one reminder email for the task, found ${count()}`);
+  assert(count() - before === 1, `expected one reminder email for the task, found ${count() - before}`);
   execFileSync("php", ["artisan", "nexora:send-task-reminders"], { cwd: BACKEND, stdio: "pipe" });
-  assert(count() === 1, "the reminder was sent twice");
+  assert(count() - before === 1, "the reminder was sent twice");
 });
 
 await browser.close();

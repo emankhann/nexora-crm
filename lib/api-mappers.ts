@@ -118,6 +118,7 @@ export type ApiTask = {
   assignedTo: number | null;
   ownerName: string | null;
   createdBy: string | null;
+  createdById: number | null;
   leadId: number | null;
   customerId: number | null;
   dealId: number | null;
@@ -136,6 +137,7 @@ export type ApiActivity = {
   title: string;
   body: string;
   by: string;
+  byId: number | null;
   leadId: number | null;
   customerId: number | null;
   dealId: number | null;
@@ -211,6 +213,8 @@ export const CODES = {
 const str = (id: number | null | undefined): string | null => (id === null || id === undefined ? null : String(id));
 const opt = (id: number | null | undefined): string | undefined => (id === null || id === undefined ? undefined : String(id));
 const OWNERLESS = "Unassigned";
+/** Owner id as used on records: the user id as a string, or "" for nobody. */
+const ownerKey = (id: number | null | undefined): string => (id === null || id === undefined ? "" : String(id));
 /** A date-only value ("2026-10-28") as a local date-time, so it never shifts a day across time zones. */
 const localDate = (date: string | null, time: string) => (date ? `${date}T${time}` : "");
 
@@ -252,6 +256,7 @@ export function mapLead(l: ApiLead): LeadRecord {
     score: l.score,
     factors: l.factors ?? [],
     autoScore: l.autoScore,
+    ownerId: ownerKey(l.ownerId),
     owner: l.ownerName ?? OWNERLESS,
     notes: l.notes ?? "",
     createdAt,
@@ -274,6 +279,7 @@ export function mapCustomer(c: ApiCustomer): CustomerRecord {
     lifetimeValue: Number(c.lifetimeValue) || 0,
     legacyOpenDeals: c.legacyOpenDeals ?? 0,
     health: HEALTH[c.health] ?? "Healthy",
+    ownerId: ownerKey(c.ownerId),
     owner: c.ownerName ?? OWNERLESS,
     since: localDate(c.since, "12:00:00"),
     leadId: str(c.leadId),
@@ -290,6 +296,7 @@ export function mapDeal(d: ApiDeal): DealRecord {
     stage: DEAL_STAGE[d.stage] ?? "New",
     probability: d.probability,
     closeDate: localDate(d.closeDate, "17:00:00"),
+    ownerId: ownerKey(d.ownerId),
     owner: d.ownerName ?? OWNERLESS,
     next: d.nextStep ?? "",
     leadId: str(d.leadId),
@@ -309,6 +316,7 @@ export function mapTask(t: ApiTask): TaskRecord {
     dueAt: t.dueAt ?? createdAt,
     reminder: (REMINDERS as string[]).includes(t.reminder) ? (t.reminder as ReminderOption) : "none",
     remindByEmail: t.remindByEmail,
+    ownerId: ownerKey(t.assignedTo),
     owner: t.ownerName ?? OWNERLESS,
     leadId: str(t.leadId),
     customerId: str(t.customerId),
@@ -319,6 +327,7 @@ export function mapTask(t: ApiTask): TaskRecord {
     done: t.done,
     doneAt: t.doneAt,
     createdAt,
+    createdById: ownerKey(t.createdById),
     createdBy: t.createdBy ?? "",
     followUps: (t.followUps ?? []).map((f) => ({
       id: String(f.id),
@@ -339,10 +348,12 @@ export function mapActivity(a: ApiActivity): ActivityRecord {
     meta: a.body ?? "",
     at: a.at ?? new Date().toISOString(),
     by: a.by,
+    byId: ownerKey(a.byId),
     leadId: opt(a.leadId),
     customerId: opt(a.customerId),
     dealId: opt(a.dealId),
     taskId: opt(a.taskId),
+    assigneeId: opt(a.assigneeId),
     assignee: a.assigneeName ?? undefined,
   };
 }

@@ -16,6 +16,7 @@ class ActivityResource extends JsonResource
             'title' => $this->title,
             'body' => $this->body ?? '',
             'by' => $this->user?->shortName() ?? 'System',
+            'byId' => $this->user_id,
             'leadId' => $this->lead_id,
             'customerId' => $this->customer_id,
             'dealId' => $this->deal_id,

@@ -17,7 +17,7 @@ import { downloadCsv, parseCsv } from "@/lib/csv";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, chipCls, chipCountCls, searchCls, selectCls } from "@/lib/ui";
-import { getOwnerOptions } from "@/lib/users";
+import { ANY_OWNER, getOwnerOptions, NO_OWNER } from "@/lib/users";
 import { formatDate, scoreTier, timeAgo } from "@/lib/utils";
 import type { LeadRecord, LeadStatus } from "@/types";
 
@@ -33,12 +33,13 @@ type TabKey = "all" | "mine" | "hot" | "unassigned" | "converted";
 const PAGE_SIZE = 10;
 const GRID = "grid grid-cols-[36px_2.3fr_1.4fr_1fr_1.1fr_1.7fr_1fr_1.1fr] items-center gap-3 px-5";
 
+/** `me` is the signed-in user's id. */
 function inTab(l: LeadRecord, tab: TabKey, me: string) {
   if (tab === "converted") return l.status === "Converted";
   if (l.status === "Converted") return false;
-  if (tab === "mine") return l.owner === me;
+  if (tab === "mine") return l.ownerId === me;
   if (tab === "hot") return scoreTier(l.score).key === "hot";
-  if (tab === "unassigned") return l.owner === "Unassigned";
+  if (tab === "unassigned") return l.ownerId === NO_OWNER;
   return true;
 }
 
@@ -74,7 +75,7 @@ export default function LeadsTable() {
     chosenTab && (viewAll || (chosenTab !== "all" && chosenTab !== "unassigned")) ? chosenTab : viewAll ? "all" : "mine";
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
-  const [owner, setOwner] = useState("Anyone");
+  const [owner, setOwner] = useState(ANY_OWNER);
   const [tier, setTier] = useState("Any");
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -92,8 +93,8 @@ export default function LeadsTable() {
     }
   }
 
-  const me = user?.short ?? "";
-  const visibleLeads = useMemo(() => (crm && user ? crm.leads.filter((l) => canSee(user, l.owner)) : []), [crm, user]);
+  const me = user?.id ?? "";
+  const visibleLeads = useMemo(() => (crm && user ? crm.leads.filter((l) => canSee(user, l.ownerId)) : []), [crm, user]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -103,7 +104,7 @@ export default function LeadsTable() {
           inTab(l, tab, me) &&
           (!q || [l.name, l.company, l.email].some((v) => v.toLowerCase().includes(q))) &&
           (status === "All" || l.status === status) &&
-          (owner === "Anyone" || l.owner === owner) &&
+          (owner === ANY_OWNER || l.ownerId === owner) &&
           (tier === "Any" || scoreTier(l.score).label === tier)
       )
       .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt));
@@ -116,7 +117,7 @@ export default function LeadsTable() {
   const pageRows = filtered.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
   const selectedLeads = crm.leads.filter((l) => selected.has(l.id));
   const allOnPage = pageRows.length > 0 && pageRows.every((l) => selected.has(l.id));
-  const canBulkEdit = selectedLeads.every((l) => canEdit(user, l.owner));
+  const canBulkEdit = selectedLeads.every((l) => canEdit(user, l.ownerId));
 
   const tabs: { key: TabKey; label: string }[] = [
     ...(viewAll ? [{ key: "all" as const, label: "All leads" }] : []),
@@ -192,7 +193,7 @@ export default function LeadsTable() {
     }
   }
 
-  const hasFilters = query || status !== "All" || owner !== "Anyone" || tier !== "Any";
+  const hasFilters = query || status !== "All" || owner !== ANY_OWNER || tier !== "Any";
 
   return (
     <>
@@ -276,7 +277,7 @@ export default function LeadsTable() {
               }}
               className={`${searchCls} basis-full sm:basis-auto`}
             />
-            <label className="flex items-center gap-2 text-[13px] text-slate-500">
+            <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
               Status
               <select
                 className={selectCls}
@@ -292,7 +293,7 @@ export default function LeadsTable() {
               </select>
             </label>
             {viewAll && (
-              <label className="flex items-center gap-2 text-[13px] text-slate-500">
+              <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
                 Owner
                 <select
                   className={selectCls}
@@ -302,13 +303,16 @@ export default function LeadsTable() {
                     resetPage();
                   }}
                 >
-                  {["Anyone", ...getOwnerOptions()].map((o) => (
-                    <option key={o}>{o}</option>
+                  <option value={ANY_OWNER}>Anyone</option>
+                  {getOwnerOptions().map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
                   ))}
                 </select>
               </label>
             )}
-            <label className="flex items-center gap-2 text-[13px] text-slate-500">
+            <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
               Score
               <select
                 className={selectCls}
@@ -387,7 +391,7 @@ export default function LeadsTable() {
                       onClick={() => {
                         setQuery("");
                         setStatus("All");
-                        setOwner("Anyone");
+                        setOwner(ANY_OWNER);
                         setTier("Any");
                       }}
                     >

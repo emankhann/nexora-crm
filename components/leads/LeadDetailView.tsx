@@ -50,7 +50,7 @@ export default function LeadDetailView({ id }: { id: string }) {
   const lead = crm.leads.find((l) => l.id === id);
   if (!lead) return <NotFoundView />;
 
-  if (!canSee(user, lead.owner)) {
+  if (!canSee(user, lead.ownerId)) {
     return (
       <EmptyState
         icon={
@@ -75,7 +75,7 @@ export default function LeadDetailView({ id }: { id: string }) {
   };
   const close = () => setDialog(null);
 
-  const editable = canEdit(user, lead.owner);
+  const editable = canEdit(user, lead.ownerId);
   const tier = scoreTier(lead.score);
   const maxPoints = Math.max(1, ...lead.factors.map((f) => f.points));
   const activities = crm.activities.filter((a) => a.leadId === lead.id);

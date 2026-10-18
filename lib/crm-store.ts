@@ -20,7 +20,7 @@ import {
   type ApiUser,
 } from "@/lib/api-mappers";
 import { onSignedOut, setSessionUser } from "@/lib/session";
-import { initialsForOwner, setDirectory, userByShort } from "@/lib/users";
+import { setDirectory } from "@/lib/users";
 import type {
   ActivityRecord,
   AuditRecord,
@@ -219,12 +219,6 @@ export function useCrmStatus(): CrmStatus {
 /* failure (validation errors are on err.errors, keyed by API field).  */
 /* ------------------------------------------------------------------ */
 
-/** Database id of the user with this short name, or null for "Unassigned". */
-function ownerId(short: string): number | null {
-  const u = userByShort(short);
-  return u ? Number(u.id) : null;
-}
-
 const num = (id: string | null | undefined): number | null => (id ? Number(id) : null);
 const day = (iso: string) => iso.slice(0, 10);
 
@@ -265,7 +259,8 @@ export type LeadInput = {
   companySize: string;
   source: LeadSource;
   status: LeadStatus;
-  owner: string;
+  /** User id of the owner, or "" for nobody. */
+  ownerId: string;
   notes: string;
 };
 
@@ -279,7 +274,7 @@ export const LEAD_FIELDS = {
   company_size: "companySize",
   source: "source",
   status: "status",
-  owner_id: "owner",
+  owner_id: "ownerId",
   notes: "notes",
 } as const;
 
@@ -293,7 +288,7 @@ function leadPayload(input: LeadInput) {
     company_size: input.companySize || null,
     source: CODES.leadSource[input.source],
     status: CODES.leadStatus[input.status],
-    owner_id: ownerId(input.owner),
+    owner_id: num(input.ownerId),
     notes: input.notes || null,
   };
 }
@@ -311,8 +306,9 @@ export async function updateLead(id: string, input: LeadInput): Promise<void> {
   await mutate(() => api.put(`/leads/${id}`, payload));
 }
 
-export async function assignLeads(ids: string[], owner: string): Promise<void> {
-  await mutate(() => api.post("/leads/bulk", { action: "assign", ids: ids.map(Number), owner_id: ownerId(owner) }));
+/** Gives leads to the user with this id ("" leaves them unassigned). */
+export async function assignLeads(ids: string[], ownerId: string): Promise<void> {
+  await mutate(() => api.post("/leads/bulk", { action: "assign", ids: ids.map(Number), owner_id: num(ownerId) }));
 }
 
 export async function setLeadsStatus(ids: string[], status: LeadStatus): Promise<void> {
@@ -363,7 +359,7 @@ export type ConvertInput = {
   mode: "new" | "existing";
   existingCustomerId: string;
   industry: string;
-  owner: string;
+  ownerId: string;
   createDeal: boolean;
   deal: { title: string; value: number; stage: DealStage; closeDate: string };
 };
@@ -375,7 +371,7 @@ export async function convertLead(leadId: string, input: ConvertInput): Promise<
       mode: input.mode,
       customer_id: input.mode === "existing" ? num(input.existingCustomerId) : null,
       industry: input.mode === "new" ? input.industry : null,
-      owner_id: ownerId(input.owner),
+      owner_id: num(input.ownerId),
       create_deal: input.createDeal,
       deal: input.createDeal
         ? {
@@ -402,7 +398,7 @@ export type CustomerInput = {
   contactTitle: string;
   contactEmail: string;
   contactPhone: string;
-  owner: string;
+  ownerId: string;
   since: string;
   /** Only used when editing. */
   health?: CustomerRecord["health"];
@@ -414,7 +410,7 @@ export const CUSTOMER_FIELDS = {
   size: "size",
   website: "website",
   city: "city",
-  owner_id: "owner",
+  owner_id: "ownerId",
   customer_since: "since",
   "contact.name": "contactName",
   "contact.job_title": "contactTitle",
@@ -429,7 +425,7 @@ function customerPayload(input: CustomerInput) {
     size: input.size || null,
     website: input.website || null,
     city: input.city || null,
-    owner_id: ownerId(input.owner),
+    owner_id: num(input.ownerId),
     customer_since: input.since ? day(input.since) : null,
     ...(input.health ? { health: CODES.health[input.health] } : {}),
     contact: {
@@ -475,7 +471,7 @@ export type DealInput = {
   stage: DealStage;
   probability: number;
   closeDate: string;
-  owner: string;
+  ownerId: string;
   tag: DealTag;
   next: string;
   leadId: string | null;
@@ -492,7 +488,7 @@ function dealPayload(input: DealInput, lostReason = "") {
     temperature: CODES.dealTag[input.tag],
     expected_close_date: day(input.closeDate),
     next_step: input.next || null,
-    owner_id: ownerId(input.owner),
+    owner_id: num(input.ownerId),
     lead_id: num(input.leadId),
     customer_id: num(input.customerId),
     lost_reason: lostReason || null,
@@ -515,7 +511,7 @@ export async function updateDeal(id: string, patch: Partial<DealInput>, lostReas
     stage: before.stage,
     probability: before.probability,
     closeDate: before.closeDate,
-    owner: before.owner,
+    ownerId: before.ownerId,
     tag: before.tag,
     next: before.next,
     leadId: before.leadId,
@@ -551,7 +547,7 @@ export async function deleteDeal(id: string): Promise<void> {
 
 export type TaskInput = Pick<
   TaskRecord,
-  "title" | "type" | "priority" | "dueAt" | "reminder" | "remindByEmail" | "owner" | "leadId" | "customerId" | "dealId" | "contact" | "company" | "notes"
+  "title" | "type" | "priority" | "dueAt" | "reminder" | "remindByEmail" | "ownerId" | "leadId" | "customerId" | "dealId" | "contact" | "company" | "notes"
 >;
 
 export const TASK_FIELDS = {
@@ -560,7 +556,7 @@ export const TASK_FIELDS = {
   priority: "priority",
   due_at: "dueAt",
   reminder: "reminder",
-  assigned_to: "owner",
+  assigned_to: "ownerId",
   lead_id: "leadId",
   customer_id: "customerId",
   deal_id: "dealId",
@@ -575,7 +571,7 @@ function taskPayload(input: TaskInput) {
     due_at: new Date(input.dueAt).toISOString(),
     reminder: input.reminder,
     remind_by_email: input.remindByEmail,
-    assigned_to: ownerId(input.owner),
+    assigned_to: num(input.ownerId),
     lead_id: num(input.leadId),
     customer_id: num(input.customerId),
     deal_id: num(input.dealId),
@@ -659,14 +655,6 @@ export async function markNoticesRead(ids: string[]): Promise<void> {
 /* ------------------------------------------------------------------ */
 /* Selectors                                                           */
 /* ------------------------------------------------------------------ */
-
-export function ownerInitials(short: string) {
-  return initialsForOwner(short);
-}
-
-export function ownerName(short: string) {
-  return userByShort(short)?.name ?? short;
-}
 
 export function openDealsFor(s: CrmState, customer: CustomerRecord) {
   return s.deals.filter((d) => d.customerId === customer.id && OPEN_STAGES.includes(d.stage)).length + customer.legacyOpenDeals;

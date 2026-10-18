@@ -25,7 +25,7 @@ export function buildNotices(s: CrmState, user: SessionUser): Notice[] {
   const out: Notice[] = [];
 
   for (const t of s.tasks) {
-    if (t.done || t.owner !== user.short) continue;
+    if (t.done || t.ownerId !== user.id) continue;
     const due = new Date(t.dueAt).getTime();
     if (due < now) {
       out.push({
@@ -49,7 +49,7 @@ export function buildNotices(s: CrmState, user: SessionUser): Notice[] {
   }
 
   for (const a of s.activities) {
-    if (a.kind !== "assigned" || a.assignee !== user.short || a.by === user.short) continue;
+    if (a.kind !== "assigned" || a.assigneeId !== user.id || a.byId === user.id) continue;
     if (now - new Date(a.at).getTime() > 3 * 24 * 60 * 60e3) continue;
     out.push({
       id: `assigned:${a.id}`,
@@ -64,7 +64,7 @@ export function buildNotices(s: CrmState, user: SessionUser): Notice[] {
   }
 
   for (const d of s.deals) {
-    if (!OPEN_STAGES.includes(d.stage) || !canSee(user, d.owner)) continue;
+    if (!OPEN_STAGES.includes(d.stage) || !canSee(user, d.ownerId)) continue;
     const late = daysBetween(d.closeDate);
     if (late > 0) {
       out.push({

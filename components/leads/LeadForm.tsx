@@ -9,14 +9,14 @@ import { COMPANY_SIZES, LEAD_FIELDS, LEAD_SOURCES, LEAD_STATUSES, createLead, up
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnGhostDanger, btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
-import { getOwnerOptions } from "@/lib/users";
+import { getOwnerOptions, NO_OWNER, ownerOption } from "@/lib/users";
 import { formatDate, isEmail, isPhone } from "@/lib/utils";
 import type { LeadRecord, LeadSource, LeadStatus } from "@/types";
 
 type Field = keyof LeadInput;
 
-function blank(owner: string): LeadInput {
-  return { name: "", email: "", phone: "", title: "", company: "", companySize: "51–200", source: "Website", status: "New", owner, notes: "" };
+function blank(ownerId: string): LeadInput {
+  return { name: "", email: "", phone: "", title: "", company: "", companySize: "51–200", source: "Website", status: "New", ownerId, notes: "" };
 }
 
 function fromLead(l: LeadRecord): LeadInput {
@@ -29,7 +29,7 @@ function fromLead(l: LeadRecord): LeadInput {
     companySize: l.companySize,
     source: l.source,
     status: l.status,
-    owner: l.owner,
+    ownerId: l.ownerId,
     notes: l.notes,
   };
 }
@@ -55,7 +55,7 @@ export default function LeadForm({
   const crm = useCrm();
   const toast = useToast();
   const editing = Boolean(lead);
-  const [v, setV] = useState<LeadInput>(() => (lead ? fromLead(lead) : blank(user?.short ?? "Unassigned")));
+  const [v, setV] = useState<LeadInput>(() => (lead ? fromLead(lead) : blank(user?.id ?? NO_OWNER)));
   const [errors, setErrors] = useState<Errors<Field>>({});
   const [another, setAnother] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -96,7 +96,7 @@ export default function LeadForm({
       toast(`${created.name} added · score ${created.score}`);
       onCreated?.(created);
       if (another) {
-        setV(blank(clean.owner));
+        setV(blank(clean.ownerId));
         setErrors({});
       } else onClose();
     } catch (err) {
@@ -173,12 +173,12 @@ export default function LeadForm({
           />
           <SelectField
             label="Owner"
-            value={v.owner}
-            onChange={(e) => set("owner", e.target.value)}
-            options={canReassign ? getOwnerOptions() : [v.owner]}
+            value={v.ownerId}
+            onChange={(e) => set("ownerId", e.target.value)}
+            options={canReassign ? getOwnerOptions() : [ownerOption(v.ownerId)]}
             disabled={!canReassign}
             hint={canReassign ? undefined : "Ask a manager to reassign."}
-            error={errors.owner}
+            error={errors.ownerId}
           />
         </div>
         {!editing && (

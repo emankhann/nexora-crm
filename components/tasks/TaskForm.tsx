@@ -10,7 +10,7 @@ import { createTask, updateTask, useCrm, type TaskInput } from "@/lib/crm-store"
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, inputCls } from "@/lib/ui";
-import { getUsers } from "@/lib/users";
+import { getOwnerOptions, NO_OWNER, ownerOption, userById } from "@/lib/users";
 import { daysFromNow, fromInputs, toDateInput, toTimeInput } from "@/lib/utils";
 import type { ReminderOption, TaskPriority, TaskRecord, TaskType } from "@/types";
 
@@ -61,7 +61,7 @@ export default function TaskForm({
 
   const [title, setTitle] = useState(task?.title ?? defaults?.title ?? "");
   const [related, setRelated] = useState(initialRelated);
-  const [owner, setOwner] = useState(task?.owner ?? user?.short ?? "");
+  const [ownerId, setOwnerId] = useState(task?.ownerId ?? user?.id ?? NO_OWNER);
   const [date, setDate] = useState(toDateInput(due));
   const [time, setTime] = useState(toTimeInput(due));
   const [priority, setPriority] = useState<TaskPriority>(task?.priority ?? "Medium");
@@ -74,9 +74,11 @@ export default function TaskForm({
 
   if (!crm || !user) return null;
 
-  const leads = crm.leads.filter((l) => canSee(user, l.owner) && l.status !== "Converted");
-  const customers = crm.customers.filter((c) => canSee(user, c.owner));
-  const ownerChoices = can(user, "reassign") ? getUsers().map((u) => u.short) : [user.short];
+  const leads = crm.leads.filter((l) => canSee(user, l.ownerId) && l.status !== "Converted");
+  const customers = crm.customers.filter((c) => canSee(user, c.ownerId));
+  const ownerChoices = (can(user, "reassign") ? getOwnerOptions({ unassigned: false }) : [ownerOption(ownerId)]).map((o) =>
+    o.value === user.id ? { ...o, label: `${o.label} (me)` } : o
+  );
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -98,7 +100,7 @@ export default function TaskForm({
       dueAt: fromInputs(date, time || "09:00"),
       reminder,
       remindByEmail: byEmail,
-      owner,
+      ownerId,
       leadId: lead?.id ?? null,
       customerId: customer?.id ?? null,
       dealId: task?.dealId ?? defaults?.dealId ?? null,
@@ -114,7 +116,7 @@ export default function TaskForm({
         toast("Task saved");
       } else {
         await createTask(input);
-        toast(owner === user.short ? "Task created" : `Task created and assigned to ${owner}`);
+        toast(ownerId === user.id ? "Task created" : `Task created and assigned to ${userById(ownerId)?.short ?? "them"}`);
       }
       onClose();
     } catch (err) {
@@ -170,9 +172,9 @@ export default function TaskForm({
           </div>
           <SelectField
             label="Assign to"
-            value={owner}
-            onChange={(e) => setOwner(e.target.value)}
-            options={ownerChoices.map((s) => ({ value: s, label: s === user.short ? `${s} (me)` : s }))}
+            value={ownerId}
+            onChange={(e) => setOwnerId(e.target.value)}
+            options={ownerChoices}
           />
           <TextField label="Due date" required type="date" value={date} onChange={(e) => setDate(e.target.value)} error={errors.date} />
           <TextField label="Time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />

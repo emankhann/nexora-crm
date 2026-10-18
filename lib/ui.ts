@@ -20,7 +20,8 @@ export const inputCls =
 
 export const textareaCls = `${inputCls} h-auto resize-y py-2.5`;
 
-export const selectCls = "h-[38px] rounded-[10px] border border-line bg-surface px-2.5 text-[13px]";
+// min-w-0 max-w-full: a long option (e.g. "Sana M. (email)") is cut short instead of widening the page on phones.
+export const selectCls = "h-[38px] min-w-0 max-w-full rounded-[10px] border border-line bg-surface px-2.5 text-[13px]";
 
 export const searchCls =
   "h-10 min-w-0 flex-1 rounded-xl border border-transparent bg-muted px-3.5 text-[13.5px] outline-none placeholder:text-slate-500 focus:border-accent focus:bg-surface sm:min-w-[260px]";

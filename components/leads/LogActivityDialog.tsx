@@ -101,7 +101,7 @@ export default function LogActivityDialog({
           dueAt: fromInputs(fuDate, "10:00"),
           reminder: "1h",
           remindByEmail: true,
-          owner: user.short,
+          ownerId: user.id,
           leadId: target.leadId ?? null,
           customerId: target.customerId ?? null,
           dealId: null,

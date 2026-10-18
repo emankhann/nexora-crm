@@ -103,7 +103,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
   if (!crm || !user) return null;
   const c = crm.customers.find((x) => x.id === id);
   if (!c) return <NotFoundView />;
-  if (!canSee(user, c.owner)) {
+  if (!canSee(user, c.ownerId)) {
     return (
       <EmptyState
         icon={
@@ -128,7 +128,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
   };
   const close = () => setDialog(null);
 
-  const editable = canEdit(user, c.owner);
+  const editable = canEdit(user, c.ownerId);
   const lead = c.leadId ? crm.leads.find((l) => l.id === c.leadId) : crm.leads.find((l) => l.customerId === c.id);
   const activities = crm.activities.filter((a) => a.customerId === c.id || (lead && a.leadId === lead.id));
   const deals = crm.deals.filter((d) => d.customerId === c.id).sort((a, b) => Number(OPEN_STAGES.includes(b.stage)) - Number(OPEN_STAGES.includes(a.stage)));

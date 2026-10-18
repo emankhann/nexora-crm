@@ -43,7 +43,7 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
   const showError = useErrorToast();
 
   if (!crm || !user) return null;
-  const editable = canEdit(user, task.owner);
+  const editable = canEdit(user, task.ownerId);
   const overdue = !task.done && new Date(task.dueAt).getTime() < now;
   const lead = task.leadId ? crm.leads.find((l) => l.id === task.leadId) : null;
   const customer = task.customerId ? crm.customers.find((c) => c.id === task.customerId) : null;
@@ -79,7 +79,7 @@ export default function TaskDetail({ task, onClose, onEdit }: { task: TaskRecord
         }
         footer={
           <>
-            {(can(user, "delete") || task.createdBy === user.short) ? (
+            {(can(user, "delete") || task.createdById === user.id) ? (
               <button type="button" className={btnGhostDanger} onClick={() => setConfirmDelete(true)}>
                 Delete task
               </button>

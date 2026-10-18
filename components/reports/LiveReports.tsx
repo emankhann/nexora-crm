@@ -7,7 +7,7 @@ import { downloadCsv } from "@/lib/csv";
 import { can, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, card, selectCls } from "@/lib/ui";
-import { getUsers } from "@/lib/users";
+import { ANY_OWNER, getOwnerOptions, getUsers, ownerLabel } from "@/lib/users";
 import { daysBetween, formatCurrency, formatDate } from "@/lib/utils";
 import type { DealStage } from "@/types";
 
@@ -26,14 +26,14 @@ export default function LiveReports() {
   const user = useSessionUser();
   const [tab, setTab] = useState<Tab>("pipeline");
   const [period, setPeriod] = useState(90);
-  const [owner, setOwner] = useState("Whole team");
+  const [owner, setOwner] = useState(ANY_OWNER);
 
   const data = useMemo(() => {
     if (!crm || !user) return null;
     const inPeriod = (iso: string | null) => period === 0 || (iso !== null && daysBetween(iso) <= period);
-    const mine = (o: string) => canSee(user, o) && (owner === "Whole team" || o === owner);
+    const mine = (ownerId: string) => canSee(user, ownerId) && (owner === ANY_OWNER || ownerId === owner);
 
-    const deals = crm.deals.filter((d) => mine(d.owner));
+    const deals = crm.deals.filter((d) => mine(d.ownerId));
     // Open deals always count; closed deals count when they closed inside the period.
     const scoped = deals.filter((d) => OPEN_STAGES.includes(d.stage) || inPeriod(d.closedAt));
     const open = scoped.filter((d) => OPEN_STAGES.includes(d.stage));
@@ -60,7 +60,7 @@ export default function LiveReports() {
     ).sort((a, b) => b[1] - a[1]);
     const closingSoon = open.filter((d) => daysBetween(d.closeDate) <= 0 && daysBetween(d.closeDate) >= -21).sort((a, b) => a.closeDate.localeCompare(b.closeDate)).slice(0, 5);
 
-    const leads = crm.leads.filter((l) => mine(l.owner) && inPeriod(l.createdAt));
+    const leads = crm.leads.filter((l) => mine(l.ownerId) && inPeriod(l.createdAt));
     const converted = leads.filter((l) => l.status === "Converted");
     const funnel = [
       { name: "All leads", count: leads.length },
@@ -75,21 +75,22 @@ export default function LiveReports() {
     }).filter((r) => r.count > 0);
 
     const team = getUsers()
-      .filter((u) => canSee(user, u.short) && (owner === "Whole team" || u.short === owner))
+      .filter((u) => canSee(user, u.id) && (owner === ANY_OWNER || u.id === owner))
       .map((u) => {
-        const uLeads = crm.leads.filter((l) => l.owner === u.short && inPeriod(l.createdAt));
-        const uWon = crm.deals.filter((d) => d.owner === u.short && d.stage === "Won" && inPeriod(d.closedAt));
-        const uLost = crm.deals.filter((d) => d.owner === u.short && d.stage === "Lost" && inPeriod(d.closedAt));
+        const uLeads = crm.leads.filter((l) => l.ownerId === u.id && inPeriod(l.createdAt));
+        const uWon = crm.deals.filter((d) => d.ownerId === u.id && d.stage === "Won" && inPeriod(d.closedAt));
+        const uLost = crm.deals.filter((d) => d.ownerId === u.id && d.stage === "Lost" && inPeriod(d.closedAt));
         return {
-          name: u.short,
+          id: u.id,
+          name: ownerLabel(u),
           role: u.role,
           leads: uLeads.length,
           converted: uLeads.filter((l) => l.status === "Converted").length,
           won: uWon.length,
           revenue: uWon.reduce((s, d) => s + d.value, 0),
           winRate: uWon.length + uLost.length ? Math.round((uWon.length / (uWon.length + uLost.length)) * 100) : null,
-          pipeline: crm.deals.filter((d) => d.owner === u.short && OPEN_STAGES.includes(d.stage)).reduce((s, d) => s + d.value, 0),
-          tasksDone: crm.tasks.filter((t) => t.owner === u.short && t.done && t.doneAt && inPeriod(t.doneAt)).length,
+          pipeline: crm.deals.filter((d) => d.ownerId === u.id && OPEN_STAGES.includes(d.stage)).reduce((s, d) => s + d.value, 0),
+          tasksDone: crm.tasks.filter((t) => t.ownerId === u.id && t.done && t.doneAt && inPeriod(t.doneAt)).length,
         };
       });
 
@@ -154,7 +155,7 @@ export default function LiveReports() {
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
-        <label className="flex items-center gap-2 text-[13px] text-slate-500">
+        <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
           Period
           <select className={selectCls} value={period} onChange={(e) => setPeriod(Number(e.target.value))}>
             {PERIODS.map((p) => (
@@ -165,11 +166,14 @@ export default function LiveReports() {
           </select>
         </label>
         {can(user, "viewAll") && (
-          <label className="flex items-center gap-2 text-[13px] text-slate-500">
+          <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
             Owner
             <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-              {["Whole team", ...getUsers().map((u) => u.short)].map((o) => (
-                <option key={o}>{o}</option>
+              <option value={ANY_OWNER}>Whole team</option>
+              {getOwnerOptions({ unassigned: false }).map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
               ))}
             </select>
           </label>
@@ -325,7 +329,7 @@ export default function LiveReports() {
                 <span>Tasks done</span>
               </div>
               {data.team.map((t) => (
-                <div key={t.name} className="grid grid-cols-[1.6fr_.8fr_.9fr_.9fr_1.1fr_.8fr_1.1fr_.8fr] items-center gap-3 border-b border-row-line py-3 text-[13.5px]">
+                <div key={t.id} className="grid grid-cols-[1.6fr_.8fr_.9fr_.9fr_1.1fr_.8fr_1.1fr_.8fr] items-center gap-3 border-b border-row-line py-3 text-[13.5px]">
                   <span>
                     <b>{t.name}</b>
                     <span className="block text-xs text-slate-500">{t.role}</span>

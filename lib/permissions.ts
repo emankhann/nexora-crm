@@ -27,15 +27,18 @@ export function can(user: Pick<SessionUser, "role"> | null, permission: Permissi
   return matrix[user.role].includes(permission);
 }
 
-/** Sales reps only see and change records they own. */
-export function canSee(user: SessionUser | null, owner: string): boolean {
+/**
+ * Sales reps only see and change records they own. Pass the record's `ownerId`
+ * (the owner's user id), never the display name: two people can share a short name.
+ */
+export function canSee(user: SessionUser | null, ownerId: string): boolean {
   if (!user) return false;
-  return can(user, "viewAll") || owner === user.short;
+  return can(user, "viewAll") || (ownerId !== "" && ownerId === user.id);
 }
 
-export function canEdit(user: SessionUser | null, owner: string): boolean {
+export function canEdit(user: SessionUser | null, ownerId: string): boolean {
   if (!user) return false;
-  return can(user, "editAny") || owner === user.short;
+  return can(user, "editAny") || (ownerId !== "" && ownerId === user.id);
 }
 
 /** Routes only admins may open. proxy.ts redirects everyone else. */

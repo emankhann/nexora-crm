@@ -133,7 +133,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
       .catch(showError);
   }
 
-  const leadCount = (short: string) => crm.leads.filter((l) => l.owner === short && l.status !== "Converted").length;
+  const leadCount = (userId: string) => crm.leads.filter((l) => l.ownerId === userId && l.status !== "Converted").length;
 
   return (
     <>
@@ -205,7 +205,7 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
                       </select>
                     )}
                   </span>
-                  <span>{m.status === "Active" ? leadCount(m.short) : "–"}</span>
+                  <span>{m.userId ? leadCount(m.userId) : "–"}</span>
                   <span className="text-slate-500">{m.status === "Pending" ? `Invited ${m.invitedAt ? timeAgo(m.invitedAt).toLowerCase() : ""}` : m.lastActiveAt ? (isMe ? "Just now" : timeAgo(m.lastActiveAt)) : "–"}</span>
                   <span>
                     <Badge tone={statusTone[m.status]}>{m.status}</Badge>

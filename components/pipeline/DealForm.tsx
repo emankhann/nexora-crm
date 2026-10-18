@@ -12,7 +12,7 @@ import { DEAL_STAGES, LOST_REASONS, OPEN_STAGES, STAGE_PROBABILITY, createDeal, 
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnGhostDanger, btnOutline, btnPrimary, inputCls, sectionLabel } from "@/lib/ui";
-import { getUsers } from "@/lib/users";
+import { getOwnerOptions, NO_OWNER, ownerOption } from "@/lib/users";
 import { daysFromNow, formatCurrency, formatDate, fromInputs, parseMoney, timeAgo, toDateInput } from "@/lib/utils";
 import type { DealRecord, DealStage, DealTag } from "@/types";
 
@@ -111,7 +111,7 @@ export default function DealForm({
   const [stage, setStage] = useState<DealStage>(deal?.stage ?? defaults?.stage ?? "New");
   const [probability, setProbability] = useState(deal?.probability ?? STAGE_PROBABILITY[defaults?.stage ?? "New"]);
   const [closeDate, setCloseDate] = useState(toDateInput(deal?.closeDate ?? daysFromNow(30)));
-  const [owner, setOwner] = useState(deal?.owner ?? user?.short ?? "");
+  const [ownerId, setOwnerId] = useState(deal?.ownerId ?? user?.id ?? NO_OWNER);
   const [tag, setTag] = useState<DealTag>(deal?.tag ?? "Warm");
   const [next, setNext] = useState(deal?.next ?? "");
   const [errors, setErrors] = useState<Errors<Field>>({});
@@ -121,7 +121,7 @@ export default function DealForm({
   const showError = useErrorToast();
 
   if (!crm || !user) return null;
-  const readOnly = deal ? !canEdit(user, deal.owner) : false;
+  const readOnly = deal ? !canEdit(user, deal.ownerId) : false;
 
   function onLinkChange(next: string) {
     setLink(next);
@@ -156,7 +156,7 @@ export default function DealForm({
       stage,
       probability: Math.max(0, Math.min(100, probability)),
       closeDate: fromInputs(closeDate, "17:00"),
-      owner,
+      ownerId,
       tag,
       next: next.trim(),
       leadId: kind === "lead" ? id : (deal?.leadId ?? null),
@@ -188,9 +188,9 @@ export default function DealForm({
     }
   }
 
-  const ownerChoices = can(user, "reassign") ? getUsers().map((u) => u.short) : [user.short];
-  const leadOptions = crm.leads.filter((l) => canSee(user, l.owner) && l.status !== "Converted");
-  const customerOptions = crm.customers.filter((c) => canSee(user, c.owner));
+  const ownerChoices = can(user, "reassign") ? getOwnerOptions({ unassigned: false }) : [ownerOption(ownerId)];
+  const leadOptions = crm.leads.filter((l) => canSee(user, l.ownerId) && l.status !== "Converted");
+  const customerOptions = crm.customers.filter((c) => canSee(user, c.ownerId));
   const activities = deal ? crm.activities.filter((a) => a.dealId === deal.id).slice(0, 5) : [];
   const stageIdx = DEAL_STAGES.indexOf(deal?.stage ?? stage);
   const weighted = Math.round(((Number.isFinite(parseMoney(value)) ? parseMoney(value) : 0) * probability) / 100);
@@ -307,7 +307,7 @@ export default function DealForm({
               <TextField label="Value (USD)" required inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} error={errors.value} placeholder="12,500" />
               <SelectField label="Stage" value={stage} onChange={(e) => onStageChange(e.target.value as DealStage)} options={editing ? DEAL_STAGES : OPEN_STAGES} />
               <TextField label="Expected close date" required type="date" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} error={errors.closeDate} />
-              <SelectField label="Owner" value={owner} onChange={(e) => setOwner(e.target.value)} options={ownerChoices} />
+              <SelectField label="Owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)} options={ownerChoices} />
               <SelectField label="Temperature" value={tag} onChange={(e) => setTag(e.target.value as DealTag)} options={["Hot", "Warm", "New", "Cold"]} />
               <TextField label="Next step" value={next} onChange={(e) => setNext(e.target.value)} placeholder="e.g. Demo Oct 22" />
             </div>

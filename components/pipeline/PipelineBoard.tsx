@@ -11,7 +11,7 @@ import { DEAL_STAGES, OPEN_STAGES, moveDeal, useCrm } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnPrimary, card, selectCls } from "@/lib/ui";
-import { getOwnerOptions, initialsForOwner } from "@/lib/users";
+import { ANY_OWNER, getOwnerOptions, initialsForOwner } from "@/lib/users";
 import { daysBetween, formatCurrency, formatDate } from "@/lib/utils";
 import type { DealRecord, DealStage } from "@/types";
 
@@ -101,7 +101,7 @@ export default function PipelineBoard() {
   const showError = useErrorToast();
   const router = useRouter();
   const params = useSearchParams();
-  const [owner, setOwner] = useState("Anyone");
+  const [owner, setOwner] = useState(ANY_OWNER);
   const [closing, setClosing] = useState("any");
   const [dragId, setDragId] = useState<string | null>(null);
   const [overStage, setOverStage] = useState<DealStage | null>(null);
@@ -125,8 +125,8 @@ export default function PipelineBoard() {
     if (!crm || !user) return [];
     const now = new Date();
     return crm.deals.filter((d) => {
-      if (!canSee(user, d.owner)) return false;
-      if (owner !== "Anyone" && d.owner !== owner) return false;
+      if (!canSee(user, d.ownerId)) return false;
+      if (owner !== ANY_OWNER && d.ownerId !== owner) return false;
       const open = OPEN_STAGES.includes(d.stage);
       if (closing === "month") {
         const c = new Date(d.closeDate);
@@ -153,7 +153,7 @@ export default function PipelineBoard() {
 
   function move(deal: DealRecord, stage: DealStage) {
     if (!user || deal.stage === stage) return;
-    if (!canEdit(user, deal.owner)) {
+    if (!canEdit(user, deal.ownerId)) {
       toast("You can only move your own deals.", { tone: "error" });
       return;
     }
@@ -196,16 +196,19 @@ export default function PipelineBoard() {
     <>
       <PageHeader title="Deals pipeline" subtitle={`${openDeals.length} open deals worth ${formatCurrency(openValue)}. Drag a card, or use its menu, to move it.`}>
         {can(user, "viewAll") && (
-          <label className="flex items-center gap-2 text-[13px] text-slate-500">
+          <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
             Owner
             <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-              {["Anyone", ...getOwnerOptions().filter((o) => o !== "Unassigned")].map((o) => (
-                <option key={o}>{o}</option>
+              <option value={ANY_OWNER}>Anyone</option>
+              {getOwnerOptions({ unassigned: false }).map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
               ))}
             </select>
           </label>
         )}
-        <label className="flex items-center gap-2 text-[13px] text-slate-500">
+        <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
           Closing
           <select className={selectCls} value={closing} onChange={(e) => setClosing(e.target.value)}>
             <option value="any">Any time</option>
@@ -277,7 +280,7 @@ export default function PipelineBoard() {
 
                 {column.map((d) => {
                   const late = OPEN_STAGES.includes(d.stage) ? daysBetween(d.closeDate) : 0;
-                  const movable = canEdit(user, d.owner);
+                  const movable = canEdit(user, d.ownerId);
                   return (
                     <article
                       key={d.id}
@@ -322,7 +325,7 @@ export default function PipelineBoard() {
                         </div>
                       )}
                       <div className="flex items-center gap-2 text-xs text-slate-600">
-                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-avatar text-avatar-text ring-1 ring-ok-border text-[10px] font-extrabold">{initialsForOwner(d.owner)}</span>
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-avatar text-avatar-text ring-1 ring-ok-border text-[10px] font-extrabold">{initialsForOwner(d.ownerId)}</span>
                         <span className="truncate">{d.next || d.owner}</span>
                       </div>
                     </article>

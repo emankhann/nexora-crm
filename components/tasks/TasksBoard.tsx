@@ -15,7 +15,7 @@ import { toggleTask, useCrm } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnPrimary, card, chipCls, chipCountCls, searchCls, selectCls } from "@/lib/ui";
-import { getUsers, initialsForOwner } from "@/lib/users";
+import { ANY_OWNER, getOwnerOptions, initialsForOwner } from "@/lib/users";
 import { formatDue, isSameDay } from "@/lib/utils";
 import type { TaskRecord } from "@/types";
 
@@ -53,7 +53,7 @@ export default function TasksBoard() {
   const [tab, setTab] = useState<TabKey>("open");
   const [query, setQuery] = useState("");
   const [priority, setPriority] = useState("Any");
-  const [owner, setOwner] = useState("Anyone");
+  const [owner, setOwner] = useState(ANY_OWNER);
   const [form, setForm] = useState<null | { task?: TaskRecord }>(() => (params.get("new") === "1" ? {} : null));
   const [detailId, setDetailId] = useState<string | null>(() => params.get("open"));
   const [k, setK] = useState(0);
@@ -71,7 +71,7 @@ export default function TasksBoard() {
     }
   }
 
-  const tasks = useMemo(() => (crm && user ? crm.tasks.filter((t) => canSee(user, t.owner)) : []), [crm, user]);
+  const tasks = useMemo(() => (crm && user ? crm.tasks.filter((t) => canSee(user, t.ownerId)) : []), [crm, user]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -81,7 +81,7 @@ export default function TasksBoard() {
           inTab(t, tab) &&
           (!q || [t.title, t.contact, t.company].some((v) => v.toLowerCase().includes(q))) &&
           (priority === "Any" || t.priority === priority) &&
-          (owner === "Anyone" || t.owner === owner)
+          (owner === ANY_OWNER || t.ownerId === owner)
       )
       .sort((a, b) =>
         tab === "done"
@@ -148,7 +148,7 @@ export default function TasksBoard() {
               onChange={(e) => setQuery(e.target.value)}
               className={`${searchCls} basis-full sm:basis-auto`}
             />
-            <label className="flex items-center gap-2 text-[13px] text-slate-500">
+            <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
               Priority
               <select className={selectCls} value={priority} onChange={(e) => setPriority(e.target.value)}>
                 {["Any", "Urgent", "High", "Medium", "Low"].map((o) => (
@@ -157,11 +157,14 @@ export default function TasksBoard() {
               </select>
             </label>
             {can(user, "viewAll") && (
-              <label className="flex items-center gap-2 text-[13px] text-slate-500">
+              <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
                 Assigned to
                 <select className={selectCls} value={owner} onChange={(e) => setOwner(e.target.value)}>
-                  {["Anyone", ...getUsers().map((u) => u.short)].map((o) => (
-                    <option key={o}>{o}</option>
+                  <option value={ANY_OWNER}>Anyone</option>
+                  {getOwnerOptions().map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
                   ))}
                 </select>
               </label>
@@ -187,7 +190,7 @@ export default function TasksBoard() {
 
           {visible.map((t) => {
             const b = bucket(t);
-            const editable = canEdit(user, t.owner);
+            const editable = canEdit(user, t.ownerId);
             return (
               <div key={t.id} className="flex flex-wrap items-start gap-3.5 border-t border-row-line px-4 py-4 first:border-t-0 hover:bg-hover sm:px-5">
                 <input
@@ -254,7 +257,7 @@ export default function TasksBoard() {
                 </div>
                 <Badge tone={priorityTone[t.priority]}>{t.priority}</Badge>
                 <span title={t.owner}>
-                  <Avatar initials={initialsForOwner(t.owner)} size={30} />
+                  <Avatar initials={initialsForOwner(t.ownerId)} size={30} />
                 </span>
               </div>
             );

@@ -33,8 +33,8 @@ export default function DashboardView() {
   const showError = useErrorToast();
   if (!crm || !user) return null;
 
-  const leads = crm.leads.filter((l) => canSee(user, l.owner));
-  const deals = crm.deals.filter((d) => canSee(user, d.owner));
+  const leads = crm.leads.filter((l) => canSee(user, l.ownerId));
+  const deals = crm.deals.filter((d) => canSee(user, d.ownerId));
   const openDeals = deals.filter((d) => OPEN_STAGES.includes(d.stage));
   const monthStart = new Date();
   monthStart.setDate(1);
@@ -73,14 +73,14 @@ export default function DashboardView() {
     .map((l) => ({ lead: l, value: deals.filter((d) => d.leadId === l.id).reduce((s, d) => s + d.value, 0) }));
 
   const myTasksToday = crm.tasks
-    .filter((t) => !t.done && t.owner === user.short && (isSameDay(t.dueAt) || new Date(t.dueAt).getTime() < now))
+    .filter((t) => !t.done && t.ownerId === user.id && (isSameDay(t.dueAt) || new Date(t.dueAt).getTime() < now))
     .sort((a, b) => a.dueAt.localeCompare(b.dueAt))
     .slice(0, 5);
 
   const staleHot = leads.filter((l) => l.status !== "Converted" && l.score >= 80 && daysBetween(l.lastActivityAt) >= 7);
-  const overdueTasks = crm.tasks.filter((t) => !t.done && canSee(user, t.owner) && new Date(t.dueAt).getTime() < now);
+  const overdueTasks = crm.tasks.filter((t) => !t.done && canSee(user, t.ownerId) && new Date(t.dueAt).getTime() < now);
   const lateDeals = openDeals.filter((d) => daysBetween(d.closeDate) > 0);
-  const atRisk = crm.customers.filter((c) => canSee(user, c.owner) && c.health === "At risk");
+  const atRisk = crm.customers.filter((c) => canSee(user, c.ownerId) && c.health === "At risk");
   const attention: { id: string; text: string; tone: keyof typeof attentionStyle; href: string }[] = [
     ...(staleHot.length ? [{ id: "stale", text: `${staleHot.length} hot ${staleHot.length === 1 ? "lead has" : "leads have"} had no contact for 7 days`, tone: "hot" as const, href: "/leads" }] : []),
     ...(overdueTasks.length ? [{ id: "tasks", text: `${overdueTasks.length} ${overdueTasks.length === 1 ? "task is" : "tasks are"} overdue`, tone: "hot" as const, href: "/tasks" }] : []),
@@ -100,11 +100,11 @@ export default function DashboardView() {
     .filter((u) => (can(user, "viewAll") ? true : u.id === user.id))
     .map((u) => ({
       user: u,
-      revenue: crm.deals.filter((d) => d.owner === u.short && d.stage === "Won" && inMonth(d.closedAt)).reduce((s, d) => s + d.value, 0),
-      wonCount: crm.deals.filter((d) => d.owner === u.short && d.stage === "Won" && inMonth(d.closedAt)).length,
-      pipeline: crm.deals.filter((d) => d.owner === u.short && OPEN_STAGES.includes(d.stage)).reduce((s, d) => s + d.value, 0),
-      tasksDone: crm.tasks.filter((t) => t.owner === u.short && t.done && inMonth(t.doneAt)).length,
-      converted: crm.leads.filter((l) => l.owner === u.short && l.status === "Converted" && inMonth(l.stageDates[3] ?? null)).length,
+      revenue: crm.deals.filter((d) => d.ownerId === u.id && d.stage === "Won" && inMonth(d.closedAt)).reduce((s, d) => s + d.value, 0),
+      wonCount: crm.deals.filter((d) => d.ownerId === u.id && d.stage === "Won" && inMonth(d.closedAt)).length,
+      pipeline: crm.deals.filter((d) => d.ownerId === u.id && OPEN_STAGES.includes(d.stage)).reduce((s, d) => s + d.value, 0),
+      tasksDone: crm.tasks.filter((t) => t.ownerId === u.id && t.done && inMonth(t.doneAt)).length,
+      converted: crm.leads.filter((l) => l.ownerId === u.id && l.status === "Converted" && inMonth(l.stageDates[3] ?? null)).length,
     }))
     .sort((a, b) => b.revenue - a.revenue || b.pipeline - a.pipeline);
   const topRevenue = Math.max(1, ...leaderboard.map((r) => r.revenue));
@@ -113,13 +113,13 @@ export default function DashboardView() {
     .filter((a) => {
       if (a.leadId) {
         const l = crm.leads.find((x) => x.id === a.leadId);
-        return l ? canSee(user, l.owner) : false;
+        return l ? canSee(user, l.ownerId) : false;
       }
       if (a.customerId) {
         const c = crm.customers.find((x) => x.id === a.customerId);
-        return c ? canSee(user, c.owner) : false;
+        return c ? canSee(user, c.ownerId) : false;
       }
-      return canSee(user, a.by);
+      return canSee(user, a.byId);
     })
     .slice(0, 15);
 

@@ -13,7 +13,7 @@ export type SessionUser = {
   /** Database id of the user, as a string. */
   id: string;
   name: string;
-  /** Short name used as the owner on leads, deals and tasks, e.g. "Huma K." */
+  /** Short display name, e.g. "Huma K.". Not unique: records point to owners by `id`. */
   short: string;
   initials: string;
   email: string;
@@ -50,15 +50,39 @@ export function getUsers(): SessionUser[] {
   return directory;
 }
 
-/** Names that can own a record, in the order they appear in owner pickers. */
-export function getOwnerOptions(): string[] {
-  return [...directory.map((u) => u.short), "Unassigned"];
+/** The owner id meaning "nobody", on records and in owner pickers. */
+export const NO_OWNER = "";
+
+/** Owner filter value meaning "anyone" (user ids are numbers, so it can't clash). */
+export const ANY_OWNER = "*";
+
+export type OwnerOption = { value: string; label: string };
+
+export function userById(id: string): SessionUser | null {
+  return id === NO_OWNER ? null : directory.find((u) => u.id === id) ?? null;
 }
 
-export function userByShort(short: string): SessionUser | null {
-  return directory.find((u) => u.short === short) ?? null;
+/**
+ * How a person is named in pickers and filters: their short name, plus their email
+ * when someone else on the team has the same short name, so the two can be told apart.
+ */
+export function ownerLabel(user: SessionUser): string {
+  const shared = directory.some((u) => u.id !== user.id && u.short === user.short);
+  return shared ? `${user.short} (${user.email})` : user.short;
 }
 
-export function initialsForOwner(short: string): string {
-  return userByShort(short)?.initials ?? "–";
+/** Owner picker choices: value is the user id, label is the name shown. */
+export function getOwnerOptions({ unassigned = true }: { unassigned?: boolean } = {}): OwnerOption[] {
+  const people = directory.map((u) => ({ value: u.id, label: ownerLabel(u) }));
+  return unassigned ? [...people, { value: NO_OWNER, label: "Unassigned" }] : people;
+}
+
+/** A single picker choice for this owner id, for people who can't reassign (the picker is locked to it). */
+export function ownerOption(ownerId: string): OwnerOption {
+  const u = userById(ownerId);
+  return { value: ownerId, label: u ? ownerLabel(u) : "Unassigned" };
+}
+
+export function initialsForOwner(ownerId: string): string {
+  return userById(ownerId)?.initials ?? "–";
 }

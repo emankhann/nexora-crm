@@ -10,7 +10,7 @@ import { COMPANY_SIZES, CUSTOMER_FIELDS, INDUSTRIES, createCustomer, updateCusto
 import { can } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, sectionLabel } from "@/lib/ui";
-import { getUsers } from "@/lib/users";
+import { getOwnerOptions, NO_OWNER, ownerOption } from "@/lib/users";
 import { fromInputs, isEmail, isPhone, toDateInput } from "@/lib/utils";
 import type { CustomerRecord, Health } from "@/types";
 
@@ -34,7 +34,7 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
     contactTitle: primary?.title ?? "",
     contactEmail: primary?.email ?? "",
     contactPhone: primary?.phone ?? "",
-    owner: customer?.owner ?? user?.short ?? "",
+    ownerId: customer?.ownerId ?? user?.id ?? NO_OWNER,
     since: toDateInput(sinceIso),
   });
   const [health, setHealth] = useState<Health>(customer?.health ?? "Healthy");
@@ -131,11 +131,11 @@ export default function CustomerForm({ open, onClose, customer }: { open: boolea
           <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             <SelectField
               label="Account owner"
-              value={v.owner}
-              onChange={(e) => set("owner", e.target.value)}
-              options={canPickOwner ? getUsers().map((u) => u.short) : [v.owner]}
+              value={v.ownerId}
+              onChange={(e) => set("ownerId", e.target.value)}
+              options={canPickOwner ? getOwnerOptions({ unassigned: false }) : [ownerOption(v.ownerId)]}
               disabled={!canPickOwner}
-              error={errors.owner}
+              error={errors.ownerId}
             />
             <TextField label="Customer since" type="date" value={v.since} onChange={(e) => set("since", e.target.value)} error={errors.since} />
             {customer && (

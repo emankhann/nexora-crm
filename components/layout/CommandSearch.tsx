@@ -45,19 +45,19 @@ export default function CommandSearch({ open, onClose }: { open: boolean; onClos
     const has = (...v: string[]) => !term || v.some((x) => x.toLowerCase().includes(term));
     const out: Result[] = [];
     crm.leads
-      .filter((l) => canSee(user, l.owner) && has(l.name, l.company, l.email))
+      .filter((l) => canSee(user, l.ownerId) && has(l.name, l.company, l.email))
       .slice(0, 5)
       .forEach((l) => out.push({ id: `l${l.id}`, group: "Leads", title: l.name, sub: `${l.company} · score ${l.score}`, href: `/leads/${l.id}`, badge: "Lead" }));
     crm.customers
-      .filter((c) => canSee(user, c.owner) && has(c.name, ...c.contacts.map((p) => p.name)))
+      .filter((c) => canSee(user, c.ownerId) && has(c.name, ...c.contacts.map((p) => p.name)))
       .slice(0, 4)
       .forEach((c) => out.push({ id: `c${c.id}`, group: "Customers", title: c.name, sub: `${c.industry} · ${c.contacts[0]?.name ?? ""}`, href: `/customers/${c.id}`, badge: "Customer" }));
     crm.deals
-      .filter((d) => canSee(user, d.owner) && has(d.title, d.company))
+      .filter((d) => canSee(user, d.ownerId) && has(d.title, d.company))
       .slice(0, 4)
       .forEach((d) => out.push({ id: `d${d.id}`, group: "Deals", title: d.title, sub: `${d.company} · ${d.stage} · ${formatCurrency(d.value)}`, href: `/pipeline?deal=${d.id}`, badge: "Deal" }));
     crm.tasks
-      .filter((t) => !t.done && canSee(user, t.owner) && has(t.title, t.contact, t.company))
+      .filter((t) => !t.done && canSee(user, t.ownerId) && has(t.title, t.contact, t.company))
       .slice(0, 4)
       .forEach((t) => out.push({ id: `t${t.id}`, group: "Tasks", title: t.title, sub: `Due ${formatDue(t.dueAt)} · ${t.owner}`, href: `/tasks?open=${t.id}`, badge: "Task" }));
     if (!term || "create a lead new lead".includes(term))
