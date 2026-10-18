@@ -217,22 +217,25 @@ export default function CustomerProfileView({ id }: { id: string }) {
               )}
             </div>
             {c.contacts.map((p) => (
-              <div key={`${p.name}${p.email}`} className="flex items-center gap-3">
+              <div key={`${p.name}${p.email}`} className="flex items-start gap-3">
                 <Avatar name={p.name} size={34} />
+                {/* One column, so a long email never squeezes the name. */}
                 <div className="min-w-0 flex-1">
                   <b className="block truncate text-[13.5px]">{p.name}</b>
                   <div className="truncate text-xs text-slate-500">
                     {p.title || "Contact"}
                     {p === primary ? " · Primary" : ""}
                   </div>
-                </div>
-                <div className="min-w-0 text-right text-xs text-slate-500">
-                  {p.email && (
-                    <a href={`mailto:${p.email}`} className="block truncate text-primary">
-                      {p.email}
-                    </a>
+                  {(p.email || p.phone) && (
+                    <div className="mt-1 flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 text-xs">
+                      {p.email && (
+                        <a href={`mailto:${p.email}`} className="min-w-0 max-w-full truncate text-primary">
+                          {p.email}
+                        </a>
+                      )}
+                      {p.phone && <span className="text-slate-500">{p.phone}</span>}
+                    </div>
                   )}
-                  {p.phone && <span className="block">{p.phone}</span>}
                 </div>
               </div>
             ))}

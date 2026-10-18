@@ -104,7 +104,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (28 tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (29 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend && php artisan test

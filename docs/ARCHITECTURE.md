@@ -191,7 +191,7 @@ app/Enums                      statuses, stages, sources, roles… stored as sho
 app/Notifications              TeamInvite and TaskReminder emails
 app/Console/Commands           nexora:send-task-reminders
 database/migrations, seeders   the schema and the demo data
-tests/Feature                  API tests (28 backend tests in all)
+tests/Feature, tests/Unit     API tests and lead-scoring unit tests (29 in all)
 ```
 
 The main endpoints:
@@ -211,7 +211,7 @@ The main endpoints:
 
 ## Testing
 
-- **28 backend tests** (`cd backend && php artisan test`: 26 API feature tests plus Laravel's two example tests) on an in-memory SQLite database seeded with the demo data. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, and people with the same short name being kept apart.
+- **29 backend tests** (`cd backend && php artisan test`): 26 API feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, and people with the same short name being kept apart.
 - **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (14), accounts and emails (9), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
 - `npm run lint` and `npm run build` (which type-checks everything) must pass before every merge.
 

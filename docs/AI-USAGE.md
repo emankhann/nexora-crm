@@ -38,7 +38,7 @@ Most bugs were caught by tests or by testing as different roles, not by me spott
 
 ## How I checked the AI's work
 
-- Nothing was merged without the **28 backend tests**, **lint**, the **production build** and the **five browser scripts** passing.
+- Nothing was merged without the **29 backend tests**, **lint**, the **production build** and the **five browser scripts** passing.
 - Every role was tried by hand: Admin, Manager and Sales rep see and can do different things.
 - ✏️ How you made sure you understand the code: for example, reading the main files (`lib/crm-store.ts`, the controllers, policies and migrations), and asking Claude to explain anything unclear until you could explain it back.
 

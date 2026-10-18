@@ -8,7 +8,8 @@ use App\Enums\LeadStatus;
 /**
  * Explainable lead scoring: a few simple rules, each worth some points.
  * The factors are saved with the lead so the UI can show *why* it scored what it did.
- * The same rules run in the frontend (lib/crm-store.ts → scoreLead) for instant feedback.
+ * Runs on the server only: leads are scored when they are created or imported, and scored
+ * again when their details or status change (while auto_score is on).
  */
 class LeadScorer
 {
