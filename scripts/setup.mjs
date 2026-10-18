@@ -29,8 +29,11 @@ function fail(message, hint) {
 
 /** Runs a command. With quiet: true, returns its output instead of printing it. */
 function run(cmd, args, { cwd = ROOT, quiet = false } = {}) {
-  // On Windows, composer and npm are .bat/.cmd files, which need a shell to run.
-  const r = spawnSync(cmd, args, { cwd, shell: WINDOWS, stdio: quiet ? "pipe" : "inherit", encoding: "utf8" });
+  // On Windows, composer and npm are .bat/.cmd files, which need a shell to run. The shell gets
+  // one command string (the arguments here are fixed, simple words), because Node warns about
+  // passing an argument list together with shell: true.
+  const options = { cwd, stdio: quiet ? "pipe" : "inherit", encoding: "utf8" };
+  const r = WINDOWS ? spawnSync([cmd, ...args].join(" "), { ...options, shell: true }) : spawnSync(cmd, args, options);
   if (r.error && r.error.code === "ENOENT") return { ok: false, missing: true, out: "" };
   return { ok: r.status === 0, missing: false, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
 }

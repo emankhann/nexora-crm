@@ -82,7 +82,9 @@ function stopAll(code) {
 }
 
 for (const part of PARTS) {
-  const child = spawn(part.cmd, part.args, { cwd: part.cwd, shell: WINDOWS, env: { ...process.env, FORCE_COLOR: "1" } });
+  const options = { cwd: part.cwd, env: { ...process.env, FORCE_COLOR: "1" } };
+  // Windows needs a shell for npm.cmd; give it one command string (Node warns about args + shell).
+  const child = WINDOWS ? spawn([part.cmd, ...part.args].join(" "), { ...options, shell: true }) : spawn(part.cmd, part.args, options);
   children.push(child);
   pipe(child.stdout, part, process.stdout);
   pipe(child.stderr, part, process.stderr);
