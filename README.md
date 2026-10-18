@@ -2,118 +2,152 @@
 
 A sales CRM for managing leads, customers, deals and follow-up tasks, with role-based access for Admins, Managers and Sales reps.
 
-Built with Next.js 16 (App Router), React 19, TypeScript and Tailwind CSS 4.
+**Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS 4 · **API:** Laravel 13 (PHP 8.3) with Sanctum · **Database:** MySQL or SQLite
 
-## Run it locally
+![Dashboard](docs/screenshots/dashboard.png)
 
-The app has two parts: the Next.js frontend (this folder) and the Laravel API in `backend/`. Both need to run.
+| Leads | Pipeline | Customer profile |
+|---|---|---|
+| ![Leads](docs/screenshots/leads.png) | ![Pipeline](docs/screenshots/pipeline.png) | ![Customer profile](docs/screenshots/customer-profile.png) |
 
-**1. API and database** (needs PHP 8.3, Composer and MySQL):
+| Tasks | Reports | On a phone |
+|---|---|---|
+| ![Tasks](docs/screenshots/tasks.png) | ![Reports](docs/screenshots/reports.png) | ![Phone](docs/screenshots/phone-dashboard.png) |
+
+## Documentation
+
+| | |
+|---|---|
+| [User guide](docs/USER-GUIDE.md) | How to use every module, what each role can do, and a five-minute tour |
+| [Architecture](docs/ARCHITECTURE.md) | How the app is built, why this stack, how the modules interact, security, and how it would scale |
+| [Database](docs/DATABASE.md) | Diagram of every table and relationship, design decisions, and the demo data |
+| [CRM concepts](docs/CRM-CONCEPTS.md) | What a CRM is for, how each department benefits, and where every requirement of the brief lives |
+| [AI usage](docs/AI-USAGE.md) | Which AI tools were used and how |
+
+## Quick start
+
+**You need:** [Node.js](https://nodejs.org) 20.9 or newer, [PHP](https://www.php.net/downloads) 8.3 or newer, and [Composer](https://getcomposer.org). No database server is needed: by default the data lives in a single SQLite file.
 
 ```bash
-cd backend
-composer install
-cp .env.example .env        # then set DB_DATABASE, DB_USERNAME, DB_PASSWORD
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan serve           # http://localhost:8000
+git clone https://github.com/emankhann/nexora-crm.git
+cd nexora-crm
+npm run setup      # checks your tools, installs everything, creates the database with demo data
+npm run dev:all    # starts the API, the reminder scheduler and the app together
 ```
 
-**2. Frontend** (in a second terminal, from the project root):
+Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the app and the API share sign-in cookies). `Ctrl+C` stops everything.
+
+`npm run setup` is safe to run again, but it resets the database to the demo data.
+
+> **Windows:** if setup says the SQLite extension isn't turned on, open your `php.ini` (`php --ini` shows where it is), remove the `;` in front of `extension=pdo_sqlite` and `extension=sqlite3`, save, and open a new terminal.
+
+### Demo accounts
+
+All demo accounts use the password **`demo1234`**. On the sign-in page you can also click an account to fill it in.
+
+| Role | Email | What they can do |
+|---|---|---|
+| Admin | huma@nexora.example | Everything, including Team and roles, the Audit log and deleting records |
+| Manager | omar@nexora.example | Sees the whole team's records, can reassign and export |
+| Sales rep | sana@nexora.example | Sees and edits only their own leads, deals and tasks |
+
+New to the app? Follow the [five-minute tour](docs/USER-GUIDE.md#13-a-five-minute-tour).
+
+### Using MySQL
+
+1. Create an empty database, for example `nexora`.
+2. In `backend/.env`, replace `DB_CONNECTION=sqlite` with:
+   ```
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=nexora
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+3. Run `npm run setup` again (or just `cd backend && php artisan migrate:fresh --seed`).
+
+### Running the parts separately
+
+`npm run dev:all` runs these three for you. To run them in separate terminals instead:
 
 ```bash
-npm install
-cp .env.example .env.local  # NEXT_PUBLIC_API_URL=http://localhost:8000
-npm run dev
-```
-
-Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the browser shares the sign-in cookies with the API). You'll be sent to the sign-in page.
-
-**3. Reminder emails** (optional, a third terminal):
-
-```bash
-cd backend
-php artisan schedule:work   # sends task reminder emails when they're due, every minute
+cd backend && php artisan serve          # API on http://localhost:8000
+cd backend && php artisan schedule:work  # sends task reminder emails when they're due
+npm run dev                              # app on http://localhost:3000
 ```
 
 ### Emails when running locally
 
-No mail service is needed. With `MAIL_MAILER=log` (the default in `.env.example`), emails are written to `backend/storage/logs/laravel.log` instead of being sent. Each email also writes one readable line with its link, so you can copy it straight from the log:
+No mail service is needed. With `MAIL_MAILER=log` (the default), emails are written to `backend/storage/logs/laravel.log` instead of being sent, plus one readable line with the link:
 
 ```
 Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?token=…&email=…
 ```
 
-- **Invite someone:** Team and roles → + Invite member, then open the invite link from the log in another browser (or a private window). They choose a password and are signed in.
-- **Forgot password:** "Forgot password?" on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
-- **Task reminders:** tasks with Email reminders on send an email when the reminder time comes, while `php artisan schedule:work` runs. To send due reminders right away: `php artisan nexora:send-task-reminders`.
-
-### Demo accounts
-
-All demo accounts use the password `demo1234`. On the sign-in page, click a demo account to fill in its details.
-
-| Role      | Email                 | What they can do                                           |
-| --------- | --------------------- | ---------------------------------------------------------- |
-| Admin     | huma@nexora.example   | Everything, including Team and roles, Audit log and delete |
-| Manager   | omar@nexora.example   | Sees the whole team's records, can reassign and export     |
-| Sales rep | sana@nexora.example   | Sees and edits only their own leads, deals and tasks       |
+- **Invite someone:** Team and roles → *+ Invite member*, then open the link from the log in a private window. They choose a password and are signed in.
+- **Forgot password:** on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
+- **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away: `cd backend && php artisan nexora:send-task-reminders`.
 
 ## What's in the app
 
-- **Sign in and roles.** Sign-in checks the user in the database, shows validation, a loading state and a 15-minute lockout after 5 wrong attempts. Forgot password sends a one-time reset link, and anyone can change their own password from the account menu (which signs them out on other devices). Admins invite people by email; the invite link lasts 7 days. `proxy.ts` sends signed-out users to `/login` and keeps non-admins out of admin pages, which show a 403 page.
-- **Dashboard.** Live stats, a revenue chart, the lead funnel, hot leads, your tasks due today, a "Needs attention" list and recent activity.
-- **Leads.** Create, edit and delete leads, with validation and duplicate-email checks. Assign an owner, change status in bulk, search, filter and page through results. Import and export CSV.
-- **Lead scoring.** New leads get an explainable score built from source, status, company size, job title and contact details.
-- **Lead detail.** Log a call, email or meeting (with an optional follow-up task), add notes, convert the lead to a customer (optionally creating a deal), and see linked deals and tasks.
-- **Customers.** Create and edit customers. Each has a profile page with communication history, contacts, deals, open tasks and the lead they came from.
-- **Pipeline.** Six stages including Won and Lost. Cards show the close date, probability and overdue status. Move deals by drag-and-drop or with the card menu. A deal panel lets you edit the deal or mark it won or lost (lost needs a reason).
-- **Tasks.** Each task has an assignee, due date and time, priority, type and reminder. Tasks can be snoozed, completed and undone. A follow-up history logs each attempt and reschedules the task.
-- **Reminders.** The bell shows overdue tasks, tasks whose reminder time has come, records assigned to you, and deals past their close date.
-- **Search.** Press Ctrl K (⌘K on a Mac) to search leads, customers, deals and tasks, or to run quick actions.
-- **Reports.** Pipeline summary by stage, lead conversion by source, and team performance. Filter by period and owner, and export to CSV.
-- **Audit log.** Every create, edit, reassignment, stage move and deletion is recorded.
-- **Responsive.** On phones the sidebar becomes a drawer and tables turn into cards. Pages have empty, loading and error states.
+- **Dashboard:** live stats, 12-month revenue chart, lead funnel, hot leads, deals closing soon, team results, your tasks due today, *Needs attention* and recent activity.
+- **Leads:** create, edit, search, filter, assign, bulk actions, CSV import and export, and an explainable lead score. Log calls, emails and meetings with a follow-up task, and convert a lead into a customer and a deal in one step.
+- **Customers:** company profiles with contacts, the full communication history (including from when they were a lead), deals, open tasks, health and lifetime value.
+- **Pipeline:** six stages from New to Won and Lost, drag and drop, probability by stage, close dates, lost reasons.
+- **Tasks and follow-ups:** assignee, due time, priority, reminders in the app and by email, a follow-up history with outcomes, snooze, complete and undo.
+- **Reports:** pipeline summary, lead conversion by source, and team performance, filtered by period and owner, with CSV export.
+- **Users and security:** Admin, Manager and Sales rep roles enforced by the API; invites by email; password reset and change; sign-in lockout; audit log of every change.
+- **Everywhere:** Ctrl K search, a reminders bell, and layouts that work on phones, tablets and laptops.
 
-## How data works
+More in the [user guide](docs/USER-GUIDE.md).
 
-- **Sign-in** uses Laravel Sanctum: the API sets an httpOnly session cookie that JavaScript can't read, and requests that change data carry a CSRF token. `lib/api.ts` handles both. `lib/session.ts` signs in and out and keeps the signed-in user for the UI.
-- **Route protection.** `proxy.ts` redirects early using a small hint cookie (just the role) set after sign-in. The real check happens in the API on every request; if it answers 401, the app clears the session and goes to `/login`.
-- **Data.** After sign-in, `lib/crm-store.ts` loads everything the user may see in one request (`GET /api/crm`), filtered on the server by role. `lib/api-mappers.ts` converts the API's JSON into the records the screens use.
-- **Permissions.** `lib/permissions.ts` decides what the UI shows. The API enforces the same rules (`backend/app/Policies` and the Gates in `AppServiceProvider`).
-- **Saving changes.** Every change goes through one store function (`createLead`, `moveDeal`, `addFollowUp` and so on), which sends one API request. The server checks permissions, saves to MySQL and records the history and audit log; then the store reloads, so the screens show exactly what was saved. Ticking off a task, dragging a deal and reading reminders update the screen at once and undo themselves if the server refuses. Form errors from the server (like an email that's already taken) appear under the right field.
+## Tests
+
+**Backend** (28 feature tests, on an in-memory SQLite database, nothing to set up):
+
+```bash
+cd backend && php artisan test
+```
+
+**End to end.** Five scripts drive a real browser through the running app. Start the app on freshly seeded data (`cd backend && php artisan migrate:fresh --seed`, then `npm run dev:all`), install Playwright once (`npm install --no-save playwright`), and from the project root run:
+
+| Script | Checks |
+|---|---|
+| `node scripts/check-signin-and-data.mjs` | Sign-in, lockout, what each role can open, data loaded from the database, sign-out, expired sessions (19 checks) |
+| `node scripts/check-saving.mjs` | Creating, editing, moving, converting and deleting records through the UI (14) |
+| `node scripts/check-account-and-emails.mjs` | Invites, password reset, change password, customer delete and reminder emails (9) |
+| `node scripts/check-same-name-owners.mjs` | Two people with the same short name are kept apart (6) |
+| `node scripts/check-responsive.mjs` | Every page and dialog at phone, tablet and laptop sizes, with screenshots (38) |
+
+`npm run lint` and `npm run build` (which type-checks everything) should also pass. `node scripts/take-screenshots.mjs` refreshes the screenshots in `docs/screenshots`.
+
+## Project structure
+
+```
+app/                  pages (Next.js App Router)
+  (auth)/             sign in, forgot and reset password, accept invite
+  (app)/              the signed-in app: dashboard, leads, customers, pipeline, tasks, reports, team, audit-log
+components/           screens and dialogs per module, plus shared ui/ and layout/
+lib/                  crm-store (data and actions), api client, mappers, session, permissions, notifications
+types/                shared TypeScript types
+proxy.ts              route protection
+backend/              Laravel API
+  app/                controllers, requests, resources, policies, services, models, enums, notifications
+  database/           migrations, seeders
+  routes/             api.php, console.php (scheduler)
+  tests/Feature/      API tests
+docs/                 documentation, screenshots and SQL copies of the schema and demo data
+scripts/              setup, dev, end-to-end checks and screenshots
+```
 
 ## Before going live
 
 The settings above are for running on your own computer. On a real server:
 
-- **Backend `.env`:** `APP_ENV=production`, `APP_DEBUG=false` (otherwise error pages show internal details), and a real `APP_URL`.
+- **Backend `.env`:** `APP_ENV=production`, `APP_DEBUG=false` (otherwise error pages show internal details), a real `APP_URL`, and MySQL.
 - **HTTPS everywhere**, plus `SESSION_SECURE_COOKIE=true` so the session cookie is only sent over HTTPS.
-- **Domains:** set `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` to the real ones. The app and the API must share a parent domain, e.g. `app.example.com` and `api.example.com` with `SESSION_DOMAIN=.example.com`.
-- **Frontend:** set `NEXT_PUBLIC_API_URL` to the API's address and keep `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=false`.
+- **Domains:** set `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` to the real ones. The app and the API must share a parent domain, for example `app.example.com` and `api.example.com` with `SESSION_DOMAIN=.example.com`.
+- **Frontend:** set `NEXT_PUBLIC_API_URL` to the API's address, keep `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=false`, and run `npm run build && npm start`.
 - **No demo data.** `php artisan db:seed` refuses to create the demo accounts in production, because their password is public. Create the first admin by hand.
-- **Email.** Set `MAIL_MAILER` and the `MAIL_*` settings for a real mail service (for example Resend, Brevo or Mailgun) instead of `log`, and run `php artisan schedule:work` (or a cron entry for `php artisan schedule:run`) for task reminders.
-
-## Project structure
-
-```
-app/
-  (auth)/login, forgot-password   sign-in pages
-  (app)/…                         signed-in pages (dashboard, leads, customers, pipeline, tasks, reports, team, audit-log)
-  (app)/forbidden                 403 page
-components/
-  layout/    AppShell, Sidebar, NotificationsBell, CommandSearch, PageHeader
-  ui/        Modal (dialog and slide-over), Field, Toast, ConfirmDialog, States, Badge, Avatar
-  leads/ customers/ pipeline/ tasks/ reports/ dashboard/ activity/ audit/
-lib/
-  crm-store.ts      data and actions
-  session.ts        sign in/out, signed-in user
-  permissions.ts    who can do what
-  api.ts            API requests (Sanctum cookies, CSRF, errors)
-  api-mappers.ts    API JSON → screen records
-  users.ts          team directory and demo accounts
-  notifications.ts  reminders for the bell
-  utils.ts, ui.ts, csv.ts, use-now.ts
-proxy.ts            route protection
-backend/            Laravel API and MySQL database
-types/index.ts      shared types
-```
+- **Email:** set `MAIL_MAILER` and the `MAIL_*` settings for a real mail service (for example Resend, Brevo or Mailgun), and run the scheduler with a cron entry for `php artisan schedule:run` every minute.
