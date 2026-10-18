@@ -29,14 +29,22 @@ if (!existsSync(join(BACKEND, "vendor")) || !existsSync(join(ROOT, "node_modules
   process.exit(1);
 }
 
-/** True if nothing is listening on this port yet. */
-function portFree(port) {
+/** True if the port can be opened on this address (all addresses when host is undefined). */
+function canListen(port, host) {
   return new Promise((resolve) => {
     const server = createServer()
       .once("error", () => resolve(false))
-      .once("listening", () => server.close(() => resolve(true)))
-      .listen(port);
+      .once("listening", () => server.close(() => resolve(true)));
+    server.listen(port, host);
   });
+}
+
+/**
+ * True if nothing is listening on this port yet. Both checks are needed: `php artisan serve`
+ * listens only on 127.0.0.1, and on Windows opening the port on all addresses still succeeds then.
+ */
+async function portFree(port) {
+  return (await canListen(port)) && (await canListen(port, "127.0.0.1"));
 }
 
 for (const part of PARTS) {
@@ -82,7 +90,8 @@ function stopAll(code) {
 }
 
 for (const part of PARTS) {
-  const options = { cwd: part.cwd, env: { ...process.env, FORCE_COLOR: "1" } };
+  // Keep colours in the labelled output, unless the user has asked for none (NO_COLOR).
+  const options = { cwd: part.cwd, env: process.env.NO_COLOR ? process.env : { ...process.env, FORCE_COLOR: "1" } };
   // Windows needs a shell for npm.cmd; give it one command string (Node warns about args + shell).
   const child = WINDOWS ? spawn([part.cmd, ...part.args].join(" "), { ...options, shell: true }) : spawn(part.cmd, part.args, options);
   children.push(child);
