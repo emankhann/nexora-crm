@@ -110,7 +110,7 @@ Every requirement in the brief, and where to find it.
 |---|---|
 | Create and assign tasks | Task form, with assignee, type, priority and the lead or customer it's about |
 | Deadlines and reminders | Due date and time; reminder 15 min, 1 h or 1 day before; in-app and email |
-| Follow-up histories | *Log a follow-up* on a task: outcome, note, reschedule; full history kept |
+| Follow-up histories | *Follow-up history* on each task: log each attempt with an outcome, a note and the next step; full history kept |
 
 ### F. User management
 | Requirement | Where |

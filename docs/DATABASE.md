@@ -164,7 +164,7 @@ erDiagram
     }
 ```
 
-Every table also has `created_at` and `updated_at` (except `audit_logs`, which only has `created_at` because entries are never edited).
+Every table also has `created_at` and `updated_at`, except `audit_logs`, which only has `created_at` because entries are never edited, and `notification_reads`, which only has `read_at`.
 
 ## The tables
 
@@ -215,7 +215,7 @@ Laravel's own tables: `sessions` (signed-in sessions), `password_reset_tokens` (
 | **Users** | Huma Khan (Admin), Omar Tariq (Manager), Sana Mirza (Sales rep), all with password `demo1234`, and Kamran Shah, an invite that hasn't been accepted yet |
 | **Leads** | 9, across every source and status, with scores |
 | **Customers** | 8, with contacts and a mix of health states |
-| **Deals** | 25, in every stage, including 12 won over the past year so the revenue chart has history |
+| **Deals** | 25, in every stage: 10 open, 1 lost and 14 won (2 this month, and 12 spread over the past year so the revenue chart has history) |
 | **Tasks** | 8, some overdue and some due today, with follow-up history |
 | **History** | Activity and audit log entries to match |
 

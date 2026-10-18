@@ -27,10 +27,10 @@ Most bugs were caught by tests or by testing as different roles, not by me spott
 | Problem | How it was found | Fix |
 |---|---|---|
 | Two people with the same short name ("Sana M.") were treated as one person, so a lead could be assigned to the wrong one | A React "duplicate key" warning during testing | Records now point to owners by **user id**; a backend test and a browser script reproduce the case |
-| A few wrong sign-ins could block "Forgot password", because all the forms shared one rate-limit counter | A failing test after adding password reset | A separate, named rate limit per form, plus a test that proves they're separate |
+| A few wrong sign-ins could block "Forgot password", because all the forms shared one rate-limit counter | The end-to-end check scripts failed after adding password reset ("Too many attempts") | A separate, named rate limit per form, plus a test that proves they're separate |
 | Editing a converted lead reset its status | Security and logic review of the API | The edit form keeps Converted, and the API allows leaving status out for converted leads |
-| An exported CSV could run a formula in Excel if a lead's name started with `=` | Security review | Cells starting with `= + - @` are neutralised on export |
-| A sales rep could link a task to a lead they can't see by sending its id directly | Security review | The API checks permission on every linked record |
+| An exported CSV could run a formula in Excel if a lead's name started with `=` | Security review | Cells starting with `=` or `@` (or `+`/`-` followed by anything but a number) are neutralised on export |
+| A sales rep could, by sending ids directly, attach a deal to another rep's customer (adding to its lifetime value), link a task to someone else's deal, or merge their lead into another rep's customer | Security review | The API checks permission on every linked record, and adding to an existing customer needs edit rights on it |
 | On phones, a long owner name made some pages scroll sideways | The responsive check script | Filters and dropdowns can shrink, and long names are cut short |
 | Test flakiness: an expired-session test and a reminder count that also read old log lines | Intermittent script failures | Wait for requests to finish before clearing cookies; only count log lines written during the run |
 

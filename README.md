@@ -35,7 +35,7 @@ npm run setup      # checks your tools, installs everything, creates the databas
 npm run dev:all    # starts the API, the reminder scheduler and the app together
 ```
 
-Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the app and the API share sign-in cookies). `Ctrl+C` stops everything.
+Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the app and the API share sign-in cookies). `Ctrl+C` stops everything. On Windows, npm then asks "Terminate batch job (Y/N)?": everything has already stopped, so answer `Y`.
 
 `npm run setup` is safe to run again, but it resets the database to the demo data.
 
@@ -104,7 +104,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (28 feature tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (28 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend && php artisan test

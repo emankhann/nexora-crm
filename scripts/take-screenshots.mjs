@@ -67,7 +67,8 @@ const browser = await launch();
   await shoot(page, "leads");
   await openFirst(page, "/leads", "a[href^='/leads/']:has-text('Ayesha Raza')");
   await shoot(page, "lead-detail");
-  await openFirst(page, "/customers", "a[href^='/customers/']:has-text('Meridian Textiles')");
+  // Orbit Studios has the fullest profile in the demo data: history, two contacts, open and won deals, a task.
+  await openFirst(page, "/customers", "a[href^='/customers/']:has-text('Orbit Studios')");
   await shoot(page, "customer-profile");
   await page.goto(`${BASE}/pipeline`);
   await shoot(page, "pipeline");

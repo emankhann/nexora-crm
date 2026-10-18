@@ -99,22 +99,25 @@ Every change follows the same shape: **one store function → one API request �
 
 ```mermaid
 flowchart TD
-    U["Users and roles"] -- own --> L & C & D
-    U -- "are assigned" --> T
+    U["Users and roles"] -- "own records,<br/>are assigned tasks" --> R
 
-    L["Leads"] -- "convert (one transaction)" --> C["Customers + contacts"]
-    L -- "convert can open" --> D["Deals (pipeline)"]
-    C -- "has many" --> D
-    D -- "Won adds value to" --> C
+    subgraph R["Records"]
+        L["Leads"] -- "convert (one transaction)" --> C["Customers + contacts"]
+        L -- "convert can open" --> D["Deals (pipeline)"]
+        C -- "has many" --> D
+        D -- "Won adds value to" --> C
+        T["Tasks + follow-ups"] -. "linked to" .-> L & C & D
+    end
 
-    T["Tasks + follow-ups"] -. "linked to" .-> L & C & D
+    R -- "every change writes" --> H["Activity history"]
+    R -- "every change writes" --> AU["Audit log"]
+    U -- "team changes write" --> AU
 
-    L & C & D & T -- "every change writes" --> H["Activity history"]
-    L & C & D & T & U -- "every change writes" --> AU["Audit log"]
-
-    L & C & D & T & H --> DASH["Dashboard"]
-    L & D & T --> REP["Reports"]
-    T & H & D --> BELL["Reminders (bell + email)"]
+    R --> DASH["Dashboard"]
+    H --> DASH
+    R --> REP["Reports"]
+    R --> BELL["Reminders (bell + email)"]
+    H --> BELL
 ```
 
 The lifecycle a record goes through:
@@ -145,11 +148,11 @@ There are three roles. The rules live in two places that say the same thing: `li
 ## Security
 
 - **Sessions:** Sanctum cookie sessions, httpOnly, with a CSRF token (`XSRF-TOKEN` cookie → `X-XSRF-TOKEN` header) on every request that changes data. If the session expires, the API answers 401 and the app sends you to sign in.
-- **Every request is authorised on the server** by policies and gates, including links between records: you can't attach a task to a lead you can't see, or convert a lead into a customer you can't see.
+- **Every request is authorised on the server** by policies and gates, including links between records: you can't attach a task or a deal to a lead, customer or deal you can't see, and adding a lead to an existing customer needs permission to edit that customer.
 - **Validation** happens in FormRequest classes, and only validated fields are saved, so a request can't set fields it shouldn't (like `lifetime_value`).
 - **Rate limits:** each sign-in-related form has its own limit (sign in, forgot password, reset, invite check, invite accept, change password), plus 240 requests a minute for the rest of the API. Five wrong passwords lock sign-in for that email from that IP address for 15 minutes.
 - **Passwords:** at least 8 characters with letters and numbers, hashed with bcrypt. Reset and invite links are single-use, stored hashed, and expire (60 minutes and 7 days). Resetting or changing a password signs the account out everywhere else.
-- **CSV export** neutralises cells that start with `=`, `+`, `-` or `@`, so a lead named `=HYPERLINK(...)` can't run as a formula in Excel.
+- **CSV export** neutralises cells that start with `=` or `@`, and cells that start with `+` or `-` unless they're a plain number or phone number, so a lead named `=HYPERLINK(...)` can't run as a formula in Excel.
 - **Demo safety:** the seeder refuses to create the demo accounts in production, and the demo password is not in the production JavaScript.
 - **History is kept:** leads, customers and deals are soft-deleted, and deletions are in the audit log.
 
@@ -188,7 +191,7 @@ app/Enums                      statuses, stages, sources, roles… stored as sho
 app/Notifications              TeamInvite and TaskReminder emails
 app/Console/Commands           nexora:send-task-reminders
 database/migrations, seeders   the schema and the demo data
-tests/Feature                  28 API tests
+tests/Feature                  API tests (28 backend tests in all)
 ```
 
 The main endpoints:
@@ -208,7 +211,7 @@ The main endpoints:
 
 ## Testing
 
-- **28 backend feature tests** (`cd backend && php artisan test`) on an in-memory SQLite database seeded with the demo data. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, and people with the same short name being kept apart.
+- **28 backend tests** (`cd backend && php artisan test`: 26 API feature tests plus Laravel's two example tests) on an in-memory SQLite database seeded with the demo data. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, and people with the same short name being kept apart.
 - **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (14), accounts and emails (9), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
 - `npm run lint` and `npm run build` (which type-checks everything) must pass before every merge.
 

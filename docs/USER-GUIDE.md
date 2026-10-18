@@ -39,7 +39,7 @@ Sign in at **http://localhost:3000** with one of the demo accounts (password `de
 
 Everything on the dashboard is worked out from live data, and a sales rep sees only their own numbers.
 
-- **Four stats:** open leads, active deals, revenue won this month, and lead conversion rate.
+- **Four stats:** total leads (and how many were added in the last 30 days), active deals, revenue won this month, and lead conversion rate.
 - **Revenue won:** a bar for each of the last 12 months.
 - **Lead funnel:** how many leads are New, Contacted and Qualified, how many deals are at Proposal, and how many were won in the last 30 days.
 - **Hot leads:** the highest-scoring open leads.
@@ -136,7 +136,7 @@ Tabs: *All open*, *Today*, *Overdue*, *Upcoming* and *Done*. Filter by priority 
 
 **Open a task** to:
 
-- **Log a follow-up:** pick the outcome (Reached, No answer, Left voicemail, Email sent, Replied, Meeting booked), add a note, and choose what's next: *in 2 days*, *tomorrow*, *in a week*, or *Done, close the task*. Each attempt is kept in the task's **follow-up history**.
+- **Log an attempt** under *Follow-up history*: write what happened, pick the outcome (Reached, No answer, Left voicemail, Email sent, Replied, Meeting booked) and what's next (*Next: in 2 days*, *Next: tomorrow*, *Next: in a week*, or *Done, close the task*), then click **Log**. Each attempt is kept in the task's follow-up history.
 - **Snooze** to the same time tomorrow.
 - **Complete** it (or reopen it).
 - **Edit** or **Delete** it (whoever created it, or an admin).
