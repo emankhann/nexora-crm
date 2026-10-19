@@ -79,6 +79,15 @@
   --font-sans: var(--font-jakarta), system-ui, sans-serif;
 }
 
+/*
+ * The logo wordmark font. "inline" puts the font list straight into the font-brand class, so
+ * var(--font-sora) is read on the element itself. next/font sets --font-sora on <body>, so a
+ * normal theme variable (defined on :root) would find it empty and fall back to the system font.
+ */
+@theme inline {
+  --font-brand: var(--font-sora), var(--font-jakarta), system-ui, sans-serif;
+}
+
 html {
   color-scheme: dark;
 }

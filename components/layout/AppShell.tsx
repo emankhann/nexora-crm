@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, Search } from "lucide-react";
 import Sidebar from "@/components/layout/Sidebar";
+import Logo from "@/components/ui/Logo";
 import NotificationsBell from "@/components/layout/NotificationsBell";
 import CommandSearch from "@/components/layout/CommandSearch";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -117,8 +118,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
             >
               <Menu size={22} />
             </button>
-            <span className="grid h-[30px] w-[30px] place-items-center rounded-[10px] bg-primary text-[15px] font-extrabold text-ink">N</span>
-            <b className="ml-1.5 flex-1 text-lg text-white">Nexora</b>
+            <span className="ml-1 flex-1">
+              <Logo size={32} />
+            </span>
             <button
               type="button"
               aria-label="Search"

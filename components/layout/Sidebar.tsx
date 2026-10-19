@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Logo from "@/components/ui/Logo";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
@@ -111,10 +112,9 @@ export default function Sidebar({ onNavigate, onClose }: { onNavigate?: () => vo
   return (
     <aside className="flex h-full w-full flex-col border-r border-line bg-ink text-navy">
       <div className="flex items-center gap-4 px-5 pb-7 pt-6">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-primary text-2xl font-bold leading-none text-ink shadow-[0_0_24px_rgba(46,224,127,0.45)]">
-          N
+        <div className="flex-1">
+          <Logo size={44} />
         </div>
-        <div className="flex-1 text-2xl font-extrabold tracking-tight text-white">Nexora</div>
         {onClose && (
           <button
             type="button"

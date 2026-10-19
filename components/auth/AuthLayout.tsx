@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Activity, ChartColumn, ShieldCheck } from "lucide-react";
+import Logo from "@/components/ui/Logo";
 
 const features = [
   { icon: Activity, title: "Explainable lead scoring", text: "See exactly why each lead is hot, warm or cold." },
@@ -12,10 +13,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
       <div className="hidden flex-col justify-between gap-12 border-r border-line bg-ink px-16 py-[52px] text-white lg:flex">
-        <div className="flex items-center gap-3 text-[22px] font-bold">
-          <div className="grid h-[38px] w-[38px] place-items-center rounded-[11px] bg-primary text-[17px] font-extrabold text-ink">N</div>
-          Nexora
-        </div>
+        <Logo size={48} />
         <div className="flex max-w-[540px] flex-col gap-7">
           <h1 className="text-[52px] font-extrabold leading-[1.08] tracking-tight">
             Every lead. Every deal.
@@ -44,9 +42,8 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
       </div>
 
       <div className="flex flex-col items-center justify-center gap-6 bg-canvas p-4 sm:p-6">
-        <div className="flex items-center gap-3 text-xl font-bold text-navy lg:hidden">
-          <div className="grid h-9 w-9 place-items-center rounded-[11px] bg-primary text-base font-extrabold text-ink">N</div>
-          Nexora
+        <div className="lg:hidden">
+          <Logo size={40} />
         </div>
         {children}
       </div>
