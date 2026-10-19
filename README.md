@@ -89,6 +89,21 @@ Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?
 - **Forgot password:** on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
 - **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away: `cd backend && php artisan nexora:send-task-reminders`.
 
+### Sending real emails
+
+The emails are real Laravel notifications; only the delivery is a setting. To have invites, password resets and task reminders arrive in a real inbox, sent from a Gmail account:
+
+1. On the Google account, turn on **2-Step Verification**, then create an **app password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (name it "Nexora"). Use it, not the normal Gmail password.
+2. In `backend/.env`, replace the `MAIL_` lines with the commented Gmail block from `backend/.env.example`, with your address and the app password.
+3. In `.env.local`, set `NEXT_PUBLIC_EMAILS_IN_LOG=false` to hide the "look in laravel.log" hints.
+4. Run `cd backend && php artisan config:clear`, then restart `npm run dev:all`.
+5. Test it: `cd backend && php artisan nexora:send-test-email you@example.com`. It prints the mailer used, or the error and the likely fix.
+
+For production, use the same settings with a mail service such as Resend, Brevo or Mailgun (see "Before going live").
+
+- The links in the emails point to `http://localhost:3000`, so open them on the computer running the app.
+- **Switch back to `MAIL_MAILER=log` (and `NEXT_PUBLIC_EMAILS_IN_LOG=true`) before running the check scripts.** They read the links from the log, and would otherwise try to send real emails to the made-up `….example` demo addresses.
+
 ## What's in the app
 
 - **Dashboard:** live stats, 12-month revenue chart, lead funnel, hot leads, deals closing soon, team results, your tasks due today, *Needs attention* and recent activity.
@@ -104,7 +119,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (29 tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (31 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend && php artisan test

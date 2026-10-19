@@ -52,7 +52,7 @@ Problems I noticed myself:
 
 ## How I checked the AI's work
 
-- Nothing was merged unless the **29 backend tests**, **lint**, the **production build** and the **five browser scripts** all passed.
+- Nothing was merged unless the **31 backend tests**, **lint**, the **production build** and the **five browser scripts** all passed.
 - I signed in as each role (Admin, Manager and Sales rep) and checked that each one sees and can do the right things.
 - I tested the layout myself on phone and tablet sizes in the browser.
 - Because Laravel was new to me, I went through the architecture and database with Claude, asking it to explain each part (the API structure, policies, migrations and how the frontend talks to the backend) until I could explain it back myself.

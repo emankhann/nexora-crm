@@ -189,9 +189,9 @@ app/Services                   business logic that touches several tables
 app/Models (+ Concerns/HasOwner) Eloquent models, visibleTo() scopes
 app/Enums                      statuses, stages, sources, roles… stored as short strings
 app/Notifications              TeamInvite and TaskReminder emails
-app/Console/Commands           nexora:send-task-reminders
+app/Console/Commands           nexora:send-task-reminders, nexora:send-test-email
 database/migrations, seeders   the schema and the demo data
-tests/Feature, tests/Unit     API tests and lead-scoring unit tests (29 in all)
+tests/Feature, tests/Unit     API tests and lead-scoring unit tests (31 in all)
 ```
 
 The main endpoints:
@@ -211,7 +211,7 @@ The main endpoints:
 
 ## Testing
 
-- **29 backend tests** (`cd backend && php artisan test`): 26 API feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, and people with the same short name being kept apart.
+- **31 backend tests** (`cd backend && php artisan test`): 28 feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, people with the same short name being kept apart, and the test email command.
 - **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (14), accounts and emails (9), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
 - `npm run lint` and `npm run build` (which type-checks everything) must pass before every merge.
 
@@ -223,7 +223,7 @@ These are deliberate choices for a demo-sized CRM, and the first things to chang
 - **Reports are calculated in the browser** from that data. `GET /api/reports` already computes the same numbers in SQL, ready for when the data outgrows the browser.
 - **Changes from other people appear on your next action or reload**, not live.
 - **One currency (USD)**, no file attachments, and no customer-support tickets or marketing campaigns yet.
-- **Emails are written to a log file** when running locally. A real mail service is a settings change (see "Before going live" in the README).
+- **Emails are written to a log file** when running locally. Real delivery (for example through Gmail for a demo, or a mail service in production) is only a settings change: see ["Sending real emails"](../README.md#sending-real-emails) in the README.
 
 ## How it would scale and improve
 

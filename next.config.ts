@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
     // runtime lookup instead of being inlined, and then the demo accounts in LoginForm.tsx
     // (including their password) would stay in the production JavaScript.
     NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS: process.env.NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS ?? "false",
+    // Same reason: inline it, so the "look in laravel.log" hints are fixed at build time.
+    NEXT_PUBLIC_EMAILS_IN_LOG: process.env.NEXT_PUBLIC_EMAILS_IN_LOG ?? "true",
   },
   experimental: {
     agentFeedback: true,
