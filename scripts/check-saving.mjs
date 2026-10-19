@@ -143,6 +143,14 @@ const pageErrors = [];
     await visible(page.getByText(/Call logged/)).waitFor({ timeout: 10000 });
   });
 
+  await check("Logging a call moves a New lead to Contacted", async () => {
+    // The lead was created as New; the call logged above should have moved it on.
+    const row = (await server(page)).leads.find((l) => l.email === lead.email);
+    assert(row?.status === "contacted", `status is "${row?.status}"`);
+    await visible(page.getByText("Status changed from New to Contacted")).waitFor({ timeout: 10000 });
+    await page.getByText("Next step: qualify.").waitFor({ timeout: 10000 });
+  });
+
   await check("Creating and completing a task is saved", async () => {
     const data = await server(page);
     const leadId = data.leads.find((l) => l.email === lead.email).id;
@@ -157,6 +165,16 @@ const pageErrors = [];
     await saved(page, "/toggle", () => visible(page.getByRole("checkbox", { name: `Complete task: ${open[0].title}`, exact: true })).click());
     open = (await server(page)).tasks.filter((t) => t.leadId === leadId && !t.done);
     assert(open.length === before, `completing didn't save: ${open.length} open tasks`);
+  });
+
+  await check("Convert is disabled until the lead is qualified", async () => {
+    const convert = page.getByRole("button", { name: "Convert to customer" });
+    assert(await convert.isDisabled(), "Convert is enabled while the lead is only Contacted");
+    await saved(page, "/api/leads/bulk", () => page.getByRole("button", { name: "Mark as qualified" }).click());
+    await page.getByText("Ready to convert.").waitFor({ timeout: 10000 });
+    assert(await convert.isEnabled(), "Convert is still disabled after Mark as qualified");
+    const row = (await server(page)).leads.find((l) => l.email === lead.email);
+    assert(row?.status === "qualified", `status is "${row?.status}"`);
   });
 
   await check("Converting a lead creates the customer and deal in the database", async () => {

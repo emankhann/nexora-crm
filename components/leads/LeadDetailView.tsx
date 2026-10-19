@@ -18,12 +18,13 @@ import { AssignOwnerDialog } from "@/components/leads/BulkDialogs";
 import TaskForm from "@/components/tasks/TaskForm";
 import NotFoundView from "@/components/ui/NotFoundView";
 import { statusTone } from "@/components/leads/LeadsTable";
-import { deleteLeads, logActivity, toggleTask, useCrm } from "@/lib/crm-store";
+import { deleteLeads, logActivity, setLeadsStatus, toggleTask, useCrm } from "@/lib/crm-store";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
 import { useNow } from "@/lib/use-now";
 import { btnOutline, btnPrimary, card } from "@/lib/ui";
 import { formatCurrency, formatDate, formatDue, scoreTier } from "@/lib/utils";
+import type { LeadStatus } from "@/types";
 
 const stageIndex = { New: 0, Contacted: 1, Qualified: 2, Unqualified: 0, Converted: 4 } as const;
 
@@ -45,6 +46,7 @@ export default function LeadDetailView({ id }: { id: string }) {
   const router = useRouter();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [n, setN] = useState(0);
+  const [moving, setMoving] = useState(false);
 
   if (!crm || !user) return null;
   const lead = crm.leads.find((l) => l.id === id);
@@ -83,6 +85,23 @@ export default function LeadDetailView({ id }: { id: string }) {
   const tasks = crm.tasks.filter((t) => t.leadId === lead.id && !t.done).sort((a, b) => a.dueAt.localeCompare(b.dueAt));
   const customer = lead.customerId ? crm.customers.find((c) => c.id === lead.customerId) : null;
   const converted = lead.status === "Converted";
+  // Converting ends qualification: the API refuses it before the lead is Qualified.
+  const qualified = lead.status === "Qualified";
+
+  const leadId = lead.id;
+
+  async function moveTo(status: LeadStatus, message: string) {
+    if (moving) return;
+    setMoving(true);
+    try {
+      await setLeadsStatus([leadId], status);
+      toast(message);
+    } catch (err) {
+      showError(err);
+    } finally {
+      setMoving(false);
+    }
+  }
 
   const details: [string, string][] = [
     ["Email", lead.email],
@@ -141,7 +160,14 @@ export default function LeadDetailView({ id }: { id: string }) {
               </Link>
             ) : (
               editable && (
-                <button type="button" className={btnPrimary} onClick={() => open({ kind: "convert" })}>
+                <button
+                  type="button"
+                  className={btnPrimary}
+                  disabled={!qualified}
+                  aria-describedby={qualified ? undefined : "convert-hint"}
+                  title={qualified ? undefined : "Qualify this lead first"}
+                  onClick={() => open({ kind: "convert" })}
+                >
                   Convert to customer
                 </button>
               )
@@ -149,6 +175,54 @@ export default function LeadDetailView({ id }: { id: string }) {
           </div>
         </div>
         <StageStepper current={stageIndex[lead.status]} dates={lead.stageDates} />
+        {editable && !converted && (
+          <div className="flex flex-col gap-3 rounded-xl border border-line bg-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <p id="convert-hint" className="text-[13px] text-slate-500">
+              {lead.status === "New" && (
+                <>
+                  <b className="text-slate-700">Next step: make contact.</b> Logging a call, email or meeting marks the lead as contacted.
+                </>
+              )}
+              {lead.status === "Contacted" && (
+                <>
+                  <b className="text-slate-700">Next step: qualify.</b> Is there a real need, budget and a decision maker? Converting is possible once the lead is qualified.
+                </>
+              )}
+              {lead.status === "Qualified" && (
+                <>
+                  <b className="text-slate-700">Ready to convert.</b> Turn this lead into a customer, with a deal if there is one.
+                </>
+              )}
+              {lead.status === "Unqualified" && (
+                <>
+                  <b className="text-slate-700">Marked as not a fit.</b> Reopen it if things change.
+                </>
+              )}
+            </p>
+            <div className="flex flex-wrap gap-2 [&>*]:flex-auto sm:[&>*]:flex-none">
+              {lead.status === "New" && (
+                <button type="button" className={btnOutline} disabled={moving} onClick={() => moveTo("Contacted", `${lead.name} marked as contacted`)}>
+                  Mark as contacted
+                </button>
+              )}
+              {lead.status === "Contacted" && (
+                <>
+                  <button type="button" className={btnOutline} disabled={moving} onClick={() => moveTo("Unqualified", `${lead.name} marked as not a fit`)}>
+                    Not a fit
+                  </button>
+                  <button type="button" className={btnPrimary} disabled={moving} onClick={() => moveTo("Qualified", `${lead.name} is qualified and ready to convert`)}>
+                    Mark as qualified
+                  </button>
+                </>
+              )}
+              {lead.status === "Unqualified" && (
+                <button type="button" className={btnOutline} disabled={moving} onClick={() => moveTo("Contacted", `${lead.name} reopened`)}>
+                  Reopen
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-wrap items-start gap-4">

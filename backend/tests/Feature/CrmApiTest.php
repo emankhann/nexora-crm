@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\LeadStatus;
 use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\Lead;
@@ -141,6 +142,7 @@ class CrmApiTest extends TestCase
     {
         $huma = $this->user('huma@nexora.example');
         $lead = Lead::where('company', 'Harbor Dental')->firstOrFail();
+        $lead->update(['status' => LeadStatus::Qualified]);
 
         $this->actingAs($huma)->postJson("/api/leads/{$lead->id}/convert", [
             'mode' => 'new',
@@ -155,10 +157,44 @@ class CrmApiTest extends TestCase
         $this->assertTrue($customer->contacts()->where('email', $lead->email)->exists());
     }
 
+    public function test_a_lead_must_be_qualified_before_it_can_be_converted(): void
+    {
+        $lead = Lead::where('company', 'Harbor Dental')->firstOrFail(); // New
+        $huma = $this->user('huma@nexora.example');
+
+        $this->actingAs($huma)->postJson("/api/leads/{$lead->id}/convert", ['mode' => 'new', 'industry' => 'Healthcare'])
+            ->assertStatus(422)
+            ->assertJsonPath('message', 'Qualify this lead before converting it.');
+        $this->assertSame('new', $lead->fresh()->status->value);
+        $this->assertSame(0, Customer::where('name', 'Harbor Dental')->count());
+    }
+
+    public function test_logging_a_call_on_a_new_lead_moves_it_to_contacted(): void
+    {
+        $lead = Lead::where('company', 'Harbor Dental')->firstOrFail(); // New, Sana's
+        $lead->update(['auto_score' => true]); // demo leads keep hand-picked scores; this one should be rescored
+        $sana = $this->user('sana@nexora.example');
+
+        $this->actingAs($sana)->postJson('/api/activities', ['type' => 'note', 'title' => 'Just a note', 'lead_id' => $lead->id])->assertCreated();
+        $this->assertSame('new', $lead->fresh()->status->value, 'a note is not contact');
+
+        $this->actingAs($sana)->postJson('/api/activities', ['type' => 'call', 'title' => 'Call logged: interested', 'lead_id' => $lead->id])->assertCreated();
+        $fresh = $lead->fresh();
+        $this->assertSame('contacted', $fresh->status->value);
+        $this->assertNotNull($fresh->contacted_at);
+        $this->assertContains('Has replied or taken a call', array_column($fresh->score_factors, 'label'));
+        $this->assertTrue($fresh->activities()->where('title', 'Status changed from New to Contacted')->exists());
+
+        // Already contacted: another call doesn't change it again.
+        $this->actingAs($sana)->postJson('/api/activities', ['type' => 'email', 'title' => 'Email sent: follow-up', 'lead_id' => $lead->id])->assertCreated();
+        $this->assertSame(1, $fresh->activities()->where('title', 'Status changed from New to Contacted')->count());
+    }
+
     public function test_editing_a_converted_lead_keeps_it_converted(): void
     {
         $huma = $this->user('huma@nexora.example');
         $lead = Lead::where('company', 'Harbor Dental')->firstOrFail();
+        $lead->update(['status' => LeadStatus::Qualified]);
         $this->actingAs($huma)->postJson("/api/leads/{$lead->id}/convert", ['mode' => 'new', 'industry' => 'Healthcare'])->assertSuccessful();
 
         $this->actingAs($huma)->putJson("/api/leads/{$lead->id}", [
@@ -176,6 +212,7 @@ class CrmApiTest extends TestCase
         $othersCustomer = Customer::where('name', 'Meridian Textiles')->firstOrFail(); // Omar's
         $othersDeal = Deal::where('title', 'Fleet tracking portal')->firstOrFail();    // Huma's
         $ownLead = Lead::where('company', 'Harbor Dental')->firstOrFail();             // Sana's
+        $ownLead->update(['status' => LeadStatus::Qualified]);                         // so only the customer check can stop it
 
         // A deal on someone else's customer.
         $this->actingAs($sana)->postJson('/api/deals', [

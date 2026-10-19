@@ -130,7 +130,7 @@ cd backend && php artisan test
 | Script | Checks |
 |---|---|
 | `node scripts/check-signin-and-data.mjs` | Sign-in, lockout, what each role can open, data loaded from the database, sign-out, expired sessions (19 checks) |
-| `node scripts/check-saving.mjs` | Creating, editing, moving, converting and deleting records through the UI (14) |
+| `node scripts/check-saving.mjs` | Creating, editing, moving, converting and deleting records through the UI, and taking a lead through its stages (16) |
 | `node scripts/check-account-and-emails.mjs` | Invites, password reset, change password, customer delete and reminder emails (9) |
 | `node scripts/check-same-name-owners.mjs` | Two people with the same short name are kept apart (6) |
 | `node scripts/check-responsive.mjs` | Every page and dialog at phone, tablet and laptop sizes, with screenshots (38) |

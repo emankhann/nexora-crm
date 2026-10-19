@@ -118,7 +118,7 @@ class LeadController extends Controller
         DB::transaction(function () use ($lead, $data) {
             $before = $lead->replicate();
             $lead->fill($data);
-            $this->stampStageDates($lead);
+            $lead->stampStageDates();
 
             if ($lead->auto_score) {
                 $scored = $this->scorer->score($lead->source, $lead->status, $lead->job_title, $lead->company_size, $lead->phone, $lead->email);
@@ -191,7 +191,7 @@ class LeadController extends Controller
                         if ($from === $lead->status) {
                             break;
                         }
-                        $this->stampStageDates($lead);
+                        $lead->stampStageDates();
                         if ($lead->auto_score) {
                             $scored = $this->scorer->score($lead->source, $lead->status, $lead->job_title, $lead->company_size, $lead->phone, $lead->email);
                             $lead->score = $scored['score'];
@@ -221,6 +221,8 @@ class LeadController extends Controller
     {
         Gate::authorize('update', $lead);
         abort_if($lead->status === LeadStatus::Converted, 422, 'This lead is already a customer.');
+        // Converting ends qualification, so the funnel stays honest: New → Contacted → Qualified → Converted.
+        abort_if($lead->status !== LeadStatus::Qualified, 422, 'Qualify this lead before converting it.');
 
         $data = $request->validate([
             'mode' => ['required', Rule::in(['new', 'existing'])],
@@ -316,17 +318,6 @@ class LeadController extends Controller
         }
 
         return response()->json(['added' => $added, 'skipped' => $skipped]);
-    }
-
-    /** Fill in when the lead first reached each stage. */
-    private function stampStageDates(Lead $lead): void
-    {
-        if (in_array($lead->status, [LeadStatus::Contacted, LeadStatus::Qualified], true) && ! $lead->contacted_at) {
-            $lead->contacted_at = now();
-        }
-        if ($lead->status === LeadStatus::Qualified && ! $lead->qualified_at) {
-            $lead->qualified_at = now();
-        }
     }
 
     private function recordAssignment(Lead $lead, ?int $ownerId): void

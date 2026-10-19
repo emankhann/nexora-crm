@@ -122,8 +122,8 @@ flowchart TD
 
 The lifecycle a record goes through:
 
-1. **Lead.** Someone who might buy. It gets a source, a status (New → Contacted → Qualified, or Unqualified), an owner and a score. The score comes from simple, visible rules in `LeadScorer` (a referral is worth more than a cold email, a decision-maker title adds points, and so on), so a sales rep can see *why* a lead is hot.
-2. **Conversion.** A qualified lead becomes a **customer** (a new company, or an existing one), and optionally a **deal**. `LeadConversionService` does all of it in one database transaction, so a failure never leaves half a conversion. The lead is kept, marked Converted, and linked to the customer, so you can always see where a customer came from.
+1. **Lead.** Someone who might buy. It gets a source, a status (New → Contacted → Qualified, or Unqualified), an owner and a score. Logging a call, email or meeting on a New lead moves it to Contacted automatically; the lead page offers *Mark as qualified* or *Not a fit* as the next step. The score comes from simple, visible rules in `LeadScorer` (a referral is worth more than a cold email, a decision-maker title adds points, and so on), so a sales rep can see *why* a lead is hot.
+2. **Conversion.** Only a **qualified** lead can be converted (the API refuses anything else). It becomes a **customer** (a new company, or an existing one), and optionally a **deal**. `LeadConversionService` does all of it in one database transaction, so a failure never leaves half a conversion. The lead is kept, marked Converted, and linked to the customer, so you can always see where a customer came from.
 3. **Deal.** An opportunity with a value and an expected close date, moving through New → Contacted → Qualified → Proposal → Won or Lost. `DealStageService` sets the probability from the stage, needs a reason for Lost, and adds the value to the customer's lifetime value when it's Won (and takes it off again if it's reopened).
 4. **Tasks and follow-ups** keep everything moving. A task can be linked to a lead, a customer or a deal. Each follow-up attempt is logged with an outcome and can reschedule the task. Reminders appear in the bell and, if turned on, as an email when the reminder time comes.
 5. **Activity history** is written by `ActivityRecorder` for calls, emails, meetings, notes, status changes, assignments, conversions and deal moves. A customer's profile shows its own history plus the history of the lead it came from.
@@ -212,7 +212,7 @@ The main endpoints:
 ## Testing
 
 - **31 backend tests** (`cd backend && php artisan test`): 28 feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, people with the same short name being kept apart, and the test email command.
-- **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (14), accounts and emails (9), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
+- **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (16), accounts and emails (9), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
 - `npm run lint` and `npm run build` (which type-checks everything) must pass before every merge.
 
 ## Known limits

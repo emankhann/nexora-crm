@@ -5,7 +5,7 @@ import Modal from "@/components/ui/Modal";
 import { TextAreaField, TextField } from "@/components/ui/Field";
 import { useToast } from "@/components/ui/Toast";
 import { errorMessage } from "@/lib/api";
-import { createTask, logActivity } from "@/lib/crm-store";
+import { createTask, logActivity, useCrm } from "@/lib/crm-store";
 import { useSessionUser } from "@/lib/session";
 import { btnOutline, btnPrimary, inputCls } from "@/lib/ui";
 import { daysFromNow, fromInputs, toDateInput, toTimeInput } from "@/lib/utils";
@@ -34,6 +34,7 @@ export default function LogActivityDialog({
   target: { name: string; company: string; leadId?: string; customerId?: string; email?: string };
 }) {
   const user = useSessionUser();
+  const crm = useCrm();
   const toast = useToast();
   const now = new Date().toISOString();
   const [kind, setKind] = useState<ActivityKindChoice>(initialKind);
@@ -77,6 +78,8 @@ export default function LogActivityDialog({
         : kind === "email"
           ? `Email ${outcome === "Replied" ? "reply" : "sent"}: ${subject.trim()}`
           : `Meeting${mins ? ` (${mins} min)` : ""}: ${outcome.toLowerCase()}`;
+    // Logging contact with a New lead moves it to Contacted on the server; say so in the toast.
+    const advances = Boolean(target.leadId) && crm?.leads.find((l) => l.id === target.leadId)?.status === "New";
     setSaving(true);
     try {
       await logActivity({
@@ -120,7 +123,7 @@ export default function LogActivityDialog({
     setSaving(false);
     const sendNow = kind === "email" && openMail && target.email && outcome === "Sent";
     toast(
-      `${kind === "call" ? "Call" : kind === "email" ? "Email" : "Meeting"} saved${followUp ? " · follow-up task created" : ""}${sendNow ? " · opening your email app" : ""}`
+      `${kind === "call" ? "Call" : kind === "email" ? "Email" : "Meeting"} saved${advances ? " · lead moved to Contacted" : ""}${followUp ? " · follow-up task created" : ""}${sendNow ? " · opening your email app" : ""}`
     );
     onClose();
     if (sendNow && target.email) {

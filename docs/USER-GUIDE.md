@@ -80,15 +80,16 @@ A lead is someone who might buy but hasn't yet.
 
 ![Lead detail](screenshots/lead-detail.png)
 
-- **Log call / Send email:** record a call, email or meeting with its outcome (for a call: Interested, Needs follow-up, No answer, Not interested) and notes. *Create a follow-up task* is ticked by default, so the next step is scheduled in the same go.
+- **Log call / Send email:** record a call, email or meeting with its outcome (for a call: Interested, Needs follow-up, No answer, Not interested) and notes. *Create a follow-up task* is ticked by default, so the next step is scheduled in the same go. Logging a call, email or meeting on a **New** lead moves it to **Contacted** automatically.
 - **Add a note:** a quick note on the timeline.
-- **Edit** the lead, including its status, and **Change owner** (admins and managers).
+- **Move it through the stages:** under the stage steps, a bar shows the next step with a button: *Mark as contacted* for a New lead; *Mark as qualified* or *Not a fit* for a Contacted one; *Reopen* for one marked not a fit. Each change is dated on the steps and recorded in the history.
+- **Edit** the lead (its status can also be changed there), and **Change owner** (admins and managers).
 - **Score breakdown, timeline, linked deals and open tasks.**
 - **Convert to customer:** see the next section.
 
 ## 4. Converting a lead
 
-When a lead is ready to buy, open it and click **Convert to customer**:
+When a lead is **Qualified**, open it and click **Convert to customer**. Before that the button is greyed out: converting ends the qualification process, so a lead goes New → Contacted → Qualified → Converted, and the reports stay honest.
 
 1. Choose **New customer** (Nexora suggests the lead's company) or add them to an **existing customer**. If a customer with the same company name exists, it's chosen for you.
 2. Pick the industry and the account owner.
@@ -191,8 +192,8 @@ A path through the main workflow, good for a first look or a demo:
 
 1. Sign in as **Huma** (Admin). Look at the dashboard's *Needs attention* list.
 2. **Leads** → *+ New lead*: add someone from a referral with a decision-maker title. Note the score and its breakdown.
-3. On the lead page, **Log call** → outcome *Interested*, with a follow-up task for tomorrow.
-4. **Convert to customer:** a new customer, with a deal in *Proposal*.
+3. On the lead page, **Log call** → outcome *Interested*, with a follow-up task for tomorrow. The lead moves to **Contacted** by itself.
+4. Click **Mark as qualified**, then **Convert to customer:** a new customer, with a deal in *Proposal*.
 5. **Pipeline:** drag the new deal to **Won**. Open the customer: the lifetime value went up.
 6. **Tasks:** open the follow-up and log an attempt; see the follow-up history.
 7. **Reports:** see the win in *Pipeline summary* and the conversion in *Lead conversion*.

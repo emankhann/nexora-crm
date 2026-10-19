@@ -62,6 +62,7 @@ A CRM is only useful if people keep it up to date, so good CRMs do as much as po
 - **Deal probability** follows the stage, and the **weighted pipeline** (value × probability) becomes a forecast.
 - **Customer lifetime value** updates itself when deals are won or reopened.
 - **Reminders:** due and overdue tasks, new assignments and late deals appear in the bell, and reminder emails are sent by a scheduled job.
+- **Leads move forward by themselves:** logging a call, email or meeting on a new lead marks it as contacted, and a lead can only be converted once it's qualified, so the funnel reflects what really happened.
 - **History writes itself:** status changes, assignments, conversions and deal moves are logged without anyone typing them.
 - **Needs attention:** the dashboard picks out hot leads nobody has contacted for a week, overdue tasks, late deals and at-risk customers.
 

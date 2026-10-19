@@ -70,6 +70,17 @@ class Lead extends Model
         return $this->hasMany(Activity::class)->latest('occurred_at');
     }
 
+    /** Records when the lead first reached Contacted and Qualified (they drive the funnel and the stepper). */
+    public function stampStageDates(): void
+    {
+        if (in_array($this->status, [LeadStatus::Contacted, LeadStatus::Qualified], true) && ! $this->contacted_at) {
+            $this->contacted_at = now();
+        }
+        if ($this->status === LeadStatus::Qualified && ! $this->qualified_at) {
+            $this->qualified_at = now();
+        }
+    }
+
     public function initials(): string
     {
         $parts = preg_split('/\s+/', trim($this->name)) ?: [$this->name];
