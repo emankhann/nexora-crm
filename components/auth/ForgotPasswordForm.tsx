@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Check, Loader2 } from "lucide-react";
 import EmailLogHint from "@/components/auth/EmailLogHint";
 import { api, errorMessage } from "@/lib/api";
+import { btnPrimaryLarge } from "@/lib/ui";
 import { isEmail } from "@/lib/utils";
 
 export default function ForgotPasswordForm() {
@@ -82,7 +83,7 @@ export default function ForgotPasswordForm() {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-[46px] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] disabled:bg-primary-disabled"
+            className={btnPrimaryLarge}
           >
             {loading && <Loader2 size={18} className="animate-spin" aria-hidden />}
             {loading ? "Sending…" : "Send reset link"}

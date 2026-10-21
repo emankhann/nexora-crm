@@ -1,7 +1,15 @@
 /** Shared Tailwind class strings so every form and button matches the designs. */
 
-export const btnPrimary =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-[18px] text-[13.5px] font-bold text-ink shadow-[0_0_0_1px_rgba(46,224,127,0.4),0_8px_24px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-subtle disabled:text-slate-500 disabled:shadow-none disabled:ring-1 disabled:ring-edge";
+/** How every green button looks while disabled: neutral, so it never looks clickable. */
+const primaryDisabled = "disabled:bg-subtle disabled:text-slate-500 disabled:shadow-none disabled:ring-1 disabled:ring-edge";
+
+export const btnPrimary = `inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-[18px] text-[13.5px] font-bold text-ink shadow-[0_0_0_1px_rgba(46,224,127,0.4),0_8px_24px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed ${primaryDisabled}`;
+
+/** The big full-width button on the sign-in pages. It's only disabled while a request is running. */
+export const btnPrimaryLarge = `flex h-[46px] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] hover:bg-primary-hover disabled:cursor-progress ${primaryDisabled}`;
+
+/** A smaller green button, for inline forms such as "Save note". */
+export const btnPrimarySmall = `inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-[13px] font-bold text-ink shadow-[0_6px_14px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed ${primaryDisabled}`;
 
 export const btnOutline =
   "inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-edge bg-surface px-4 text-[13.5px] font-semibold text-navy hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";

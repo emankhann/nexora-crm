@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { ActivityKind, ActivityRecord } from "@/types";
+import { btnPrimarySmall } from "@/lib/ui";
 import { formatDate, formatTime, timeAgo } from "@/lib/utils";
 
 const kindStyle: Record<ActivityKind, { icon: LucideIcon; cls: string }> = {
@@ -116,7 +117,7 @@ export default function ActivityFeed({
               type="button"
               onClick={() => void save()}
               disabled={!note.trim() || saving}
-              className="ml-auto h-9 rounded-xl bg-primary px-4 text-[13px] font-bold text-ink shadow-[0_6px_14px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              className={`ml-auto ${btnPrimarySmall}`}
             >
               {saving ? "Saving…" : "Save note"}
             </button>

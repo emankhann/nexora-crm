@@ -6,13 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import NewPasswordFields, { checkNewPassword } from "@/components/auth/NewPasswordFields";
 import { api, errorMessage, formErrors } from "@/lib/api";
+import { btnPrimaryLarge } from "@/lib/ui";
 import { mapUser, type ApiUser } from "@/lib/api-mappers";
 import { loadCrm } from "@/lib/crm-store";
 import { clearSession, setSessionUser } from "@/lib/session";
 
 const card = "flex w-full max-w-[440px] flex-col gap-5 rounded-[22px] border border-line bg-surface p-6 shadow-[0_24px_60px_rgba(0,0,0,0.45)] sm:p-8";
-const submitCls =
-  "flex h-[46px] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] hover:bg-primary-hover disabled:bg-primary-disabled";
+const submitCls = btnPrimaryLarge;
 
 type Invite = { name: string; email: string; role: string };
 

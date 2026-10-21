@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { loadCrm } from "@/lib/crm-store";
 import { signIn } from "@/lib/session";
+import { btnPrimaryLarge } from "@/lib/ui";
 import { isEmail } from "@/lib/utils";
 
 const input =
@@ -173,7 +174,7 @@ export default function LoginForm() {
         type="submit"
         disabled={loading}
         aria-busy={loading}
-        className="flex h-[46px] items-center justify-center gap-2.5 rounded-xl bg-primary text-[15px] font-bold text-ink shadow-[0_8px_18px_rgba(46,224,127,0.28)] hover:bg-primary-hover disabled:cursor-progress disabled:bg-primary-disabled"
+        className={btnPrimaryLarge}
       >
         {loading && <Loader2 size={18} className="animate-spin" aria-hidden />}
         {loading ? "Signing in…" : "Sign in"}

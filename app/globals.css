@@ -38,7 +38,6 @@
   /* Brand green */
   --color-primary-hover: #5BEA9C;
   --color-primary-deep: #1BA45C;   /* bottom of the glowing chart bar */
-  --color-primary-disabled: #1F5C3B;
   --color-primary-soft: #0F2318;   /* selected rows, active filters */
   --color-bar: #1E3A2A;            /* chart bars for past months */
   --color-bar-hover: #25503A;
