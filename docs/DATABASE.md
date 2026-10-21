@@ -208,7 +208,7 @@ Laravel's own tables: `sessions` (signed-in sessions), `password_reset_tokens` (
 
 ## Demo data
 
-`php artisan migrate:fresh --seed` creates:
+From the backend folder, `php artisan migrate:fresh --seed` creates:
 
 | | |
 |---|---|
@@ -223,4 +223,4 @@ Dates are relative to the day you seed, so the dashboard always looks current. T
 
 ## Changing the schema
 
-Never edit an existing migration once it has run somewhere. Add a new one (`php artisan make:migration add_x_to_y_table`), as `2026_10_18_000001_add_reminder_sent_at_to_tasks_table.php` does, and run `php artisan migrate`.
+Never edit an existing migration once it has run somewhere. Add a new one (from the backend folder, `php artisan make:migration add_x_to_y_table`), as `2026_10_18_000001_add_reminder_sent_at_to_tasks_table.php` does, and run `php artisan migrate`.

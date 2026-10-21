@@ -26,6 +26,8 @@ A sales CRM for managing leads, customers, deals and follow-up tasks, with role-
 
 ## Quick start
 
+**Windows:** these commands work in PowerShell, Command Prompt and Git Bash. Run each line on its own.
+
 **You need:** [Node.js](https://nodejs.org) 20.9 or newer, [PHP](https://www.php.net/downloads) 8.3 or newer, and [Composer](https://getcomposer.org). No database server is needed: by default the data lives in a single SQLite file.
 
 ```bash
@@ -67,16 +69,23 @@ New to the app? Follow the [five-minute tour](docs/USER-GUIDE.md#13-a-five-minut
    DB_USERNAME=root
    DB_PASSWORD=
    ```
-3. Run `npm run setup` again (or just `cd backend && php artisan migrate:fresh --seed`).
+3. Run `npm run setup` again (or just, from the backend folder, run `php artisan migrate:fresh --seed`).
 
 ### Running the parts separately
 
-`npm run dev:all` runs these three for you. To run them in separate terminals instead:
+`npm run dev:all` runs these three for you. To run them in three separate terminals instead, each starting in the project root:
 
 ```bash
-cd backend && php artisan serve          # API on http://localhost:8000
-cd backend && php artisan schedule:work  # sends task reminder emails when they're due
-npm run dev                              # app on http://localhost:3000
+# Terminal 1: the API on http://localhost:8000
+cd backend
+php artisan serve
+
+# Terminal 2: sends task reminder emails when they're due
+cd backend
+php artisan schedule:work
+
+# Terminal 3: the app on http://localhost:3000
+npm run dev
 ```
 
 ### Emails when running locally
@@ -89,7 +98,7 @@ Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?
 
 - **Invite someone:** Team and roles → *+ Invite member*, then open the link from the log in a private window. They choose a password and are signed in.
 - **Forgot password:** on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
-- **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away: `cd backend && php artisan nexora:send-task-reminders`.
+- **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away, from the backend folder, run `php artisan nexora:send-task-reminders`.
 
 ### Sending real emails
 
@@ -108,8 +117,8 @@ The emails are real Laravel notifications; only the delivery is a setting. To ha
    MAIL_FROM_NAME="Nexora CRM"
    ```
 3. In `.env.local`, set `NEXT_PUBLIC_EMAILS_IN_LOG=false`.
-4. Run `cd backend && php artisan config:clear`, then restart `npm run dev:all`.
-5. Test it: `cd backend && php artisan nexora:send-test-email you@gmail.com`.
+4. From the backend folder, run `php artisan config:clear`, then restart `npm run dev:all` from the project root.
+5. Test it: from the backend folder, run `php artisan nexora:send-test-email you@gmail.com`.
 
 Invites, password resets, task reminders and lead assignments now arrive in real inboxes, sent from your Gmail. Your password stays in `backend/.env`, which Git never commits.
 
@@ -137,10 +146,26 @@ More in the [user guide](docs/USER-GUIDE.md).
 **Backend** (41 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
-cd backend && php artisan test
+cd backend
+php artisan test
+cd ..
 ```
 
-**End to end.** Five scripts drive a real browser through the running app. Start the app on freshly seeded data (`cd backend && php artisan migrate:fresh --seed`, then `npm run dev:all`), install Playwright once (`npm install --no-save playwright`), and from the project root run:
+**End to end.** Five scripts drive a real browser through the running app. First start the app on freshly seeded data:
+
+```bash
+cd backend
+php artisan migrate:fresh --seed
+cd ..
+npm run dev:all
+```
+
+Then, in a second terminal in the project root, install Playwright once and run each script from the table below, for example:
+
+```bash
+npm install --no-save playwright
+node scripts/check-signin-and-data.mjs
+```
 
 | Script | Checks |
 |---|---|
@@ -178,6 +203,6 @@ The settings above are for running on your own computer. On a real server:
 - **Backend `.env`:** `APP_ENV=production`, `APP_DEBUG=false` (otherwise error pages show internal details), a real `APP_URL`, and MySQL.
 - **HTTPS everywhere**, plus `SESSION_SECURE_COOKIE=true` so the session cookie is only sent over HTTPS.
 - **Domains:** set `FRONTEND_URL`, `SANCTUM_STATEFUL_DOMAINS` and `SESSION_DOMAIN` to the real ones. The app and the API must share a parent domain, for example `app.example.com` and `api.example.com` with `SESSION_DOMAIN=.example.com`.
-- **Frontend:** set `NEXT_PUBLIC_API_URL` to the API's address, keep `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=false`, and run `npm run build && npm start`.
+- **Frontend:** set `NEXT_PUBLIC_API_URL` to the API's address, keep `NEXT_PUBLIC_SHOW_DEMO_ACCOUNTS=false`, and run `npm run build`, then `npm start`.
 - **No demo data.** `php artisan db:seed` refuses to create the demo accounts in production, because their password is public. Create the first admin by hand.
 - **Email:** set `MAIL_MAILER` and the `MAIL_*` settings for a real mail service (for example Resend, Brevo or Mailgun), and run the scheduler with a cron entry for `php artisan schedule:run` every minute.
