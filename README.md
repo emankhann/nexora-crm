@@ -101,19 +101,47 @@ By default, emails (invites, password resets, task reminders, lead assignments) 
 
 ### Using MySQL
 
-**Optional.** You only need this if you prefer MySQL to the default SQLite file. Reviewers can skip it.
+**Optional.** You only need this if you prefer MySQL to the default SQLite file. Reviewers can skip it. Do these steps **instead of Step 3** of Getting started.
 
-1. Create an empty database, for example `nexora`.
-2. In `backend/.env`, replace `DB_CONNECTION=sqlite` with these lines, using your MySQL user and password:
+**You need:** MySQL Server running on your computer (installed with MySQL Workbench, XAMPP or similar), and its username and password (often `root`).
+
+**A. Create an empty database.** In MySQL Workbench, connect to your local server, open a new query tab, run this, then refresh the schema list:
+
+```sql
+CREATE DATABASE nexora CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
+
+**B. Create the settings file before running setup.**
+
+1. In VS Code, in the `backend` folder, copy `.env.example` and name the copy exactly `.env` (right-click → Copy, right-click `backend` → Paste, then rename).
+2. Open `backend/.env` and replace the database lines with:
    ```
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
    DB_PORT=3306
    DB_DATABASE=nexora
    DB_USERNAME=root
-   DB_PASSWORD=
+   DB_PASSWORD="your MySQL password"
    ```
-3. Run `npm run setup`.
+   If your MySQL user has no password, write `DB_PASSWORD=`. Make sure the old `DB_CONNECTION=sqlite` line is gone.
+3. Save the file.
+
+**C. Run setup:** `npm run setup`
+
+- It says "backend/.env already exists, keeping it" and "Database: mysql (nexora …)".
+- If it says PHP needs a few extensions turned on, with `pdo_mysql` under "Missing", press **Y**.
+- It creates every table and the demo data in your `nexora` database, then says "✓ Nexora CRM is ready."
+
+Then continue with Step 4 (`npm run dev:all`). To see the data, refresh the `nexora` schema in MySQL Workbench.
+
+| If you see | Fix |
+|---|---|
+| `Unknown database 'nexora'` | Step A wasn't done, or the name differs from `DB_DATABASE` |
+| `Access denied for user 'root'` | Wrong `DB_PASSWORD` in `backend/.env` |
+| `No connection could be made` / `Connection refused` | MySQL isn't running: start it from Windows Services or XAMPP |
+| `could not find driver` | `pdo_mysql` is off: run `npm run setup` again and press **Y** |
+
+**Note:** `npm run setup` resets the database to the demo data each time. After the first time, start Nexora with only `npm run dev:all`.
 
 ### Running the parts separately
 
