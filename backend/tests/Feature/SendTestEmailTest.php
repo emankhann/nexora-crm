@@ -13,15 +13,15 @@ class SendTestEmailTest extends TestCase
 {
     public function test_the_test_email_goes_to_the_given_address(): void
     {
-        $this->artisan('nexora:send-test-email', ['to' => 'eman@nexora.example'])
+        $this->artisan('nexora:send-test-email', ['to' => 'someone@gmail.com'])
             ->expectsOutput('Mailer: array')
-            ->expectsOutput('Sent to eman@nexora.example')
+            ->expectsOutput('Sent to someone@gmail.com')
             ->assertExitCode(0);
 
         $messages = Mail::mailer('array')->getSymfonyTransport()->messages();
         $this->assertCount(1, $messages);
         $email = $messages->first()->getOriginalMessage();
-        $this->assertSame('eman@nexora.example', $email->getTo()[0]->getAddress());
+        $this->assertSame('someone@gmail.com', $email->getTo()[0]->getAddress());
         $this->assertStringContainsString('email delivery works', $email->getTextBody());
     }
 

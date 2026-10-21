@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Support\EmailLink;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 use Throwable;
@@ -48,6 +49,8 @@ class SendTestEmail extends Command
         $this->info("Sent to {$to}");
         if ($mailer === 'log') {
             $this->line('MAIL_MAILER is "log", so the email was written to storage/logs/laravel.log, not delivered.');
+        } elseif (EmailLink::isReserved($to)) {
+            $this->line("{$to} is on a reserved test domain, so it wasn't really sent. Use a real address to test delivery.");
         }
 
         return self::SUCCESS;

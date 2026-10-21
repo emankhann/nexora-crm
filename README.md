@@ -102,7 +102,8 @@ The emails are real Laravel notifications; only the delivery is a setting. To ha
 For production, use the same settings with a mail service such as Resend, Brevo or Mailgun (see "Before going live").
 
 - The links in the emails point to `http://localhost:3000`, so open them on the computer running the app.
-- **Switch back to `MAIL_MAILER=log` (and `NEXT_PUBLIC_EMAILS_IN_LOG=true`) before running the check scripts.** They read the links from the log, and would otherwise try to send real emails to the made-up `….example` demo addresses.
+- **Demo accounts never get real emails.** Addresses on reserved test domains (`.example`, `.test`, `.invalid`, `.localhost`, and `example.com/.net/.org`), like `huma@nexora.example`, can't receive email, so Nexora doesn't send to them (they would only come back as bounces). Their "Email link for …" line is still written to `backend/storage/logs/laravel.log`, so you can open the link from there. In an email to several people, only the reserved addresses are dropped.
+- **Switch back to `MAIL_MAILER=log` (and `NEXT_PUBLIC_EMAILS_IN_LOG=true`) before running the check scripts.** They were written for the log mailer and read the links from the log.
 
 ## What's in the app
 
@@ -119,7 +120,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (31 tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (37 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend && php artisan test
