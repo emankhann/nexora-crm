@@ -72,7 +72,7 @@ A lead is someone who might buy but hasn't yet.
 
 80 and above is **Hot**, 50–79 **Warm**, below 50 **Cold**.
 
-**Work with several leads at once.** Tick leads to *Assign owner*, *Change status* or *Delete* (admins) them together. Assigning shows Undo.
+**Work with several leads at once.** Tick leads to *Assign owner*, *Change status* or *Delete* (admins) them together. Assigning shows Undo, and with *Email the new owner* ticked (the default) the new owner gets one email listing all the leads, with a link to open them.
 
 **Import and export.** *Import CSV* takes a file with a header row. **Name** and **Email** columns are required; **Company**, **Phone**, **Job title** and **Source** are used if present. Rows with a missing email, or an email that already exists, are skipped, and you're told how many. *Export* (admins and managers) downloads the leads you're looking at as a CSV file.
 
@@ -83,7 +83,7 @@ A lead is someone who might buy but hasn't yet.
 - **Log call / Send email:** record a call, email or meeting with its outcome (for a call: Interested, Needs follow-up, No answer, Not interested) and notes. *Create a follow-up task* is ticked by default, so the next step is scheduled in the same go. Logging a call, email or meeting on a **New** lead moves it to **Contacted** automatically.
 - **Add a note:** a quick note on the timeline.
 - **Move it through the stages:** under the stage steps, a bar shows the next step with a button: *Mark as contacted* for a New lead; *Mark as qualified* or *Not a fit* for a Contacted one; *Reopen* for one marked not a fit. Each change is dated on the steps and recorded in the history.
-- **Edit** the lead (its status can also be changed there), and **Change owner** (admins and managers).
+- **Edit** the lead (its status can also be changed there), and **Change owner** (admins and managers). With *Email the new owner* ticked, they get an email with a link to the lead. Nobody is emailed when you unassign a lead or take it yourself.
 - **Score breakdown, timeline, linked deals and open tasks.**
 - **Convert to customer:** see the next section.
 

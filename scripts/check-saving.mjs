@@ -209,7 +209,7 @@ const pageErrors = [];
     assert(Number(customer.lifetimeValue) === 5000, `lifetime value is ${customer.lifetimeValue}`);
   });
 
-  await check("Bulk assign is saved", async () => {
+  await check("Bulk assign is saved and emails the new owner", async () => {
     await newLeadViaForm(page, bulk);
     await page.goto(`${BASE}/leads`);
     await ready(page);
@@ -217,7 +217,12 @@ const pageErrors = [];
     await page.getByRole("button", { name: "Assign owner" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByRole("radio", { name: /Omar Tariq/ }).click(); // owner choices are a radio group
+    assert(await dialog.getByRole("checkbox", { name: "Email the new owner" }).isChecked(), "Email the new owner isn't ticked by default");
+    const request = page.waitForRequest((r) => r.url().includes("/api/leads/bulk") && r.method() === "POST");
     await saved(page, "/api/leads/bulk", () => dialog.getByRole("button", { name: /Assign to Omar/ }).click());
+    const body = (await request).postDataJSON();
+    assert(body.action === "assign" && body.notify === true, `the API was sent ${JSON.stringify(body)}`);
+    await visible(page.getByText(/assigned to Omar T\. · we’ve emailed them/)).waitFor({ timeout: 10000 });
     // When the dialog closes the app also clears the selection, so wait for that before selecting again.
     await dialog.waitFor({ state: "hidden", timeout: 15000 });
     const row = (await server(page)).leads.find((l) => l.email === bulk.email);

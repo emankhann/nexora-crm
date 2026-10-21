@@ -306,9 +306,12 @@ export async function updateLead(id: string, input: LeadInput): Promise<void> {
   await mutate(() => api.put(`/leads/${id}`, payload));
 }
 
-/** Gives leads to the user with this id ("" leaves them unassigned). */
-export async function assignLeads(ids: string[], ownerId: string): Promise<void> {
-  await mutate(() => api.post("/leads/bulk", { action: "assign", ids: ids.map(Number), owner_id: num(ownerId) }));
+/**
+ * Gives leads to the user with this id ("" leaves them unassigned). With notify, the API emails
+ * the new owner once, listing the leads (not when unassigning or assigning to yourself).
+ */
+export async function assignLeads(ids: string[], ownerId: string, notify = false): Promise<void> {
+  await mutate(() => api.post("/leads/bulk", { action: "assign", ids: ids.map(Number), owner_id: num(ownerId), notify }));
 }
 
 export async function setLeadsStatus(ids: string[], status: LeadStatus): Promise<void> {

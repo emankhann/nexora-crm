@@ -13,6 +13,7 @@ use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\LeadAssigned;
 use App\Services\ActivityRecorder;
 use App\Services\LeadConversionService;
 use App\Services\LeadScorer;
@@ -154,9 +155,12 @@ class LeadController extends Controller
     }
 
     /**
-     * POST /api/leads/bulk  { action: assign|status|delete, ids: [..], owner_id?, status? }
+     * POST /api/leads/bulk  { action: assign|status|delete, ids: [..], owner_id?, notify?, status? }
      * Each lead is checked against the policy, so a bulk request can't touch
      * records the user isn't allowed to change.
+     *
+     * Assigning with notify: true emails the new owner once, listing every lead they got
+     * (not when unassigning, and not when you assign leads to yourself).
      */
     public function bulk(Request $request): JsonResponse
     {
@@ -165,11 +169,13 @@ class LeadController extends Controller
             'ids' => ['required', 'array', 'min:1', 'max:500'],
             'ids.*' => ['integer'],
             'owner_id' => ['nullable', 'integer', Rule::exists('users', 'id')->where('status', 'active')],
+            'notify' => ['boolean'],
             'status' => ['required_if:action,status', Rule::enum(LeadStatus::class)->except([LeadStatus::Converted])],
         ]);
         $leads = Lead::whereIn('id', $data['ids'])->get();
+        $assigned = collect();
 
-        DB::transaction(function () use ($data, $leads) {
+        DB::transaction(function () use ($data, $leads, $assigned) {
             foreach ($leads as $lead) {
                 switch ($data['action']) {
                     case 'assign':
@@ -182,6 +188,7 @@ class LeadController extends Controller
                         $lead->update(['owner_id' => $newOwner]);
                         $this->recordAssignment($lead, $newOwner);
                         Audit::log('Reassigned', $lead, $lead->name, "Owner changed from {$oldName} to ".(User::find($newOwner)?->shortName() ?? 'Unassigned'));
+                        $assigned->push($lead);
                         break;
 
                     case 'status':
@@ -212,6 +219,12 @@ class LeadController extends Controller
                 }
             }
         });
+
+        // After the transaction, so nobody is emailed about an assignment that was rolled back.
+        $owner = $data['action'] === 'assign' ? User::find($data['owner_id'] ?? null) : null;
+        if ($owner && $assigned->isNotEmpty() && $request->boolean('notify') && $owner->id !== $request->user()->id) {
+            $owner->notify(new LeadAssigned($assigned, $request->user()->name));
+        }
 
         return response()->json(['updated' => $leads->count()]);
     }

@@ -72,16 +72,20 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
     // Previous owners, grouped, so Undo can put each lead back with one request per owner.
     const prev = new Map<string, string[]>();
     for (const l of leads) prev.set(l.ownerId, [...(prev.get(l.ownerId) ?? []), l.id]);
+    // Nobody is emailed about leads they unassign or give to themselves (the API checks this too).
+    const emailed = notify && chosen !== null && chosen.id !== user.id;
     setSaving(true);
     try {
       await assignLeads(
         leads.map((l) => l.id),
-        ownerId
+        ownerId,
+        emailed
       );
       const who = chosen ? chosen.short : "nobody";
-      toast(`${leads.length} ${leads.length === 1 ? "lead" : "leads"} assigned to ${who}${notify && chosen ? " · they’ll be notified" : ""}`, {
+      toast(`${leads.length} ${leads.length === 1 ? "lead" : "leads"} assigned to ${who}${emailed ? " · we’ve emailed them" : ""}`, {
         action: {
           label: "Undo",
+          // Undo puts the leads back quietly: no email to the previous owners.
           onClick: () => {
             Promise.all([...prev].map(([o, ids]) => assignLeads(ids, o))).catch(showError);
           },
@@ -130,7 +134,7 @@ export function AssignOwnerDialog({ open, onClose, leads, onDone }: { open: bool
       </div>
       <label className="mt-4 flex items-center gap-2 text-[13px] font-semibold text-slate-700">
         <input type="checkbox" checked={notify} onChange={(e) => setNotify(e.target.checked)} className="h-[17px] w-[17px] accent-primary" />
-        Notify the new owner
+        Email the new owner
       </label>
     </Modal>
   );
