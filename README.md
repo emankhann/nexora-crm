@@ -28,7 +28,7 @@ A sales CRM for managing leads, customers, deals and follow-up tasks, with role-
 
 **Windows:** these commands work in PowerShell, Command Prompt and Git Bash. Run each line on its own.
 
-**You need:** [Node.js](https://nodejs.org) 20.9 or newer, [PHP](https://www.php.net/downloads) 8.3 or newer, and [Composer](https://getcomposer.org). No database server is needed: by default the data lives in a single SQLite file.
+**You need:** [Node.js](https://nodejs.org) 20.9 or newer, [PHP](https://www.php.net/downloads) 8.3 or newer, and [Composer](https://getcomposer.org). No database server is needed: by default the data lives in a single SQLite file. New to PHP on Windows? See [Installing on Windows](#installing-on-windows).
 
 ```bash
 git clone https://github.com/emankhann/nexora-crm.git
@@ -43,7 +43,7 @@ Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the app and
 
 `npm run setup` is safe to run again, but it resets the database to the demo data.
 
-> **Windows:** if setup says the SQLite extension isn't turned on, open your `php.ini` (`php --ini` shows where it is), remove the `;` in front of `extension=pdo_sqlite` and `extension=sqlite3`, save, and open a new terminal.
+Before installing anything, setup checks Node.js, PHP, Composer and every PHP extension the project needs, and lists all problems at once. If PHP extensions are missing, it offers to turn them on in `php.ini` for you (after backing it up). `npm run doctor` runs the same checks without installing or changing anything. If something goes wrong, see [Troubleshooting](#troubleshooting).
 
 ### Demo accounts
 
@@ -128,6 +128,44 @@ For production, use the same settings with a mail service such as Resend, Brevo 
 - **Demo accounts never get real emails.** Addresses on reserved test domains (`.example`, `.test`, `.invalid`, `.localhost`, and `example.com/.net/.org`), like `huma@nexora.example`, can't receive email, so Nexora doesn't send to them (they would only come back as bounces). Their "Email link for …" line is still written to `backend/storage/logs/laravel.log`, so you can open the link from there. In an email to several people, only the reserved addresses are dropped.
 - **Switch back to `MAIL_MAILER=log` (and `NEXT_PUBLIC_EMAILS_IN_LOG=true`) before running the check scripts.** They were written for the log mailer and read the links from the log.
 
+## Installing on Windows
+
+You need Node.js and PHP 8.3 or newer with Composer. If Node.js isn't installed, get the LTS version from [nodejs.org](https://nodejs.org).
+
+**Option A, easiest (recommended): Laravel Herd.**
+
+1. Download [Laravel Herd](https://herd.laravel.com) (free), install it, and open it once. It installs PHP 8.3+ and Composer with all the extensions this project needs, and adds them to PATH.
+2. Close and reopen your terminal (and VS Code), then check:
+   ```
+   php -v
+   composer --version
+   ```
+3. Run `npm run setup` in the project folder.
+
+**Option B: PHP by hand.**
+
+1. Download PHP 8.3 or newer from [windows.php.net/download](https://windows.php.net/download): the **VS16 x64 Non Thread Safe** zip. Unzip it to `C:\php`.
+2. Add `C:\php` to PATH: Start → "Edit the system environment variables" → **Environment Variables** → **Path** → **New** → `C:\php`.
+3. Install Composer with **Composer-Setup.exe** from [getcomposer.org](https://getcomposer.org).
+4. Close and reopen the terminal and VS Code, then run `npm run setup`. It finds anything PHP still needs and offers to turn it on for you.
+
+For the record, these are the `php.ini` lines setup turns on:
+
+```
+extension_dir = "ext"
+extension=curl
+extension=fileinfo
+extension=mbstring
+extension=openssl
+extension=pdo_sqlite
+extension=sqlite3
+extension=zip
+```
+
+and `extension=pdo_mysql` when you use MySQL.
+
+**XAMPP:** only if its PHP is 8.3 or newer (check with `php -v`). Many XAMPP versions ship PHP 8.2, which is too old for this project.
+
 ## What's in the app
 
 - **Dashboard:** live stats, 12-month revenue chart, lead funnel, hot leads, deals closing soon, team results, your tasks due today, *Needs attention* and recent activity.
@@ -195,6 +233,24 @@ backend/              Laravel API
 docs/                 documentation, screenshots and SQL copies of the schema and demo data
 scripts/              setup, dev, end-to-end checks and screenshots
 ```
+
+## Troubleshooting
+
+`npm run doctor` checks everything setup needs and lists what's missing, without changing anything.
+
+| You see | Fix |
+|---|---|
+| `PHP was not found` / `'php' is not recognized` | Install PHP (see [Installing on Windows](#installing-on-windows)), then close and reopen the terminal and VS Code. |
+| `Composer was not found` | Install Composer with Composer-Setup.exe from getcomposer.org, then reopen the terminal. |
+| `PHP needs a few extensions turned on` | Answer **Y** and setup turns them on, or follow the lines it prints. |
+| `requires ext-fileinfo … missing from your system` | The same: run `npm run setup` again and answer **Y**, or turn on `extension=fileinfo` in php.ini. |
+| `The zip extension and unzip/7z commands are both missing` | The same, for `extension=zip`. |
+| `running scripts is disabled on this system` (PowerShell, when running `npm`) | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use Command Prompt. |
+| `Port 8000 is already in use` / `Port 3000 is already in use` | Something already runs there, often Nexora in another terminal. Close it, or stop it there with `Ctrl+C`. |
+| `Setup couldn't write …php.ini (no permission to change it)` | Open the terminal as Administrator and run `npm run setup` again, or make the change by hand as it shows. |
+| Setup failed halfway | Fix the reported problem and run `npm run setup` again. It's safe to repeat (it resets the demo data). |
+
+Don't use `composer update` or `--ignore-platform-reqs` to get past a missing extension: that installs different package versions or hides the problem until the app runs. The fix is turning the extension on.
 
 ## Before going live
 

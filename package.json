@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "setup": "node scripts/setup.mjs",
+    "doctor": "node scripts/setup.mjs --check",
     "dev:all": "node scripts/dev.mjs"
   },
   "dependencies": {
