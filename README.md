@@ -37,6 +37,8 @@ npm run dev:all    # starts the API, the reminder scheduler and the app together
 
 Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the app and the API share sign-in cookies). `Ctrl+C` stops everything. On Windows, npm then asks "Terminate batch job (Y/N)?": everything has already stopped, so answer `Y`.
 
+**Emails:** by default, invites, password resets, task reminders and lead assignments are written to `backend/storage/logs/laravel.log` instead of being sent, so no mail account is needed (open the link from there). To send real emails, see [Sending real emails](#sending-real-emails).
+
 `npm run setup` is safe to run again, but it resets the database to the demo data.
 
 > **Windows:** if setup says the SQLite extension isn't turned on, open your `php.ini` (`php --ini` shows where it is), remove the `;` in front of `extension=pdo_sqlite` and `extension=sqlite3`, save, and open a new terminal.
@@ -91,13 +93,25 @@ Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?
 
 ### Sending real emails
 
-The emails are real Laravel notifications; only the delivery is a setting. To have invites, password resets and task reminders arrive in a real inbox, sent from a Gmail account:
+The emails are real Laravel notifications; only the delivery is a setting. To have invites, password resets, task reminders and lead assignments arrive in a real inbox, sent from a Gmail account:
 
-1. On the Google account, turn on **2-Step Verification**, then create an **app password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (name it "Nexora"). Use it, not the normal Gmail password.
-2. In `backend/.env`, replace the `MAIL_` lines with the commented Gmail block from `backend/.env.example`, with your address and the app password.
-3. In `.env.local`, set `NEXT_PUBLIC_EMAILS_IN_LOG=false` to hide the "look in laravel.log" hints.
+1. Turn on **2-Step Verification** on your Google account, then create an **app password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (name it "Nexora"). Use it, not your normal Gmail password.
+2. Open `backend/.env` and replace the `MAIL_` lines with this block, using your address and app password:
+   ```
+   MAIL_MAILER=smtp
+   MAIL_HOST=smtp.gmail.com
+   MAIL_PORT=587
+   MAIL_SCHEME=null
+   MAIL_USERNAME=you@gmail.com
+   MAIL_PASSWORD="your 16-character app password"
+   MAIL_FROM_ADDRESS="you@gmail.com"
+   MAIL_FROM_NAME="Nexora CRM"
+   ```
+3. In `.env.local`, set `NEXT_PUBLIC_EMAILS_IN_LOG=false`.
 4. Run `cd backend && php artisan config:clear`, then restart `npm run dev:all`.
-5. Test it: `cd backend && php artisan nexora:send-test-email you@example.com`. It prints the mailer used, or the error and the likely fix.
+5. Test it: `cd backend && php artisan nexora:send-test-email you@gmail.com`.
+
+Invites, password resets, task reminders and lead assignments now arrive in real inboxes, sent from your Gmail. Your password stays in `backend/.env`, which Git never commits.
 
 For production, use the same settings with a mail service such as Resend, Brevo or Mailgun (see "Before going live").
 
