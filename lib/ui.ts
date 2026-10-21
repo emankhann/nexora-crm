@@ -1,7 +1,7 @@
 /** Shared Tailwind class strings so every form and button matches the designs. */
 
 export const btnPrimary =
-  "inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-[18px] text-[13.5px] font-bold text-ink shadow-[0_0_0_1px_rgba(46,224,127,0.4),0_8px_24px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-primary-disabled disabled:text-slate-500 disabled:shadow-none";
+  "inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-[18px] text-[13.5px] font-bold text-ink shadow-[0_0_0_1px_rgba(46,224,127,0.4),0_8px_24px_rgba(46,224,127,0.25)] hover:bg-primary-hover disabled:cursor-not-allowed disabled:bg-subtle disabled:text-slate-500 disabled:shadow-none disabled:ring-1 disabled:ring-edge";
 
 export const btnOutline =
   "inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-edge bg-surface px-4 text-[13.5px] font-semibold text-navy hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50";
