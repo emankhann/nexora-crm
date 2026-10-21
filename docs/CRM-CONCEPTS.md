@@ -131,7 +131,7 @@ Every requirement in the brief, and where to find it.
 ### Submission
 | Requirement | Where |
 |---|---|
-| Working application, runnable locally | `npm run setup` then `npm run dev:all` ([README](../README.md#quick-start)) |
+| Working application, runnable locally | `npm run setup` then `npm run dev:all` ([README](../README.md#getting-started)) |
 | Source code | This repository |
 | Database schema, migrations and sample data | `backend/database/migrations`, `backend/database/seeders`, [DATABASE.md](DATABASE.md), `docs/database/*.sql` |
 | Installation, configuration and usage instructions | [README](../README.md), [USER-GUIDE.md](USER-GUIDE.md) |

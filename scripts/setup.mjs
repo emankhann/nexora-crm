@@ -209,7 +209,7 @@ else problems.push([`Node.js ${node} is too old.`, "Install Node.js 20.9 or newe
 
 const installPhp = WINDOWS
   ? [
-      "Install PHP 8.3 or newer. The easiest way on Windows is Laravel Herd (herd.laravel.com, free), which installs PHP and Composer with everything this project needs. Or see \"Installing on Windows\" in README.md.",
+      "Install PHP 8.3 or newer. The easiest way on Windows is Laravel Herd (herd.laravel.com, free), which installs PHP and Composer with everything this project needs. Or see \"Installing PHP on Windows\" in README.md.",
       "If you just installed PHP, close and reopen the terminal (and VS Code) so it's found.",
     ]
   : [MAC ? "Install PHP 8.3 or newer and Composer: brew install php composer" : "Install PHP 8.3 or newer and Composer with your distribution's packages (for example php-cli, php-sqlite3, php-mbstring, php-xml, php-curl, php-zip and composer)."];
@@ -347,7 +347,7 @@ if (problems.length > 0 || missingExts.length > 0) {
       console.log(`\n${red("✗")} Still not loading: ${still.join(", ")}`);
       for (const e of still) {
         const dll = join(extDir, `php_${e}.dll`);
-        if (WINDOWS && !existsSync(dll)) console.log(`  ${e}: ${dll} doesn't exist. This PHP doesn't include it; install PHP from windows.php.net or with Laravel Herd (see "Installing on Windows" in README.md).`);
+        if (WINDOWS && !existsSync(dll)) console.log(`  ${e}: ${dll} doesn't exist. This PHP doesn't include it; install PHP from windows.php.net or with Laravel Herd (see "Installing PHP on Windows" in README.md).`);
         else console.log(`  ${e}: turned on in ${target} but PHP can't load it. Run php -m to see PHP's warning about it.`);
       }
       process.exit(1);

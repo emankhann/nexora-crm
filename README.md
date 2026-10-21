@@ -24,30 +24,50 @@ A sales CRM for managing leads, customers, deals and follow-up tasks, with role-
 | [CRM concepts](docs/CRM-CONCEPTS.md) | What a CRM is for, how each department benefits, and where every requirement of the brief lives |
 | [AI usage](docs/AI-USAGE.md) | Which AI tools were used and how |
 
-## Quick start
+## Getting started
 
-**Windows:** these commands work in PowerShell, Command Prompt and Git Bash. Run each line on its own.
+About 15 minutes the first time, most of it waiting for downloads. **You don't need to install a database:** Nexora keeps its data in one file that setup creates for you.
 
-**You need:** [Node.js](https://nodejs.org) 20.9 or newer, [PHP](https://www.php.net/downloads) 8.3 or newer, and [Composer](https://getcomposer.org). No database server is needed: by default the data lives in a single SQLite file. New to PHP on Windows? See [Installing on Windows](#installing-on-windows).
+### Step 1: Install the tools (once per computer)
 
-```bash
-git clone https://github.com/emankhann/nexora-crm.git
-cd nexora-crm
-npm run setup      # checks your tools, installs everything, creates the database with demo data
-npm run dev:all    # starts the API, the reminder scheduler and the app together
+| You need | How to check | How to install |
+|---|---|---|
+| **Node.js** 20.9 or newer | `node -v` | Download the **LTS** installer from [nodejs.org](https://nodejs.org) and run it. |
+| **PHP** 8.3 or newer | `php -v` | **Windows, easiest:** install [Laravel Herd](https://herd.laravel.com) (free). It installs PHP **and** Composer with everything this project needs. Other options: [Installing PHP on Windows](#installing-php-on-windows). **macOS:** `brew install php composer`. |
+| **Composer** | `composer --version` | Comes with Laravel Herd. Otherwise run **Composer-Setup.exe** from [getcomposer.org](https://getcomposer.org). |
+
+**After installing, close and reopen your terminal and VS Code**, then run the three checks in the table. Each should print a version number. If one says *"not recognized"*, that tool isn't installed yet or the terminal was opened before installing it.
+
+### Step 2: Open the project
+
+1. Unzip `nexora-crm.zip` (or `git clone https://github.com/emankhann/nexora-crm.git`).
+2. In VS Code: **File → Open Folder** and choose the **`nexora-crm`** folder (the one that contains `package.json` and `backend`).
+3. Open a terminal in VS Code: **Terminal → New Terminal** (or **Ctrl + `**).
+4. VS Code may suggest installing **SQLite Viewer**. Click **Install**: it lets you look at the data later.
+
+### Step 3: Set it up (once)
+
+In the terminal, run:
+
+```
+npm run setup
 ```
 
-Open **http://localhost:3000** (use `localhost`, not `127.0.0.1`, so the app and the API share sign-in cookies). `Ctrl+C` stops everything. On Windows, npm then asks "Terminate batch job (Y/N)?": everything has already stopped, so answer `Y`.
+It checks your tools, installs everything, and creates the database with demo data. It takes 3 to 7 minutes.
 
-**Emails:** by default, invites, password resets, task reminders and lead assignments are written to `backend/storage/logs/laravel.log` instead of being sent, so no mail account is needed (open the link from there). To send real emails, see [Sending real emails](#sending-real-emails).
+- If it says **"PHP needs a few extensions turned on"**, press **Y**. It fixes PHP's settings for you and carries on.
+- It's done when it says **"✓ Nexora CRM is ready."**
+- If it stops with an error, read the message: it says exactly what to do. After fixing it, run `npm run setup` again. See also [Troubleshooting](#troubleshooting).
 
-`npm run setup` is safe to run again, but it resets the database to the demo data.
+### Step 4: Start Nexora
 
-Before installing anything, setup checks Node.js, PHP, Composer and every PHP extension the project needs, and lists all problems at once. If PHP extensions are missing, it offers to turn them on in `php.ini` for you (after backing it up). `npm run doctor` runs the same checks without installing or changing anything. If something goes wrong, see [Troubleshooting](#troubleshooting).
+```
+npm run dev:all
+```
 
-### Demo accounts
+Wait until the lines starting with `web` say **Ready** (about 10 seconds), then open **http://localhost:3000** in your browser. Use `localhost`, not `127.0.0.1`.
 
-All demo accounts use the password **`demo1234`**. On the sign-in page you can also click an account to fill it in.
+Sign in by clicking a demo account on the sign-in page (password **`demo1234`**):
 
 | Role | Email | What they can do |
 |---|---|---|
@@ -57,10 +77,34 @@ All demo accounts use the password **`demo1234`**. On the sign-in page you can a
 
 New to the app? Follow the [five-minute tour](docs/USER-GUIDE.md#13-a-five-minute-tour).
 
+### Step 5: Stop it, and start it again later
+
+- **To stop:** press **Ctrl + C** in the terminal. On Windows it asks *"Terminate batch job (Y/N)?"*: press **Y**.
+- **Next time:** only `npm run dev:all`. Setup is only needed once.
+- **To reset the demo data:** run `npm run setup` again. It deletes everything you added and puts the demo data back.
+
+### Looking at the data
+
+The whole database is one file: **`backend/database/database.sqlite`**. It's a binary file, so it looks like gibberish in a normal text tab.
+
+1. In VS Code, install **SQLite Viewer** (Extensions, **Ctrl + Shift + X**, search "SQLite Viewer"), if you didn't in Step 2.
+2. Right-click `backend/database/database.sqlite` → **Open With…** → **SQLite Viewer**.
+3. Pick a table on the left (`leads`, `customers`, `deals`, `tasks`, `users`…) to see its rows. After you change something in the app, close and reopen the file to see the update.
+
+What each table holds: [docs/DATABASE.md](docs/DATABASE.md).
+
+### Emails
+
+By default, emails (invites, password resets, task reminders, lead assignments) are **not sent**. They're written to `backend/storage/logs/laravel.log`, so no mail account is needed. Open that file and look for the last line with `Email link for`, then copy the link into your browser. To send real emails, see [Sending real emails](#sending-real-emails).
+
+## More options
+
 ### Using MySQL
 
+**Optional.** You only need this if you prefer MySQL to the default SQLite file. Reviewers can skip it.
+
 1. Create an empty database, for example `nexora`.
-2. In `backend/.env`, replace `DB_CONNECTION=sqlite` with:
+2. In `backend/.env`, replace `DB_CONNECTION=sqlite` with these lines, using your MySQL user and password:
    ```
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -69,7 +113,7 @@ New to the app? Follow the [five-minute tour](docs/USER-GUIDE.md#13-a-five-minut
    DB_USERNAME=root
    DB_PASSWORD=
    ```
-3. Run `npm run setup` again (or just, from the backend folder, run `php artisan migrate:fresh --seed`).
+3. Run `npm run setup`.
 
 ### Running the parts separately
 
@@ -90,7 +134,7 @@ npm run dev
 
 ### Emails when running locally
 
-No mail service is needed. With `MAIL_MAILER=log` (the default), emails are written to `backend/storage/logs/laravel.log` instead of being sent, plus one readable line with the link:
+Each email written to `backend/storage/logs/laravel.log` also gets one readable line with its link, for example:
 
 ```
 Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?token=…&email=…
@@ -128,7 +172,7 @@ For production, use the same settings with a mail service such as Resend, Brevo 
 - **Demo accounts never get real emails.** Addresses on reserved test domains (`.example`, `.test`, `.invalid`, `.localhost`, and `example.com/.net/.org`), like `huma@nexora.example`, can't receive email, so Nexora doesn't send to them (they would only come back as bounces). Their "Email link for …" line is still written to `backend/storage/logs/laravel.log`, so you can open the link from there. In an email to several people, only the reserved addresses are dropped.
 - **Switch back to `MAIL_MAILER=log` (and `NEXT_PUBLIC_EMAILS_IN_LOG=true`) before running the check scripts.** They were written for the log mailer and read the links from the log.
 
-## Installing on Windows
+## Installing PHP on Windows
 
 You need Node.js and PHP 8.3 or newer with Composer. If Node.js isn't installed, get the LTS version from [nodejs.org](https://nodejs.org).
 
@@ -240,7 +284,7 @@ scripts/              setup, dev, end-to-end checks and screenshots
 
 | You see | Fix |
 |---|---|
-| `PHP was not found` / `'php' is not recognized` | Install PHP (see [Installing on Windows](#installing-on-windows)), then close and reopen the terminal and VS Code. |
+| `PHP was not found` / `'php' is not recognized` | Install PHP (see [Installing on Windows](#installing-php-on-windows)), then close and reopen the terminal and VS Code. |
 | `Composer was not found` | Install Composer with Composer-Setup.exe from getcomposer.org, then reopen the terminal. |
 | `PHP needs a few extensions turned on` | Answer **Y** and setup turns them on, or follow the lines it prints. |
 | `requires ext-fileinfo … missing from your system` | The same: run `npm run setup` again and answer **Y**, or turn on `extension=fileinfo` in php.ini. |
