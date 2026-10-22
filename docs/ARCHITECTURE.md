@@ -191,7 +191,7 @@ app/Enums                      statuses, stages, sources, roles… stored as sho
 app/Notifications              TeamInvite, TaskReminder, TaskAssigned, OverdueTasksSummary and LeadAssigned emails
 app/Console/Commands           nexora:send-task-reminders, nexora:send-overdue-summaries, nexora:send-test-email
 database/migrations, seeders   the schema and the demo data
-tests/Feature, tests/Unit     API tests and lead-scoring unit tests (53 in all)
+tests/Feature, tests/Unit     API tests and lead-scoring unit tests (57 in all)
 ```
 
 The main endpoints:
@@ -213,7 +213,7 @@ The main endpoints:
 
 ## Testing
 
-- **53 backend tests** (from the backend folder, run `php artisan test`): 50 feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, people with the same short name being kept apart, leads moving through their stages, the test email command, emails to reserved test domains not being sent, the "leads assigned to you" email, and demo data that matches what the app works out (every score equals its breakdown, open-deal counts are real deals, next steps are upcoming).
+- **57 backend tests** (from the backend folder, run `php artisan test`): 54 feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, people with the same short name being kept apart, leads moving through their stages, the test email command, emails to reserved test domains not being sent, the "leads assigned to you" email, and demo data that matches what the app works out (every score equals its breakdown, open-deal counts are real deals, next steps are upcoming), and the invite and reset links shown in the app only when email isn't set up.
 - **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (16), accounts and emails (11), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
 - `npm run lint` and `npm run build` (which type-checks everything) must pass before every merge.
 
