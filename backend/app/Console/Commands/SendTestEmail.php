@@ -33,8 +33,8 @@ class SendTestEmail extends Command
         }
 
         try {
-            Mail::raw('Nexora CRM test email: if you can read this, email delivery works.', function ($message) use ($to) {
-                $message->to($to)->subject('Nexora CRM test email');
+            Mail::raw('Nexora test email: if you can read this, email delivery works.', function ($message) use ($to) {
+                $message->to($to)->subject('Nexora test email');
             });
         } catch (Throwable $e) {
             $this->error("The test email could not be sent (mailer: {$mailer}).");

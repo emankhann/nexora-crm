@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     /*
@@ -127,10 +125,9 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'laravel')).'-session'
-    ),
+    // A fixed name, not derived from APP_NAME: renaming the app must never rename the cookie
+    // (that would sign everyone out).
+    'cookie' => env('SESSION_COOKIE', 'nexora-crm-session'),
 
     /*
     |--------------------------------------------------------------------------

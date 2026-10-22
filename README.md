@@ -191,7 +191,7 @@ The emails are real Laravel notifications; only the delivery is a setting. To ha
    MAIL_USERNAME=you@gmail.com
    MAIL_PASSWORD="your 16-character app password"
    MAIL_FROM_ADDRESS="you@gmail.com"
-   MAIL_FROM_NAME="Nexora CRM"
+   MAIL_FROM_NAME="Nexora"
    ```
 3. In `.env.local`, set `NEXT_PUBLIC_EMAILS_IN_LOG=false`.
 4. From the backend folder, run `php artisan config:clear`, then restart `npm run dev:all` from the project root.

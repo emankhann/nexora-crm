@@ -31,9 +31,9 @@ class TeamInvite extends Notification
         EmailLink::log($notifiable->email, 'Invite', $url);
 
         return (new MailMessage)
-            ->subject('You’re invited to Nexora CRM')
+            ->subject('You’re invited to Nexora')
             ->greeting("Hi {$notifiable->name},")
-            ->line("{$this->invitedBy} invited you to join the sales team on Nexora CRM as {$notifiable->role->label()}.")
+            ->line("{$this->invitedBy} invited you to join the sales team on Nexora as {$notifiable->role->label()}.")
             ->action('Accept invite', $url)
             ->line('You’ll choose your password on the next page. The link works for 7 days.')
             ->line('If you weren’t expecting this, you can ignore this email.');

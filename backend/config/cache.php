@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Str;
-
 return [
 
     /*
@@ -112,7 +110,9 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug((string) env('APP_NAME', 'laravel')).'-cache-'),
+    // Fixed, not derived from APP_NAME, so renaming the app keeps every cached value
+    // (rate limits, the overdue-summary day).
+    'prefix' => env('CACHE_PREFIX', 'nexora-crm-cache-'),
 
     /*
     |--------------------------------------------------------------------------
