@@ -108,7 +108,7 @@ export default function ActivityFeed({
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) void save();
             }}
-            placeholder={placeholder ?? "Add a note. Mention a teammate with @"}
+            placeholder={placeholder ?? "Add a note"}
             className="w-full resize-y rounded-xl border-[1.5px] border-line bg-surface p-3.5 text-sm outline-none placeholder:text-slate-500 focus:border-accent focus:ring-[3px] focus:ring-accent/20"
           />
           <div className="flex items-center justify-between gap-3">

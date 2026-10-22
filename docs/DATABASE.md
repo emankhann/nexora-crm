@@ -76,7 +76,6 @@ erDiagram
         string city
         string health "healthy | watch | at_risk"
         decimal lifetime_value "sum of won deals"
-        int legacy_open_deals
         bigint owner_id FK
         bigint lead_id FK "the lead it came from"
         date customer_since
@@ -172,8 +171,8 @@ Every table also has `created_at` and `updated_at`, except `audit_logs`, which o
 | Table | What it holds |
 |---|---|
 | `users` | Everyone who can sign in, with their **role** (Admin, Manager, Sales rep) and **status** (an invited person is `pending` until they accept). `overdue_summary_sent_on` records the day their last overdue-tasks summary went out, so it is sent once a day. |
-| `leads` | Potential customers. The **score** and the **score_factors** that explain it are worked out by `LeadScorer` when the lead is created. The `contacted_at`, `qualified_at` and `converted_at` dates drive the funnel. |
-| `customers` | Companies that buy. **lifetime_value** is the total of their won deals, kept up to date by `DealStageService`. |
+| `leads` | Potential customers. The **score** and the **score_factors** that explain it are worked out by `LeadScorer` when the lead is created, and again when its details or status change, so the score always equals the points listed. The `contacted_at`, `qualified_at` and `converted_at` dates drive the funnel. |
+| `customers` | Companies that buy. **lifetime_value** is the total of their won deals, kept up to date by `DealStageService`. Open deals are always counted from the real deals, so every one can be opened. |
 | `contacts` | People at a customer. One is marked **primary**. |
 | `deals` | Opportunities in the pipeline. **probability** follows the stage (10, 25, 50, 65, 100 or 0%). **closed_at** is set when a deal is won or lost, and **lost_reason** is required for lost deals. |
 | `tasks` | To-dos and follow-ups with a due time, priority and reminder. **completed_at** is empty while the task is open. **reminder_sent_at** stops a reminder email being sent twice. |
@@ -214,7 +213,7 @@ From the backend folder, `php artisan migrate:fresh --seed` creates:
 | | |
 |---|---|
 | **Users** | Huma Khan (Admin), Omar Tariq (Manager), Sana Mirza (Sales rep), all with password `demo1234`, and Kamran Shah, an invite that hasn't been accepted yet |
-| **Leads** | 9, across every source and status, with scores |
+| **Leads** | 9, across every source and status, scored by `LeadScorer` like any new lead: 3 hot (Ayesha Raza 95, Hira Baig 82, Bilal Siddiqui 80), 3 warm and 3 cold |
 | **Customers** | 8, with contacts and a mix of health states |
 | **Deals** | 25, in every stage: 10 open, 1 lost and 14 won (2 this month, and 12 spread over the past year so the revenue chart has history) |
 | **Tasks** | 8, some overdue and some due today, with follow-up history |

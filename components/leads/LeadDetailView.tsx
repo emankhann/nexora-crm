@@ -230,9 +230,8 @@ export default function LeadDetailView({ id }: { id: string }) {
           <div className={`${card} flex flex-col gap-3.5 px-4 py-5 sm:px-6`}>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-base font-bold">Why this lead scores {lead.score}</h2>
-              <span className="text-xs text-slate-500">
-                {lead.autoScore ? "Worked out from Nexora’s scoring rules" : "Rules are set by admins and recalculate on every interaction"}
-              </span>
+              {/* Every lead is scored by LeadScorer: nothing in the app sets a score by hand. */}
+              <span className="text-xs text-slate-500">Worked out from Nexora’s scoring rules</span>
             </div>
             {lead.factors.length === 0 && <div className="py-4 text-sm text-slate-500">No scoring signals recorded yet.</div>}
             {lead.factors.map((f) => (
@@ -250,7 +249,7 @@ export default function LeadDetailView({ id }: { id: string }) {
 
           <ActivityFeed
             activities={activities}
-            placeholder="Write a note about this lead. Mention a teammate with @"
+            placeholder="Write a note about this lead"
             onAddNote={async (text) => {
               await logActivity({ kind: "note", title: text, meta: user.short, leadId: lead.id, customerId: lead.customerId ?? undefined });
               toast("Note saved");

@@ -172,7 +172,6 @@ class CrmApiTest extends TestCase
     public function test_logging_a_call_on_a_new_lead_moves_it_to_contacted(): void
     {
         $lead = Lead::where('company', 'Harbor Dental')->firstOrFail(); // New, Sana's
-        $lead->update(['auto_score' => true]); // demo leads keep hand-picked scores; this one should be rescored
         $sana = $this->user('sana@nexora.example');
 
         $this->actingAs($sana)->postJson('/api/activities', ['type' => 'note', 'title' => 'Just a note', 'lead_id' => $lead->id])->assertCreated();

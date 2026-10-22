@@ -110,8 +110,6 @@ export type CustomerRecord = {
   city: string;
   contacts: ContactPerson[];
   lifetimeValue: number;
-  /** Open deals from before Nexora (seed data). New deals are counted live. */
-  legacyOpenDeals: number;
   health: Health;
   /** Database id of the owner, or "" when nobody owns it. */
   ownerId: string;

@@ -46,23 +46,25 @@ class CrmDemoSeeder extends Seeder
         // Times of day ("due at 5 PM") are meant in the demo's local time zone, then stored in UTC.
         $tz = config('app.local_timezone', 'UTC');
         $at = fn (int $days, int $hour = 10, int $minute = 0): Carbon => now($tz)->addDays($days)->setTime($hour, $minute)->utc();
+        // "Oct 25": a day this many days from the seed day, for texts like a deal's next step.
+        $day = fn (int $days): string => now($tz)->addDays($days)->format('M j');
         $scorer = new LeadScorer;
 
         /* ---------------- Customers and contacts ---------------- */
 
         $customerRows = [
-            ['Orbit Studios', 'Design agency', 15000, 0, CustomerHealth::Healthy, $sana, -2, [['Daniyal Ahmed', 'Founder', 'daniyal@orbitstudios.example', '+92 321 555 0198'], ['Rida Farooq', 'Finance manager', 'rida@orbitstudios.example', null]]],
-            ['Aster Pharma', 'Healthcare', 7600, 0, CustomerHealth::Healthy, $huma, -7, [['Rabia Anwar', 'Procurement lead', 'rabia@asterpharma.example', '+92 300 555 0111']]],
-            ['Meridian Textiles', 'Manufacturing', 48000, 2, CustomerHealth::Healthy, $omar, -227, [['Kamran Ali', 'Operations Director', 'kamran@meridiantextiles.example', '+92 42 555 0102']]],
-            ['Summit Logistics', 'Logistics', 31500, 1, CustomerHealth::AtRisk, $omar, -268, [['Nida Farooq', 'COO', 'nida@summitlogistics.example', '+92 21 555 0177']]],
-            ['Indus Software', 'Software', 27900, 1, CustomerHealth::Healthy, $huma, -246, [['Asad Mehmood', 'CTO', 'asad@indussoftware.example', '+92 51 555 0133']]],
-            ['Zenith Clinics', 'Healthcare', 19800, 1, CustomerHealth::Watch, $sana, -169, [['Dr. Mehwish Ali', 'Medical Director', 'mehwish@zenithclinics.example', '+92 300 555 0155']]],
-            ['Falcon Auto', 'Retail', 12400, 0, CustomerHealth::AtRisk, $omar, -312, [['Tahir Javed', 'Owner', 'tahir@falconauto.example', '+92 333 555 0166']]],
-            ['Crescent Bakery', 'Food and beverage', 6200, 0, CustomerHealth::Healthy, $sana, -59, [['Farah Naseem', 'Founder', 'farah@crescentbakery.example', '+92 345 555 0144']]],
+            ['Orbit Studios', 'Design agency', 15000, CustomerHealth::Healthy, $sana, -2, [['Daniyal Ahmed', 'Founder', 'daniyal@orbitstudios.example', '+92 321 555 0198'], ['Rida Farooq', 'Finance manager', 'rida@orbitstudios.example', null]]],
+            ['Aster Pharma', 'Healthcare', 7600, CustomerHealth::Healthy, $huma, -7, [['Rabia Anwar', 'Procurement lead', 'rabia@asterpharma.example', '+92 300 555 0111']]],
+            ['Meridian Textiles', 'Manufacturing', 48000, CustomerHealth::Healthy, $omar, -227, [['Kamran Ali', 'Operations Director', 'kamran@meridiantextiles.example', '+92 42 555 0102']]],
+            ['Summit Logistics', 'Logistics', 31500, CustomerHealth::AtRisk, $omar, -268, [['Nida Farooq', 'COO', 'nida@summitlogistics.example', '+92 21 555 0177']]],
+            ['Indus Software', 'Software', 27900, CustomerHealth::Healthy, $huma, -246, [['Asad Mehmood', 'CTO', 'asad@indussoftware.example', '+92 51 555 0133']]],
+            ['Zenith Clinics', 'Healthcare', 19800, CustomerHealth::Watch, $sana, -169, [['Dr. Mehwish Ali', 'Medical Director', 'mehwish@zenithclinics.example', '+92 300 555 0155']]],
+            ['Falcon Auto', 'Retail', 12400, CustomerHealth::AtRisk, $omar, -312, [['Tahir Javed', 'Owner', 'tahir@falconauto.example', '+92 333 555 0166']]],
+            ['Crescent Bakery', 'Food and beverage', 6200, CustomerHealth::Healthy, $sana, -59, [['Farah Naseem', 'Founder', 'farah@crescentbakery.example', '+92 345 555 0144']]],
         ];
 
         $customers = [];
-        foreach ($customerRows as [$name, $industry, $ltv, $legacy, $health, $owner, $since, $contacts]) {
+        foreach ($customerRows as [$name, $industry, $ltv, $health, $owner, $since, $contacts]) {
             $customer = Customer::create([
                 'name' => $name,
                 'industry' => $industry,
@@ -71,7 +73,6 @@ class CrmDemoSeeder extends Seeder
                 'city' => 'Lahore',
                 'health' => $health,
                 'lifetime_value' => $ltv,
-                'legacy_open_deals' => $legacy,
                 'owner_id' => $owner->id,
                 'customer_since' => $at($since)->toDateString(),
             ]);
@@ -90,41 +91,35 @@ class CrmDemoSeeder extends Seeder
         /* ---------------- Leads ---------------- */
 
         $leadRows = [
-            // name, email, company, source, status, score, owner, last activity (hours ago), title, phone
-            ['Ayesha Raza', 'ayesha@cedarlogistics.example', 'Cedar Logistics', LeadSource::Referral, LeadStatus::Qualified, 92, $huma, 2, 'Operations Director', '+92 300 555 0142'],
-            ['Bilal Siddiqui', 'bilal@northwind.example', 'Northwind Retail', LeadSource::Website, LeadStatus::Qualified, 85, $omar, 5, 'Head of Digital', '+92 321 555 0187'],
-            ['Hira Baig', 'hira@pixelfoods.example', 'Pixel Foods', LeadSource::LinkedIn, LeadStatus::Qualified, 71, $sana, 26, 'Marketing Manager', null],
-            ['Maryam Noor', 'maryam@brightpath.example', 'Brightpath Clinics', LeadSource::LinkedIn, LeadStatus::Contacted, 64, $huma, 27, 'Practice Manager', null],
-            ['Hamza Qureshi', 'hamza@deltahardware.example', 'Delta Hardware', LeadSource::Website, LeadStatus::Contacted, 61, $omar, 48, 'Owner', null],
-            ['Zainab Hussain', 'zainab@lumenfoods.example', 'Lumen Foods', LeadSource::Event, LeadStatus::Qualified, 58, $omar, 50, 'Brand Manager', null],
-            ['Usman Tariq', 'usman@kitetravel.example', 'Kite Travel', LeadSource::Referral, LeadStatus::New, 47, null, 72, 'Founder', null],
-            ['Sara Iqbal', 'sara@harbordental.example', 'Harbor Dental', LeadSource::ColdEmail, LeadStatus::New, 42, $sana, 96, 'Clinic Manager', null],
-            ['Fahad Ali', 'fahad@greenleaf.example', 'Greenleaf Cafe', LeadSource::ColdEmail, LeadStatus::Unqualified, 18, $omar, 216, 'Manager', null],
+            // name, email, company, company size, source, status, owner, last activity (hours ago), title, phone
+            // Scores come from LeadScorer, like any new lead's: to change a demo lead's score, change its details.
+            ['Ayesha Raza', 'ayesha@cedarlogistics.example', 'Cedar Logistics', '200+', LeadSource::Referral, LeadStatus::Qualified, $huma, 2, 'Operations Director', '+92 300 555 0142'], // 95, Hot
+            ['Bilal Siddiqui', 'bilal@northwind.example', 'Northwind Retail', '200+', LeadSource::Website, LeadStatus::Qualified, $omar, 5, 'Head of Digital', '+92 321 555 0187'], // 80, Hot
+            ['Hira Baig', 'hira@pixelfoods.example', 'Pixel Foods', '200+', LeadSource::LinkedIn, LeadStatus::Qualified, $sana, 26, 'Head of Marketing', '+92 300 555 0123'], // 82, Hot
+            ['Maryam Noor', 'maryam@brightpath.example', 'Brightpath Clinics', '51–200', LeadSource::LinkedIn, LeadStatus::Contacted, $huma, 27, 'Practice Manager', null],
+            ['Hamza Qureshi', 'hamza@deltahardware.example', 'Delta Hardware', '51–200', LeadSource::Website, LeadStatus::Contacted, $omar, 48, 'Owner', null],
+            ['Zainab Hussain', 'zainab@lumenfoods.example', 'Lumen Foods', '51–200', LeadSource::Event, LeadStatus::Qualified, $omar, 50, 'Brand Manager', null],
+            ['Usman Tariq', 'usman@kitetravel.example', 'Kite Travel', '51–200', LeadSource::Referral, LeadStatus::New, null, 72, 'Founder', null],
+            ['Sara Iqbal', 'sara@harbordental.example', 'Harbor Dental', '51–200', LeadSource::ColdEmail, LeadStatus::New, $sana, 96, 'Clinic Manager', null],
+            ['Fahad Ali', 'fahad@greenleaf.example', 'Greenleaf Cafe', '51–200', LeadSource::ColdEmail, LeadStatus::Unqualified, $omar, 216, 'Manager', null],
         ];
 
         $leads = [];
-        foreach ($leadRows as $i => [$name, $email, $company, $source, $status, $score, $owner, $hoursAgo, $title, $phone]) {
+        foreach ($leadRows as $i => [$name, $email, $company, $size, $source, $status, $owner, $hoursAgo, $title, $phone]) {
             $created = now($tz)->subDays($i === 0 ? 10 : 13 + $i)->setTime(9, 0)->utc();
-            $scored = $scorer->score($source, $status, $title, '51–200', $phone, $email);
+            $scored = $scorer->score($source, $status, $title, $size, $phone, $email);
             $leads[$name] = Lead::create([
                 'name' => $name,
                 'email' => $email,
                 'phone' => $phone,
                 'job_title' => $title,
                 'company' => $company,
-                'company_size' => $i === 0 ? '200+' : '51–200',
+                'company_size' => $size,
                 'source' => $source,
                 'status' => $status,
-                // Keep the hand-picked demo scores; new leads are scored by LeadScorer.
-                'score' => $score,
-                'score_factors' => $i === 0 ? [
-                    ['label' => 'Budget confirmed on call', 'points' => 25],
-                    ['label' => 'Company size: 200 or more employees', 'points' => 20],
-                    ['label' => 'Visited pricing page 3 times', 'points' => 18],
-                    ['label' => 'Opened the last 3 emails', 'points' => 15],
-                    ['label' => 'Decision maker (Operations Director)', 'points' => 14],
-                ] : $scored['factors'],
-                'auto_score' => false,
+                'score' => $scored['score'],
+                'score_factors' => $scored['factors'],
+                'auto_score' => true,
                 'owner_id' => $owner?->id,
                 'contacted_at' => in_array($status, [LeadStatus::Contacted, LeadStatus::Qualified], true) ? $created->copy()->addDays(2) : null,
                 'qualified_at' => $status === LeadStatus::Qualified ? ($i === 0 ? $at(-2, 14) : $created->copy()->addDays(5)) : null,
@@ -138,15 +133,15 @@ class CrmDemoSeeder extends Seeder
 
         $dealRows = [
             // title, company, value, stage, temperature, close offset (days), owner, next step, lead, customer
-            ['Website redesign', 'Lumen Foods', 4200, DealStage::New, DealTemperature::Warm, 35, $omar, 'Follow up Oct 18', 'Zainab Hussain', null],
-            ['CRM onboarding', 'Harbor Dental', 2800, DealStage::New, DealTemperature::New, 43, $sana, 'Follow up Oct 20', 'Sara Iqbal', null],
-            ['Support retainer', 'Kite Travel', 3500, DealStage::New, DealTemperature::New, 50, $huma, 'Follow up Oct 21', 'Usman Tariq', null],
-            ['Clinic booking portal', 'Brightpath Clinics', 5400, DealStage::Contacted, DealTemperature::Warm, 27, $huma, 'Call Oct 17', 'Maryam Noor', null],
-            ['Inventory dashboard', 'Delta Hardware', 6100, DealStage::Contacted, DealTemperature::Warm, -2, $omar, 'Call Oct 19', 'Hamza Qureshi', null],
-            ['Retail analytics suite', 'Northwind Retail', 8900, DealStage::Qualified, DealTemperature::Hot, 15, $omar, 'Demo Oct 16', 'Bilal Siddiqui', null],
-            ['Mobile app MVP', 'Pixel Foods', 11000, DealStage::Qualified, DealTemperature::Warm, -6, $sana, 'Demo Oct 22', 'Hira Baig', null],
+            ['Website redesign', 'Lumen Foods', 4200, DealStage::New, DealTemperature::Warm, 35, $omar, 'Follow up '.$day(3), 'Zainab Hussain', null],
+            ['CRM onboarding', 'Harbor Dental', 2800, DealStage::New, DealTemperature::New, 43, $sana, 'Follow up '.$day(5), 'Sara Iqbal', null],
+            ['Support retainer', 'Kite Travel', 3500, DealStage::New, DealTemperature::New, 50, $huma, 'Follow up '.$day(6), 'Usman Tariq', null],
+            ['Clinic booking portal', 'Brightpath Clinics', 5400, DealStage::Contacted, DealTemperature::Warm, 27, $huma, 'Call '.$day(2), 'Maryam Noor', null],
+            ['Inventory dashboard', 'Delta Hardware', 6100, DealStage::Contacted, DealTemperature::Warm, -2, $omar, 'Call '.$day(1), 'Hamza Qureshi', null],
+            ['Retail analytics suite', 'Northwind Retail', 8900, DealStage::Qualified, DealTemperature::Hot, 15, $omar, 'Demo '.$day(4), 'Bilal Siddiqui', null],
+            ['Mobile app MVP', 'Pixel Foods', 11000, DealStage::Qualified, DealTemperature::Warm, -6, $sana, 'Demo '.$day(2), 'Hira Baig', null],
             ['Fleet tracking portal', 'Cedar Logistics', 12500, DealStage::Proposal, DealTemperature::Hot, 13, $huma, 'Send today', 'Ayesha Raza', null],
-            ['Booking engine', 'Kite Travel', 9300, DealStage::Proposal, DealTemperature::Warm, 18, $sana, 'Review Oct 21', null, null],
+            ['Booking engine', 'Kite Travel', 9300, DealStage::Proposal, DealTemperature::Warm, 18, $sana, 'Review '.$day(5), null, null],
             ['Social media retainer', 'Orbit Studios', 6200, DealStage::Proposal, DealTemperature::Warm, 19, $sana, 'Send proposal tomorrow', null, 'Orbit Studios'],
             ['Brand video package', 'Orbit Studios', 15000, DealStage::Won, DealTemperature::Hot, -2, $sana, 'Customer created', null, 'Orbit Studios'],
             ['Lab booking system', 'Aster Pharma', 7600, DealStage::Won, DealTemperature::Warm, -7, $huma, 'Customer created', null, 'Aster Pharma'],

@@ -116,7 +116,6 @@ CREATE TABLE `customers` (
   `city` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `health` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'healthy',
   `lifetime_value` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `legacy_open_deals` int unsigned NOT NULL DEFAULT '0',
   `owner_id` bigint unsigned DEFAULT NULL,
   `lead_id` bigint unsigned DEFAULT NULL,
   `customer_since` date NOT NULL,

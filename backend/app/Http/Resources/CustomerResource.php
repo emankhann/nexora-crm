@@ -23,7 +23,6 @@ class CustomerResource extends JsonResource
             'city' => $this->city ?? '',
             'health' => $this->health->value,
             'lifetimeValue' => (float) $this->lifetime_value,
-            'legacyOpenDeals' => $this->legacy_open_deals,
             'ownerId' => $this->owner_id,
             'ownerName' => $this->owner?->shortName(),
             'leadId' => $this->lead_id,

@@ -78,7 +78,6 @@ export type ApiCustomer = {
   city: string;
   health: string;
   lifetimeValue: number;
-  legacyOpenDeals: number;
   ownerId: number | null;
   ownerName: string | null;
   leadId: number | null;
@@ -277,7 +276,6 @@ export function mapCustomer(c: ApiCustomer): CustomerRecord {
     city: c.city ?? "",
     contacts: (c.contacts ?? []).map((p) => ({ name: p.name, title: p.jobTitle ?? "", email: p.email ?? "", phone: p.phone ?? "", primary: p.primary })),
     lifetimeValue: Number(c.lifetimeValue) || 0,
-    legacyOpenDeals: c.legacyOpenDeals ?? 0,
     health: HEALTH[c.health] ?? "Healthy",
     ownerId: ownerKey(c.ownerId),
     owner: c.ownerName ?? OWNERLESS,

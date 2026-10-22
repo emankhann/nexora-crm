@@ -662,7 +662,7 @@ export async function markNoticesRead(ids: string[]): Promise<void> {
 /* ------------------------------------------------------------------ */
 
 export function openDealsFor(s: CrmState, customer: CustomerRecord) {
-  return s.deals.filter((d) => d.customerId === customer.id && OPEN_STAGES.includes(d.stage)).length + customer.legacyOpenDeals;
+  return s.deals.filter((d) => d.customerId === customer.id && OPEN_STAGES.includes(d.stage)).length;
 }
 
 /** Revenue won per calendar month for the last `count` months, oldest first (from won deals' close dates). */

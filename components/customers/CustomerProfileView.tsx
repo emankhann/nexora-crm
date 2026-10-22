@@ -182,7 +182,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
         <div className="grid grid-cols-2 gap-y-4 border-t border-row-line pt-[18px] lg:grid-cols-4">
           {[
             ["Lifetime value", formatCurrency(c.lifetimeValue)],
-            ["Open deals", `${openDeals.length + c.legacyOpenDeals}${openDeals.length ? ` · ${formatCurrency(openDeals.reduce((s, d) => s + d.value, 0))}` : ""}`],
+            ["Open deals", `${openDeals.length}${openDeals.length ? ` · ${formatCurrency(openDeals.reduce((s, d) => s + d.value, 0))}` : ""}`],
             ["Open tasks", String(tasks.length)],
             ["Last contact", lastContact ? timeAgo(lastContact.at) : "No contact yet"],
           ].map(([k, v], i) => (
@@ -198,7 +198,7 @@ export default function CustomerProfileView({ id }: { id: string }) {
         <div className="min-w-0 flex-[999_1_520px]">
           <ActivityFeed
             activities={activities}
-            placeholder={`Add a note about ${c.name}. Mention a teammate with @`}
+            placeholder={`Add a note about ${c.name}`}
             onAddNote={async (text) => {
               await logActivity({ kind: "note", title: text, meta: user.short, customerId: c.id });
               toast("Note saved");

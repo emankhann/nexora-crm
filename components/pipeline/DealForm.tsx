@@ -309,7 +309,7 @@ export default function DealForm({
               <TextField label="Expected close date" required type="date" value={closeDate} onChange={(e) => setCloseDate(e.target.value)} error={errors.closeDate} />
               <SelectField label="Owner" value={ownerId} onChange={(e) => setOwnerId(e.target.value)} options={ownerChoices} />
               <SelectField label="Temperature" value={tag} onChange={(e) => setTag(e.target.value as DealTag)} options={["Hot", "Warm", "New", "Cold"]} />
-              <TextField label="Next step" value={next} onChange={(e) => setNext(e.target.value)} placeholder="e.g. Demo Oct 22" />
+              <TextField label="Next step" value={next} onChange={(e) => setNext(e.target.value)} placeholder="e.g. Send the proposal" />
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex justify-between text-[13px] font-bold">
@@ -318,7 +318,7 @@ export default function DealForm({
               </div>
               <input id="deal-prob" type="range" min={0} max={100} step={5} value={probability} onChange={(e) => setProbability(Number(e.target.value))} className="w-full accent-primary" />
               <span className="text-xs text-slate-500">
-                Weighted value: {formatCurrency(weighted)}. Set from the stage; change it if you know better.
+                Weighted value: {formatCurrency(weighted)}. Set from the stage; change it if you know better. This doesn’t move the deal to another stage; moving it resets this to the new stage’s default.
               </span>
             </div>
           </fieldset>

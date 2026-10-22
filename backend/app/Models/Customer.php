@@ -23,7 +23,6 @@ class Customer extends Model
         'city',
         'health',
         'lifetime_value',
-        'legacy_open_deals',
         'owner_id',
         'lead_id',
         'customer_since',
@@ -34,7 +33,6 @@ class Customer extends Model
         return [
             'health' => CustomerHealth::class,
             'lifetime_value' => 'decimal:2',
-            'legacy_open_deals' => 'integer',
             'customer_since' => 'date',
         ];
     }
