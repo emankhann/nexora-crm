@@ -191,7 +191,7 @@ app/Enums                      statuses, stages, sources, roles… stored as sho
 app/Notifications              TeamInvite, TaskReminder, TaskAssigned, OverdueTasksSummary and LeadAssigned emails
 app/Console/Commands           nexora:send-task-reminders, nexora:send-overdue-summaries, nexora:send-test-email
 database/migrations, seeders   the schema and the demo data
-tests/Feature, tests/Unit     API tests and lead-scoring unit tests (47 in all)
+tests/Feature, tests/Unit     API tests and lead-scoring unit tests (49 in all)
 ```
 
 The main endpoints:
@@ -209,11 +209,11 @@ The main endpoints:
 
 **Reminder emails** come from a scheduled command, `nexora:send-task-reminders`, run every minute by `php artisan schedule:work` (or cron in production). It finds open tasks whose reminder time has passed and that haven't been reminded yet, emails the assignee, and sets `reminder_sent_at` so each reminder is sent once. Moving the due date clears it, so the new time gets its own reminder.
 
-**The overdue summary** comes from `nexora:send-overdue-summaries`, scheduled daily at 9:00 in `LOCAL_TIMEZONE`. For each active person it collects their open, past-due tasks that have email reminders on, sends one email listing them, and records the day in `users.overdue_summary_sent_on`, so running it again the same day sends nothing. **New-task emails** (`TaskAssigned`) are sent by the task API when the form asks for it (`notify: true`) and the assignee is someone else: on create, or on edit only when the assignee changes.
+**The overdue summary** comes from `nexora:send-overdue-summaries`. The scheduler runs it every minute with `--scheduled`; it does nothing before 9:00 in `LOCAL_TIMEZONE`, sends the day’s summaries on the first run at or after 9:00 (so a missed 9:00 is caught up when the app next runs that day), and records the day in the cache so later runs that day do nothing. For each active person it collects their open, past-due tasks that have email reminders on, sends one email listing them, and records the day in `users.overdue_summary_sent_on`, so running it again the same day sends nothing. **New-task emails** (`TaskAssigned`) are sent by the task API when the form asks for it (`notify: true`) and the assignee is someone else: on create, or on edit only when the assignee changes.
 
 ## Testing
 
-- **47 backend tests** (from the backend folder, run `php artisan test`): 44 feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, people with the same short name being kept apart, leads moving through their stages, the test email command, emails to reserved test domains not being sent, and the "leads assigned to you" email.
+- **49 backend tests** (from the backend folder, run `php artisan test`): 46 feature tests on an in-memory SQLite database seeded with the demo data, and 3 unit tests for the lead-scoring rules. They cover sign-in and lockout, what each role receives, policies, validation, lead scoring, conversion, deal stages and lifetime value, the audit log, team rules, password reset and invites (expired and reused links), reminders being sent once, rate limits being separate per form, people with the same short name being kept apart, leads moving through their stages, the test email command, emails to reserved test domains not being sent, and the "leads assigned to you" email.
 - **Five end-to-end scripts** (`scripts/check-*.mjs`) drive a real browser against the running app: sign-in and data loading (19 checks), saving every kind of change (16), accounts and emails (11), same-name owners (6) and responsive layout at three screen sizes (38 pages and dialogs).
 - `npm run lint` and `npm run build` (which type-checks everything) must pass before every merge.
 

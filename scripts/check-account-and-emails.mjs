@@ -226,15 +226,19 @@ await check("Creating a task for someone else emails them (Email the assignee)",
 });
 
 await check("The overdue summary goes out once a day, for tasks with email reminders on", async () => {
-  const me = (await apiCall(admin, "GET", "/me")).json.data;
-  const task = await apiCall(admin, "POST", "/tasks", {
-    title: `E2E overdue ${RUN}`, type: "call", priority: "high", reminder: "15m", remind_by_email: true,
-    due_at: new Date(Date.now() - 3 * 3600e3).toISOString(), assigned_to: me.id,
-  });
-  assert(task.status === 201, `creating the task returned ${task.status}`);
-  const line = `Email link for ${me.email} (Overdue tasks): ${BASE}/tasks`;
+  // The person who joined above has no tasks yet, so nothing has been sent to them today. (The
+  // running scheduler may send the day's summaries at any minute after 9:00; counting from before
+  // their task exists keeps this check right whichever run sends it.)
+  const member = (await apiCall(admin, "GET", "/team")).json.data.find((u) => u.email === invitee.email);
+  assert(member, "the joined invitee isn't on the team");
+  const line = `Email link for ${invitee.email} (Overdue tasks): ${BASE}/tasks`;
   const count = () => readFileSync(LOG, "utf8").split(line).length - 1;
   const before = count();
+  const task = await apiCall(admin, "POST", "/tasks", {
+    title: `E2E overdue ${RUN}`, type: "call", priority: "high", reminder: "15m", remind_by_email: true,
+    due_at: new Date(Date.now() - 3 * 3600e3).toISOString(), assigned_to: member.id,
+  });
+  assert(task.status === 201, `creating the task returned ${task.status}`);
   execFileSync("php", ["artisan", "nexora:send-overdue-summaries"], { cwd: BACKEND, stdio: "pipe" });
   assert(count() - before === 1, `expected one overdue summary, found ${count() - before}`);
   execFileSync("php", ["artisan", "nexora:send-overdue-summaries"], { cwd: BACKEND, stdio: "pipe" });

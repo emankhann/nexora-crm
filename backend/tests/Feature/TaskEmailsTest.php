@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Notifications\OverdueTasksSummary;
 use App\Notifications\TaskAssigned;
+use Carbon\Carbon;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -135,12 +136,79 @@ class TaskEmailsTest extends TestCase
         Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 2);
     }
 
-    public function test_the_overdue_summary_is_scheduled_at_9am_local_time(): void
+    public function test_the_scheduler_checks_for_the_overdue_summary_every_minute(): void
     {
         $event = collect(app(Schedule::class)->events())->first(fn ($e) => str_contains($e->command ?? '', 'nexora:send-overdue-summaries'));
 
         $this->assertNotNull($event);
-        $this->assertSame('0 9 * * *', $event->expression);
-        $this->assertSame(config('app.local_timezone'), $event->timezone);
+        $this->assertStringContainsString('--scheduled', $event->command);
+        $this->assertSame('* * * * *', $event->expression);
+    }
+
+    public function test_a_missed_9am_run_is_caught_up_the_first_time_the_scheduler_runs_after_9(): void
+    {
+        Notification::fake();
+        $tz = config('app.local_timezone');
+        $at = fn (string $time) => $this->travelTo(Carbon::parse("2026-11-03 {$time}", $tz));
+        $sana = $this->user('sana@nexora.example');
+        $omar = $this->user('omar@nexora.example');
+        Task::query()->delete();
+        $at('08:00');
+        $task = fn (User $user, string $due) => Task::create([
+            'title' => "Task for {$user->name}", 'type' => 'call', 'priority' => 'high', 'reminder' => '1h', 'remind_by_email' => true,
+            'due_at' => Carbon::parse($due, $tz), 'assigned_to' => $user->id, 'created_by' => $user->id,
+        ]);
+        $task($sana, '2026-11-02 17:00'); // overdue since yesterday
+        $task($omar, '2026-11-03 15:00'); // only overdue this afternoon
+
+        // Before 9:00 the scheduled run does nothing.
+        $at('08:59');
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->assertSuccessful();
+        Notification::assertNothingSent();
+
+        // The app wasn't running at 9:00; the first scheduled run after that sends today's summary.
+        $at('11:42');
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->expectsOutputToContain('Sent 1 overdue summary')->assertSuccessful();
+        Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 1);
+
+        // Later runs the same day do nothing: no second email for Sana, and Omar's task that went
+        // overdue this afternoon waits for tomorrow's summary.
+        $at('11:43');
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->assertSuccessful();
+        $at('16:30');
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->assertSuccessful();
+        Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 1);
+        Notification::assertNotSentTo($omar, OverdueTasksSummary::class);
+
+        // Next morning at 9:00, both get theirs.
+        $at('08:59');
+        $this->travel(1)->days();
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->assertSuccessful();
+        Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 1);
+        $this->travel(1)->minutes();
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->expectsOutputToContain('Sent 2 overdue summaries')->assertSuccessful();
+        Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 2);
+        Notification::assertSentToTimes($omar, OverdueTasksSummary::class, 1);
+    }
+
+    public function test_running_the_command_by_hand_sends_right_away_even_before_9(): void
+    {
+        Notification::fake();
+        $tz = config('app.local_timezone');
+        $sana = $this->user('sana@nexora.example');
+        Task::query()->delete();
+        $this->travelTo(Carbon::parse('2026-11-03 07:30', $tz));
+        Task::create([
+            'title' => 'Late call', 'type' => 'call', 'priority' => 'high', 'reminder' => '1h', 'remind_by_email' => true,
+            'due_at' => now()->subDay(), 'assigned_to' => $sana->id, 'created_by' => $sana->id,
+        ]);
+
+        $this->artisan('nexora:send-overdue-summaries')->expectsOutputToContain('Sent 1 overdue summary')->assertSuccessful();
+        Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 1);
+
+        // The 9:00 run still happens, but Sana already has today's summary.
+        $this->travelTo(Carbon::parse('2026-11-03 09:00', $tz));
+        $this->artisan('nexora:send-overdue-summaries --scheduled')->assertSuccessful();
+        Notification::assertSentToTimes($sana, OverdueTasksSummary::class, 1);
     }
 }

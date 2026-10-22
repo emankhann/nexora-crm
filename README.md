@@ -174,7 +174,7 @@ Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?
 - **Forgot password:** on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
 - **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away, from the backend folder, run `php artisan nexora:send-task-reminders`.
 - **New tasks:** creating a task for someone else (or giving them an existing one) with *Email the assignee* ticked emails them a link to the task. Nobody is emailed about tasks they assign to themselves.
-- **Overdue summary:** at 9:00 every morning (in `LOCAL_TIMEZONE` from `backend/.env`), each person with overdue tasks that have email reminders on gets one email listing them. It goes out at most once a day. To send it right away, for a test or a demo, from the backend folder, run `php artisan nexora:send-overdue-summaries`.
+- **Overdue summary:** at 9:00 every morning (in `LOCAL_TIMEZONE` from `backend/.env`), or as soon after 9:00 as the app is running that day, each person with overdue tasks that have email reminders on gets one email listing them. It goes out at most once a day. To send it right away, for a test or a demo, from the backend folder, run `php artisan nexora:send-overdue-summaries`.
 - **Leads assigned:** assigning leads to someone else with *Email the new owner* ticked emails them one message listing the leads.
 
 ### Sending real emails
@@ -258,7 +258,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (47 tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (49 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend

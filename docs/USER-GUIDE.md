@@ -137,7 +137,7 @@ Tabs: *All open*, *Today*, *Overdue*, *Upcoming* and *Done*. Filter by priority 
 
 **Email the assignee** (admins and managers): when you create a task for someone else, or give an existing task to someone else, they get an email with a link to the task, and the toast says *we’ve emailed them*. It’s ticked by default; untick it to assign quietly. Editing a task without changing who it’s for sends nothing, and nobody is emailed about tasks they assign to themselves.
 
-**Overdue summary:** every morning at 9:00, each person with overdue tasks that have email reminders on gets **one** email listing them, with how late each one is. Nobody gets it twice in a day, and tasks without email reminders are left out. Complete or reschedule the tasks to stop it.
+**Overdue summary:** every morning at 9:00 (or, if the app isn’t running then, as soon as it starts that day), each person with overdue tasks that have email reminders on gets **one** email listing them, with how late each one is. Nobody gets it twice in a day, and tasks without email reminders are left out. Complete or reschedule the tasks to stop it.
 
 **Open a task** to:
 
