@@ -163,7 +163,7 @@ Choose a period (last 30 days, last 90 days, last 12 months, or all time) and, f
 ![Team and roles](screenshots/team.png)
 
 - **Invite someone:** *+ Invite member* → name, work email and role. They get an email with a link that works for 7 days, where they choose a password and are signed in. Until then they show as **Pending**, and you can **Resend** (the old link stops working) or **Cancel** the invite.
-  > Running locally, emails go to `backend/storage/logs/laravel.log` instead of being sent. Open the link from there in a private window.
+  > On a computer without email set up, nothing is sent: the dialog shows the join link instead, with *Copy link* and *Open*. Open it in a private window. *Resend* gives you a *Copy link* button with the new link.
 - **Change someone's role** from the list. You can't change your own role, and the last admin can't be demoted, so the team is never left without one.
 - **The permissions table** at the bottom shows exactly what each role can do.
 
@@ -174,7 +174,7 @@ Every sign-in, create, edit, reassignment, stage move, conversion, deletion and 
 ## 11. Your account
 
 - **Change password:** account menu → *Change password*. You need your current password. Your other devices are signed out.
-- **Forgot password:** on the sign-in page. The reset link works once, for 60 minutes. Running locally, it's in `backend/storage/logs/laravel.log`.
+- **Forgot password:** on the sign-in page. The reset link works once, for 60 minutes. On a computer without email set up, the page shows the link instead of sending it.
 - **Locked out?** Five wrong passwords lock sign-in for 15 minutes.
 
 ## 12. What each role can do

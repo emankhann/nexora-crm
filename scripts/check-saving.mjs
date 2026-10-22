@@ -245,6 +245,10 @@ const pageErrors = [];
     await dialog.getByLabel(label("Full name")).fill(invite.name);
     await dialog.getByLabel(label("Work email")).fill(invite.email);
     await saved(page, "/api/team/invite", () => dialog.getByRole("button", { name: "Send invite" }).click());
+    // With email not set up (how these scripts run), the dialog shows the join link: close it.
+    const done = dialog.getByRole("button", { name: "Done" });
+    if (await done.waitFor({ timeout: 5000 }).then(() => true, () => false)) await done.click();
+    await dialog.waitFor({ state: "hidden", timeout: 15000 });
     let member = (await server(page)).members.find((m) => m.email === invite.email);
     assert(member?.status === "pending", "invite not saved");
     // The member's row: the innermost visible element that holds both their email and a Cancel button.

@@ -627,19 +627,22 @@ export async function deleteTask(id: string): Promise<void> {
 
 /* -------------------------------- Team -------------------------------- */
 
-export async function inviteMember(input: { name: string; email: string; role: Role }): Promise<MemberRecord> {
+/** devLink: the join link, only when the API runs locally without email set up (nothing was sent). */
+export async function inviteMember(input: { name: string; email: string; role: Role }): Promise<{ member: MemberRecord; devLink: string | null }> {
   const res = await mutate(() =>
-    api.post<{ data: ApiUser }>("/team/invite", { name: input.name.trim(), email: input.email.trim().toLowerCase(), role: CODES.role[input.role] })
+    api.post<{ data: ApiUser; devLink?: string }>("/team/invite", { name: input.name.trim(), email: input.email.trim().toLowerCase(), role: CODES.role[input.role] })
   );
-  return mapMember(res.data);
+  return { member: mapMember(res.data), devLink: res.devLink ?? null };
 }
 
 export async function changeMemberRole(id: string, role: Role): Promise<void> {
   await mutate(() => api.patch(`/team/${id}/role`, { role: CODES.role[role] }));
 }
 
-export async function resendInvite(id: string): Promise<void> {
-  await mutate(() => api.post(`/team/${id}/resend`));
+/** Returns the new join link when the API runs locally without email set up (else null). */
+export async function resendInvite(id: string): Promise<string | null> {
+  const res = await mutate(() => api.post<{ devLink?: string }>(`/team/${id}/resend`));
+  return res.devLink ?? null;
 }
 
 export async function revokeInvite(id: string): Promise<void> {

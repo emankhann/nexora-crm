@@ -97,7 +97,14 @@ What each table holds: [docs/DATABASE.md](docs/DATABASE.md).
 
 ### Emails
 
-By default, emails (invites, password resets, task reminders, new-task emails, the daily overdue summary, lead assignments) are **not sent**. They're written to `backend/storage/logs/laravel.log`, so no mail account is needed. Open that file and look for the last line with `Email link for`, then copy the link into your browser. To send real emails, see [Sending real emails](#sending-real-emails).
+By default, emails are **not sent**, so no mail account is needed.
+
+- **Invites and password resets:** the app shows you the link right away, with **Copy link** and **Open** buttons, in the invite dialog and on the forgot-password page.
+- **Other emails** (task reminders, new tasks, leads assigned, the overdue summary):
+  1. In VS Code, open `backend/storage/logs/laravel.log` and scroll to the bottom.
+  2. Find the last line with `Email link for`, and copy the link after it into your browser.
+
+To send real emails, see [Sending real emails](#sending-real-emails).
 
 ## More options
 
@@ -164,14 +171,14 @@ npm run dev
 
 ### Emails when running locally
 
-Each email written to `backend/storage/logs/laravel.log` also gets one readable line with its link, for example:
+With email not set up (`MAIL_MAILER=log`), the invite dialog and the forgot-password page show the link straight away. Every email is also written to `backend/storage/logs/laravel.log`, with one readable line holding its link, for example:
 
 ```
 Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?token=…&email=…
 ```
 
-- **Invite someone:** Team and roles → *+ Invite member*, then open the link from the log in a private window. They choose a password and are signed in.
-- **Forgot password:** on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
+- **Invite someone:** Team and roles → *+ Invite member*. The dialog shows the join link: open it in a private window. They choose a password and are signed in. *Resend* offers a *Copy link* button with the new link.
+- **Forgot password:** on the sign-in page. The page shows the reset link (only for an account that exists). Links work once, for 60 minutes.
 - **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away, from the backend folder, run `php artisan nexora:send-task-reminders`.
 - **New tasks:** creating a task for someone else (or giving them an existing one) with *Email the assignee* ticked emails them a link to the task. Nobody is emailed about tasks they assign to themselves.
 - **Overdue summary:** at 9:00 every morning (in `LOCAL_TIMEZONE` from `backend/.env`), or as soon after 9:00 as the app is running that day, each person with overdue tasks that have email reminders on gets one email listing them. It goes out at most once a day. To send it right away, for a test or a demo, from the backend folder, run `php artisan nexora:send-overdue-summaries`.
@@ -193,9 +200,8 @@ The emails are real Laravel notifications; only the delivery is a setting. To ha
    MAIL_FROM_ADDRESS="you@gmail.com"
    MAIL_FROM_NAME="Nexora"
    ```
-3. In `.env.local`, set `NEXT_PUBLIC_EMAILS_IN_LOG=false`.
-4. From the backend folder, run `php artisan config:clear`, then restart `npm run dev:all` from the project root.
-5. Test it: from the backend folder, run `php artisan nexora:send-test-email you@gmail.com`.
+3. From the backend folder, run `php artisan config:clear`, then restart `npm run dev:all` from the project root.
+4. Test it: from the backend folder, run `php artisan nexora:send-test-email you@gmail.com`.
 
 Invites, password resets, task reminders, new-task emails, the daily overdue summary and lead assignments now arrive in real inboxes, sent from your Gmail. Your password stays in `backend/.env`, which Git never commits.
 
@@ -203,7 +209,7 @@ For production, use the same settings with a mail service such as Resend, Brevo 
 
 - The links in the emails point to `http://localhost:3000`, so open them on the computer running the app.
 - **Demo accounts never get real emails.** Addresses on reserved test domains (`.example`, `.test`, `.invalid`, `.localhost`, and `example.com/.net/.org`), like `huma@nexora.example`, can't receive email, so Nexora doesn't send to them (they would only come back as bounces). Their "Email link for …" line is still written to `backend/storage/logs/laravel.log`, so you can open the link from there. In an email to several people, only the reserved addresses are dropped.
-- **Switch back to `MAIL_MAILER=log` (and `NEXT_PUBLIC_EMAILS_IN_LOG=true`) before running the check scripts.** They were written for the log mailer and read the links from the log.
+- **Switch back to `MAIL_MAILER=log` before running the check scripts.** They were written for the log mailer and read the links from the log.
 
 ## Installing PHP on Windows
 

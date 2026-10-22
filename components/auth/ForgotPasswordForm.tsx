@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Check, Loader2 } from "lucide-react";
-import EmailLogHint from "@/components/auth/EmailLogHint";
+import DevLinkNotice from "@/components/auth/DevLinkNotice";
 import { api, errorMessage } from "@/lib/api";
 import { btnPrimaryLarge } from "@/lib/ui";
 import { isEmail } from "@/lib/utils";
@@ -13,6 +13,8 @@ export default function ForgotPasswordForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  // Only when email isn't set up on this computer and a link was really made (never for unknown emails).
+  const [devLink, setDevLink] = useState<string | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -25,7 +27,8 @@ export default function ForgotPasswordForm() {
     try {
       // The API emails a one-time link to active accounts. It answers the same way for
       // every email, so nobody can use this form to find out which emails have accounts.
-      await api.post("/forgot-password", { email: email.trim() });
+      const res = await api.post<{ devLink?: string }>("/forgot-password", { email: email.trim() });
+      setDevLink(res.devLink ?? null);
       setSent(true);
     } catch (err) {
       setError(errorMessage(err));
@@ -55,7 +58,7 @@ export default function ForgotPasswordForm() {
               </p>
             </div>
           </div>
-          <EmailLogHint />
+          {devLink && <DevLinkNotice link={devLink} />}
         </div>
       ) : (
         <form onSubmit={submit} noValidate className="flex flex-col gap-5">

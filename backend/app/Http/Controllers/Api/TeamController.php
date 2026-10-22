@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
+use App\Support\EmailLink;
 use App\Models\User;
 use App\Notifications\TeamInvite;
 use App\Support\Audit;
@@ -51,7 +52,7 @@ class TeamController extends Controller
         Audit::log('Created', $user, $user->email, "Invited as {$user->role->label()}");
         $this->sendInvite($user, $request->user());
 
-        return (new UserResource($user))->response()->setStatusCode(201);
+        return (new UserResource($user))->additional($this->devLink($user))->response()->setStatusCode(201);
     }
 
     public function updateRole(Request $request, User $user): UserResource
@@ -87,7 +88,7 @@ class TeamController extends Controller
         $this->sendInvite($user, request()->user());
         Audit::log('Updated', $user, $user->email, 'Invite sent again');
 
-        return new UserResource($user);
+        return (new UserResource($user))->additional($this->devLink($user));
     }
 
     public function revokeInvite(User $user): Response
@@ -100,6 +101,17 @@ class TeamController extends Controller
         $user->delete();
 
         return response()->noContent();
+    }
+
+    /**
+     * On a computer without email set up (local, log mailer), the join link that was just
+     * "emailed", so the app can show it. Empty everywhere else. See EmailLink::devLink().
+     */
+    private function devLink(User $user): array
+    {
+        $link = EmailLink::devLink($user->email, 'Invite');
+
+        return $link ? ['devLink' => $link] : [];
     }
 
     /** Emails a join link with a fresh one-time token (valid 7 days). */

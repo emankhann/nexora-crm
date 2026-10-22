@@ -8,7 +8,7 @@ import Modal from "@/components/ui/Modal";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { SelectField, TextField, type Errors } from "@/components/ui/Field";
 import { useErrorToast, useToast } from "@/components/ui/Toast";
-import EmailLogHint from "@/components/auth/EmailLogHint";
+import DevLinkNotice from "@/components/auth/DevLinkNotice";
 import { errorMessage, formErrors } from "@/lib/api";
 import PageHeader from "@/components/layout/PageHeader";
 import { changeMemberRole, inviteMember, resendInvite, revokeInvite, useCrm } from "@/lib/crm-store";
@@ -40,6 +40,8 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
   const [role, setRole] = useState<Role>("Sales rep");
   const [errors, setErrors] = useState<Errors<"name" | "email">>({});
   const [saving, setSaving] = useState(false);
+  // Set when email isn't set up on this computer: the dialog then shows the join link instead of closing.
+  const [devLink, setDevLink] = useState<string | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -53,9 +55,14 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
     if (Object.keys(errs).length) return;
     setSaving(true);
     try {
-      await inviteMember({ name, email, role });
-      toast(`Invite sent to ${email.trim().toLowerCase()}`);
-      onClose();
+      const { devLink: link } = await inviteMember({ name, email, role });
+      if (link) {
+        toast(`Invite created for ${email.trim().toLowerCase()}`);
+        setDevLink(link);
+      } else {
+        toast(`Invite sent to ${email.trim().toLowerCase()}`);
+        onClose();
+      }
     } catch (err) {
       const fields = formErrors(err, { name: "name", email: "email" } as const);
       if (fields) setErrors(fields);
@@ -70,24 +77,39 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
       open={open}
       onClose={onClose}
       size="sm"
-      title="Invite a team member"
-      description="They get an email with a link to choose their password. It works for 7 days; until they join they show as Pending."
+      title={devLink ? `${name.trim()} is invited` : "Invite a team member"}
+      description={
+        devLink
+          ? "They show as Pending until they join. The link works for 7 days."
+          : "They get an email with a link to choose their password. It works for 7 days; until they join they show as Pending."
+      }
       icon={
         <span className="grid h-[42px] w-[42px] shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
           <UserPlus size={20} />
         </span>
       }
       footer={
-        <div className="ml-auto flex gap-2.5">
-          <button type="button" className={btnOutline} onClick={onClose}>
-            Cancel
-          </button>
-          <button type="submit" form="invite-form" className={btnPrimary} disabled={saving}>
-            {saving ? "Sending…" : "Send invite"}
-          </button>
-        </div>
+        devLink ? (
+          <div className="ml-auto flex gap-2.5">
+            <button type="button" className={btnPrimary} onClick={onClose}>
+              Done
+            </button>
+          </div>
+        ) : (
+          <div className="ml-auto flex gap-2.5">
+            <button type="button" className={btnOutline} onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" form="invite-form" className={btnPrimary} disabled={saving}>
+              {saving ? "Sending…" : "Send invite"}
+            </button>
+          </div>
+        )
       }
     >
+      {devLink ? (
+        <DevLinkNotice link={devLink} />
+      ) : (
       <form id="invite-form" onSubmit={submit} noValidate className="flex flex-col gap-4">
         <TextField label="Full name" required value={name} onChange={(e) => setName(e.target.value)} error={errors.name} placeholder="e.g. Kamran Shah" />
         <TextField label="Work email" required type="email" value={email} onChange={(e) => setEmail(e.target.value)} error={errors.email} placeholder="name@company.com" />
@@ -97,8 +119,8 @@ function InviteDialog({ open, onClose, existing }: { open: boolean; onClose: () 
           onChange={(e) => setRole(e.target.value as Role)}
           options={ROLES.map((r) => ({ value: r, label: `${r} · ${roleNote[r]}` }))}
         />
-        <EmailLogHint />
       </form>
+      )}
     </Modal>
   );
 }
@@ -129,7 +151,14 @@ export default function TeamView({ permissions }: { permissions: PermissionRow[]
 
   function resend(m: MemberRecord) {
     resendInvite(m.id)
-      .then(() => toast(`Invite sent again to ${m.email}`))
+      .then((link) =>
+        link
+          ? // Email isn't set up on this computer: offer the new link instead.
+            toast(`New invite link for ${m.email} (email isn’t set up, so nothing was sent)`, {
+              action: { label: "Copy link", onClick: () => void navigator.clipboard.writeText(link).catch(() => undefined) },
+            })
+          : toast(`Invite sent again to ${m.email}`)
+      )
       .catch(showError);
   }
 

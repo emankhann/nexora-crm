@@ -6,6 +6,7 @@ use App\Enums\UserStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Http\Resources\UserResource;
+use App\Support\EmailLink;
 use App\Models\User;
 use App\Support\Audit;
 use Illuminate\Auth\Events\PasswordReset;
@@ -70,12 +71,19 @@ class AuthController extends Controller
         $data = $request->validate(['email' => ['required', 'email']]);
 
         $user = User::where('email', strtolower($data['email']))->where('status', UserStatus::Active->value)->first();
+        $devLink = null;
         if ($user) {
             // Laravel also limits this to one email per minute per account.
             Password::broker()->sendResetLink(['email' => $user->email]);
+            // Only locally with the log mailer, and only when a link was really made: an
+            // unknown email gets exactly the same answer as before.
+            $devLink = EmailLink::devLink($user->email, 'Password reset');
         }
 
-        return response()->json(['message' => 'If that email has an account, a reset link is on its way.']);
+        return response()->json([
+            'message' => 'If that email has an account, a reset link is on its way.',
+            ...($devLink ? ['devLink' => $devLink] : []),
+        ]);
     }
 
     /**

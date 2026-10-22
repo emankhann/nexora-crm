@@ -94,7 +94,7 @@ const admin = await (await browser.newContext()).newPage();
 admin.on("pageerror", (e) => pageErrors.push(e.message));
 await signIn(admin, "huma@nexora.example", "demo1234");
 
-await check("An admin's invite emails a join link", async () => {
+await check("An admin's invite makes a join link: logged, and shown in the dialog when email isn't set up", async () => {
   await admin.goto(`${BASE}/team`);
   await admin.locator("main h1").first().waitFor();
   await admin.getByRole("button", { name: "+ Invite member" }).click();
@@ -102,9 +102,15 @@ await check("An admin's invite emails a join link", async () => {
   await field(dialog, "Full name").fill(invitee.name);
   await field(dialog, "Work email").fill(invitee.email);
   await dialog.getByRole("button", { name: "Send invite" }).click();
-  await dialog.waitFor({ state: "hidden", timeout: 15000 });
   const link = await emailLink(invitee.email, "Invite");
   assert(link.startsWith(`${BASE}/accept-invite?`), `unexpected link ${link}`);
+  // Locally with the log mailer (how these scripts run), the dialog shows the same link instead of closing.
+  await dialog.getByText("Email isn’t set up on this computer", { exact: false }).waitFor({ timeout: 15000 });
+  const shown = (await dialog.locator("code").innerText()).trim();
+  assert(shown === link, `the dialog shows ${shown}, the log has ${link}`);
+  assert((await dialog.getByRole("link", { name: "Open" }).getAttribute("href")) === link, "Open doesn't point at the link");
+  await dialog.getByRole("button", { name: "Done" }).click();
+  await dialog.waitFor({ state: "hidden", timeout: 15000 });
 });
 
 const joiner = await (await browser.newContext()).newPage();
