@@ -42,6 +42,7 @@ erDiagram
         string job_title
         timestamp invited_at
         timestamp last_active_at
+        date overdue_summary_sent_on "last daily overdue email"
         string password "bcrypt hash"
     }
     leads {
@@ -170,7 +171,7 @@ Every table also has `created_at` and `updated_at`, except `audit_logs`, which o
 
 | Table | What it holds |
 |---|---|
-| `users` | Everyone who can sign in, with their **role** (Admin, Manager, Sales rep) and **status** (an invited person is `pending` until they accept). |
+| `users` | Everyone who can sign in, with their **role** (Admin, Manager, Sales rep) and **status** (an invited person is `pending` until they accept). `overdue_summary_sent_on` records the day their last overdue-tasks summary went out, so it is sent once a day. |
 | `leads` | Potential customers. The **score** and the **score_factors** that explain it are worked out by `LeadScorer` when the lead is created. The `contacted_at`, `qualified_at` and `converted_at` dates drive the funnel. |
 | `customers` | Companies that buy. **lifetime_value** is the total of their won deals, kept up to date by `DealStageService`. |
 | `contacts` | People at a customer. One is marked **primary**. |

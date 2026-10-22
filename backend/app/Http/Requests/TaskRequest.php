@@ -30,6 +30,8 @@ class TaskRequest extends FormRequest
             'customer_id' => ['nullable', 'integer', Rule::exists('customers', 'id')->withoutTrashed()],
             'deal_id' => ['nullable', 'integer', Rule::exists('deals', 'id')->withoutTrashed()],
             'notes' => ['nullable', 'string', 'max:2000'],
+            // "Email the assignee": not saved on the task, only decides whether TaskAssigned is sent.
+            'notify' => ['boolean'],
         ];
     }
 }

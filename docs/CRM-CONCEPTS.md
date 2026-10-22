@@ -61,7 +61,7 @@ A CRM is only useful if people keep it up to date, so good CRMs do as much as po
 - **Lead scoring:** every new lead is scored from its source, status, company size, job title and contact details. The breakdown is shown, so the score can be trusted and argued with.
 - **Deal probability** follows the stage, and the **weighted pipeline** (value × probability) becomes a forecast.
 - **Customer lifetime value** updates itself when deals are won or reopened.
-- **Reminders:** due and overdue tasks, new assignments and late deals appear in the bell, and reminder emails are sent by a scheduled job.
+- **Reminders:** due and overdue tasks, new assignments and late deals appear in the bell. Scheduled jobs send reminder emails before tasks are due and a daily summary of overdue ones, and people are emailed when someone gives them a task or leads.
 - **Leads move forward by themselves:** logging a call, email or meeting on a new lead marks it as contacted, and a lead can only be converted once it's qualified, so the funnel reflects what really happened.
 - **History writes itself:** status changes, assignments, conversions and deal moves are logged without anyone typing them.
 - **Needs attention:** the dashboard picks out hot leads nobody has contacted for a week, overdue tasks, late deals and at-risk customers.
@@ -110,7 +110,7 @@ Every requirement in the brief, and where to find it.
 | Requirement | Where |
 |---|---|
 | Create and assign tasks | Task form, with assignee, type, priority and the lead or customer it's about |
-| Deadlines and reminders | Due date and time; reminder 15 min, 1 h or 1 day before; in-app and email |
+| Deadlines and reminders | Due date and time; reminder 15 min, 1 h or 1 day before; in-app and email; an email to the assignee when a task is assigned; a daily overdue summary |
 | Follow-up histories | *Follow-up history* on each task: log each attempt with an outcome, a note and the next step; full history kept |
 
 ### F. User management

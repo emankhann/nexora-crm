@@ -1,6 +1,7 @@
-// End-to-end check for invites, password reset, changing your password, deleting a customer
-// and task reminder emails. Emails go to backend/storage/logs/laravel.log (MAIL_MAILER=log);
-// this script reads the links from there, the same way a person testing locally would.
+// End-to-end check for invites, password reset, changing your password, deleting a customer,
+// task reminder emails, task-assigned emails and the overdue summary. Emails go to
+// backend/storage/logs/laravel.log (MAIL_MAILER=log); this script reads the links from there,
+// the same way a person testing locally would.
 //
 // Needs both servers running on a seeded database, and Playwright:
 //   cd backend && php artisan migrate:fresh --seed && php artisan serve
@@ -203,6 +204,41 @@ await check("A task whose reminder time has come sends one reminder email", asyn
   assert(count() - before === 1, `expected one reminder email for the task, found ${count() - before}`);
   execFileSync("php", ["artisan", "nexora:send-task-reminders"], { cwd: BACKEND, stdio: "pipe" });
   assert(count() - before === 1, "the reminder was sent twice");
+});
+
+await check("Creating a task for someone else emails them (Email the assignee)", async () => {
+  const title = `E2E assigned ${RUN}`;
+  await admin.goto(`${BASE}/tasks`);
+  await admin.locator("main h1").first().waitFor({ state: "visible", timeout: 15000 });
+  await visible(admin.getByRole("button", { name: "+ New task" })).click();
+  const dialog = admin.getByRole("dialog");
+  await field(dialog, "What needs doing?").fill(title);
+  await field(dialog, "Assign to").selectOption({ label: "Omar T." }); // owners are listed by short name
+  assert(await dialog.getByRole("checkbox", { name: /Email the assignee/ }).isChecked(), "Email the assignee isn't ticked by default");
+  const request = admin.waitForRequest((r) => r.url().endsWith("/api/tasks") && r.method() === "POST");
+  const response = admin.waitForResponse((r) => r.url().endsWith("/api/tasks") && r.request().method() === "POST");
+  await dialog.getByRole("button", { name: "Create task" }).click();
+  assert((await request).postDataJSON().notify === true, "the form didn't send notify: true");
+  const id = (await (await response).json()).data.id;
+  await visible(admin.getByText(/assigned to Omar T\. · we’ve emailed them/)).waitFor({ timeout: 10000 });
+  const link = await emailLink("omar@nexora.example", "Task assigned");
+  assert(link === `${BASE}/tasks?open=${id}`, `the email links to ${link}`);
+});
+
+await check("The overdue summary goes out once a day, for tasks with email reminders on", async () => {
+  const me = (await apiCall(admin, "GET", "/me")).json.data;
+  const task = await apiCall(admin, "POST", "/tasks", {
+    title: `E2E overdue ${RUN}`, type: "call", priority: "high", reminder: "15m", remind_by_email: true,
+    due_at: new Date(Date.now() - 3 * 3600e3).toISOString(), assigned_to: me.id,
+  });
+  assert(task.status === 201, `creating the task returned ${task.status}`);
+  const line = `Email link for ${me.email} (Overdue tasks): ${BASE}/tasks`;
+  const count = () => readFileSync(LOG, "utf8").split(line).length - 1;
+  const before = count();
+  execFileSync("php", ["artisan", "nexora:send-overdue-summaries"], { cwd: BACKEND, stdio: "pipe" });
+  assert(count() - before === 1, `expected one overdue summary, found ${count() - before}`);
+  execFileSync("php", ["artisan", "nexora:send-overdue-summaries"], { cwd: BACKEND, stdio: "pipe" });
+  assert(count() - before === 1, "the summary was sent twice on the same day");
 });
 
 await browser.close();

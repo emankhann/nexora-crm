@@ -135,6 +135,10 @@ Tabs: *All open*, *Today*, *Overdue*, *Upcoming* and *Done*. Filter by priority 
 
 **Create a task:** a title, type (Call, Email, Meeting, To-do), priority, due date and time, who it's for, what it's about (a lead or customer), and a **reminder** (15 minutes, 1 hour or 1 day before, or none). With *Email reminder* on, the assignee also gets an email at that time.
 
+**Email the assignee** (admins and managers): when you create a task for someone else, or give an existing task to someone else, they get an email with a link to the task, and the toast says *we’ve emailed them*. It’s ticked by default; untick it to assign quietly. Editing a task without changing who it’s for sends nothing, and nobody is emailed about tasks they assign to themselves.
+
+**Overdue summary:** every morning at 9:00, each person with overdue tasks that have email reminders on gets **one** email listing them, with how late each one is. Nobody gets it twice in a day, and tasks without email reminders are left out. Complete or reschedule the tasks to stop it.
+
 **Open a task** to:
 
 - **Log an attempt** under *Follow-up history*: write what happened, pick the outcome (Reached, No answer, Left voicemail, Email sent, Replied, Meeting booked) and what's next (*Next: in 2 days*, *Next: tomorrow*, *Next: in a week*, or *Done, close the task*), then click **Log**. Each attempt is kept in the task's follow-up history.

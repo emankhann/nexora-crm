@@ -12,6 +12,7 @@ use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\Task;
 use App\Models\User;
+use App\Notifications\TaskAssigned;
 use App\Services\ActivityRecorder;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
@@ -52,10 +53,13 @@ class TaskController extends Controller
         return new TaskResource($task->load(self::RELATIONS));
     }
 
+    /**
+     * POST /api/tasks. With notify: true, a task for someone else emails them (TaskAssigned).
+     */
     public function store(TaskRequest $request): JsonResponse
     {
         Gate::authorize('create', Task::class);
-        $data = $request->validated();
+        $data = $request->safe()->except('notify');
         $user = $request->user();
         $this->authorizeLinks($data);
 
@@ -76,16 +80,24 @@ class TaskController extends Controller
             return $task;
         });
 
-        return (new TaskResource($task->load(self::RELATIONS)))->response()->setStatusCode(201);
+        $task->load(self::RELATIONS);
+        $this->emailAssignee($request, $task);
+
+        return (new TaskResource($task))->response()->setStatusCode(201);
     }
 
+    /**
+     * PUT /api/tasks/{task}. With notify: true, giving the task to someone else emails them;
+     * editing anything else sends nothing.
+     */
     public function update(TaskRequest $request, Task $task): TaskResource
     {
         Gate::authorize('update', $task);
-        $data = $request->validated();
+        $data = $request->safe()->except('notify');
         $this->authorizeLinks($data);
 
-        if (isset($data['assigned_to']) && (int) $data['assigned_to'] !== (int) $task->assigned_to) {
+        $reassigned = isset($data['assigned_to']) && (int) $data['assigned_to'] !== (int) $task->assigned_to;
+        if ($reassigned) {
             Gate::authorize('reassign');
         } else {
             unset($data['assigned_to']);
@@ -94,7 +106,21 @@ class TaskController extends Controller
         $task->update($data);
         Audit::log('Updated', $task, $task->title, 'Task edited');
 
-        return new TaskResource($task->load(self::RELATIONS));
+        $task->load(self::RELATIONS);
+        if ($reassigned) {
+            $this->emailAssignee($request, $task);
+        }
+
+        return new TaskResource($task);
+    }
+
+    /** Emails the assignee about their new task, unless notify is off or they assigned it to themselves. */
+    private function emailAssignee(Request $request, Task $task): void
+    {
+        $user = $request->user();
+        if ($request->boolean('notify') && $task->assignee && $task->assignee->id !== $user->id) {
+            $task->assignee->notify(new TaskAssigned($task, $user->name));
+        }
     }
 
     /** POST /api/tasks/{task}/toggle: mark done or reopen. */

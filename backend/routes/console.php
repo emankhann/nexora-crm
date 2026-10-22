@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Task reminder emails. Run the scheduler with:  php artisan schedule:work
 Schedule::command('nexora:send-task-reminders')->everyMinute()->withoutOverlapping();
+
+// The daily overdue-tasks summary, at 9:00 in the local time zone (LOCAL_TIMEZONE in backend/.env).
+Schedule::command('nexora:send-overdue-summaries')->dailyAt('09:00')->timezone(config('app.local_timezone'))->withoutOverlapping();

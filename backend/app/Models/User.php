@@ -36,6 +36,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'invited_at' => 'datetime',
             'last_active_at' => 'datetime',
+            'overdue_summary_sent_on' => 'date',
             'password' => 'hashed',
             'role' => Role::class,
             'status' => UserStatus::class,

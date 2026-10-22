@@ -53,7 +53,7 @@ In the terminal, run:
 npm run setup
 ```
 
-It checks your tools, installs everything, and creates the database with demo data. It takes 3 to 7 minutes.
+It checks your tools, installs everything, and creates the database with demo data. It takes 3 to 7 minutes. **You need an internet connection**: setup downloads the PHP and JavaScript packages the project uses.
 
 - If it says **"PHP needs a few extensions turned on"**, press **Y**. It fixes PHP's settings for you and carries on.
 - It's done when it says **"✓ Nexora CRM is ready."**
@@ -66,6 +66,8 @@ npm run dev:all
 ```
 
 Wait until the lines starting with `web` say **Ready** (about 10 seconds), then open **http://localhost:3000** in your browser. Use `localhost`, not `127.0.0.1`.
+
+**Windows:** the first time, Windows Defender Firewall may ask whether Node.js may use the network. Either answer works: Nexora runs on your own computer (`localhost`), and allowing it only lets other devices on your network open it too. If you allow it, choose **Private networks** only.
 
 Sign in by clicking a demo account on the sign-in page (password **`demo1234`**):
 
@@ -95,7 +97,7 @@ What each table holds: [docs/DATABASE.md](docs/DATABASE.md).
 
 ### Emails
 
-By default, emails (invites, password resets, task reminders, lead assignments) are **not sent**. They're written to `backend/storage/logs/laravel.log`, so no mail account is needed. Open that file and look for the last line with `Email link for`, then copy the link into your browser. To send real emails, see [Sending real emails](#sending-real-emails).
+By default, emails (invites, password resets, task reminders, new-task emails, the daily overdue summary, lead assignments) are **not sent**. They're written to `backend/storage/logs/laravel.log`, so no mail account is needed. Open that file and look for the last line with `Email link for`, then copy the link into your browser. To send real emails, see [Sending real emails](#sending-real-emails).
 
 ## More options
 
@@ -171,10 +173,13 @@ Email link for ali@nexora.example (Invite): http://localhost:3000/accept-invite?
 - **Invite someone:** Team and roles → *+ Invite member*, then open the link from the log in a private window. They choose a password and are signed in.
 - **Forgot password:** on the sign-in page, then open the reset link from the log. Links work once, for 60 minutes.
 - **Task reminders:** tasks with email reminders on send an email when the reminder time comes, while the scheduler runs. To send due reminders right away, from the backend folder, run `php artisan nexora:send-task-reminders`.
+- **New tasks:** creating a task for someone else (or giving them an existing one) with *Email the assignee* ticked emails them a link to the task. Nobody is emailed about tasks they assign to themselves.
+- **Overdue summary:** at 9:00 every morning (in `LOCAL_TIMEZONE` from `backend/.env`), each person with overdue tasks that have email reminders on gets one email listing them. It goes out at most once a day. To send it right away, for a test or a demo, from the backend folder, run `php artisan nexora:send-overdue-summaries`.
+- **Leads assigned:** assigning leads to someone else with *Email the new owner* ticked emails them one message listing the leads.
 
 ### Sending real emails
 
-The emails are real Laravel notifications; only the delivery is a setting. To have invites, password resets, task reminders and lead assignments arrive in a real inbox, sent from a Gmail account:
+The emails are real Laravel notifications; only the delivery is a setting. To have invites, password resets, task reminders, new-task emails, the daily overdue summary and lead assignments arrive in a real inbox, sent from a Gmail account:
 
 1. Turn on **2-Step Verification** on your Google account, then create an **app password** at [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords) (name it "Nexora"). Use it, not your normal Gmail password.
 2. Open `backend/.env` and replace the `MAIL_` lines with this block, using your address and app password:
@@ -192,7 +197,7 @@ The emails are real Laravel notifications; only the delivery is a setting. To ha
 4. From the backend folder, run `php artisan config:clear`, then restart `npm run dev:all` from the project root.
 5. Test it: from the backend folder, run `php artisan nexora:send-test-email you@gmail.com`.
 
-Invites, password resets, task reminders and lead assignments now arrive in real inboxes, sent from your Gmail. Your password stays in `backend/.env`, which Git never commits.
+Invites, password resets, task reminders, new-task emails, the daily overdue summary and lead assignments now arrive in real inboxes, sent from your Gmail. Your password stays in `backend/.env`, which Git never commits.
 
 For production, use the same settings with a mail service such as Resend, Brevo or Mailgun (see "Before going live").
 
@@ -253,7 +258,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (41 tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (47 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend
@@ -281,7 +286,7 @@ node scripts/check-signin-and-data.mjs
 |---|---|
 | `node scripts/check-signin-and-data.mjs` | Sign-in, lockout, what each role can open, data loaded from the database, sign-out, expired sessions (19 checks) |
 | `node scripts/check-saving.mjs` | Creating, editing, moving, converting and deleting records through the UI, and taking a lead through its stages (16) |
-| `node scripts/check-account-and-emails.mjs` | Invites, password reset, change password, customer delete and reminder emails (9) |
+| `node scripts/check-account-and-emails.mjs` | Invites, password reset, change password, customer delete, reminder, new-task and overdue-summary emails (11) |
 | `node scripts/check-same-name-owners.mjs` | Two people with the same short name are kept apart (6) |
 | `node scripts/check-responsive.mjs` | Every page and dialog at phone, tablet and laptop sizes, with screenshots (38) |
 
@@ -320,6 +325,7 @@ scripts/              setup, dev, end-to-end checks and screenshots
 | `running scripts is disabled on this system` (PowerShell, when running `npm`) | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once, or use Command Prompt. |
 | `Port 8000 is already in use` / `Port 3000 is already in use` | Something already runs there, often Nexora in another terminal. Close it, or stop it there with `Ctrl+C`. |
 | `Setup couldn't write …php.ini (no permission to change it)` | Open the terminal as Administrator and run `npm run setup` again, or make the change by hand as it shows. |
+| `Couldn't load your data` / `Can't reach the Nexora server at http://localhost:8000` | The API isn't running. Start Nexora with `npm run dev:all` (not just `npm run dev`), and check the lines starting with `api` for an error. Open the app at `http://localhost:3000`, not `127.0.0.1`. Then click **Try again**. |
 | Setup failed halfway | Fix the reported problem and run `npm run setup` again. It's safe to repeat (it resets the demo data). |
 
 Don't use `composer update` or `--ignore-platform-reqs` to get past a missing extension: that installs different package versions or hides the problem until the app runs. The fix is turning the extension on.

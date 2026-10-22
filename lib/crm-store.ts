@@ -582,15 +582,17 @@ function taskPayload(input: TaskInput) {
   };
 }
 
-export async function createTask(input: TaskInput): Promise<TaskRecord> {
-  const res = await mutate(() => api.post<{ data: ApiTask }>("/tasks", taskPayload(input)));
+/** With notify, the API emails the assignee (not when you assign the task to yourself). */
+export async function createTask(input: TaskInput, notify = false): Promise<TaskRecord> {
+  const res = await mutate(() => api.post<{ data: ApiTask }>("/tasks", { ...taskPayload(input), notify }));
   return mapTask(res.data);
 }
 
-export async function updateTask(id: string, patch: Partial<TaskInput>): Promise<void> {
+/** With notify, the API emails the new assignee if the assignee changed. */
+export async function updateTask(id: string, patch: Partial<TaskInput>, notify = false): Promise<void> {
   const before = state?.tasks.find((t) => t.id === id);
   if (!before) throw new ApiError(404, "That task no longer exists.");
-  await mutate(() => api.put(`/tasks/${id}`, taskPayload({ ...before, ...patch })));
+  await mutate(() => api.put(`/tasks/${id}`, { ...taskPayload({ ...before, ...patch }), notify }));
 }
 
 /** Marks a task done, or reopens it. Ticks the box at once. */

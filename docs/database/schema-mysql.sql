@@ -384,6 +384,7 @@ CREATE TABLE `users` (
   `job_title` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `invited_at` timestamp NULL DEFAULT NULL,
   `last_active_at` timestamp NULL DEFAULT NULL,
+  `overdue_summary_sent_on` date DEFAULT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
   `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

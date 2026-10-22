@@ -69,6 +69,7 @@ export default function TaskForm({
   const [reminder, setReminder] = useState<ReminderOption>(task?.reminder ?? "1h");
   const [byEmail, setByEmail] = useState(task?.remindByEmail ?? true);
   const [notes, setNotes] = useState(task?.notes ?? "");
+  const [notifyAssignee, setNotifyAssignee] = useState(true);
   const [errors, setErrors] = useState<Errors<Field>>({});
   const [saving, setSaving] = useState(false);
 
@@ -109,14 +110,17 @@ export default function TaskForm({
       notes: notes.trim(),
     };
 
+    // Only a new assignee who isn't you gets the email (the API checks this too).
+    const emailed = notifyAssignee && ownerId !== user.id && (!task || ownerId !== task.ownerId);
+    const emailNote = emailed ? " · we’ve emailed them" : "";
     setSaving(true);
     try {
       if (task) {
-        await updateTask(task.id, input);
-        toast("Task saved");
+        await updateTask(task.id, input, emailed);
+        toast(`Task saved${emailNote}`);
       } else {
-        await createTask(input);
-        toast(ownerId === user.id ? "Task created" : `Task created and assigned to ${userById(ownerId)?.short ?? "them"}`);
+        await createTask(input, emailed);
+        toast(ownerId === user.id ? "Task created" : `Task created and assigned to ${userById(ownerId)?.short ?? "them"}${emailNote}`);
       }
       onClose();
     } catch (err) {
@@ -179,6 +183,19 @@ export default function TaskForm({
           <TextField label="Due date" required type="date" value={date} onChange={(e) => setDate(e.target.value)} error={errors.date} />
           <TextField label="Time" type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </div>
+        {can(user, "reassign") && (
+          <label className="-mt-1 flex items-start gap-2 text-[13px] font-semibold text-slate-700">
+            <input
+              type="checkbox"
+              checked={notifyAssignee}
+              onChange={(e) => setNotifyAssignee(e.target.checked)}
+              className="mt-px h-[17px] w-[17px] shrink-0 accent-primary"
+            />
+            <span>
+              Email the assignee <span className="font-normal text-slate-500">(not when you assign it to yourself)</span>
+            </span>
+          </label>
+        )}
 
         <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-[1fr_160px]">
           <div className="flex flex-col gap-2">
