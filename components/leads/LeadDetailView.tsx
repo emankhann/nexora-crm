@@ -284,7 +284,23 @@ export default function LeadDetailView({ id }: { id: string }) {
                 </Link>
               )}
             </div>
-            {deals.length === 0 && <div className="text-sm text-slate-500">No deal linked to this lead yet. Converting can create one.</div>}
+            {deals.length === 0 && (
+              <div className="text-sm text-slate-500">
+                {converted && customer ? (
+                  <>
+                    Converted to{" "}
+                    <Link href={`/customers/${customer.id}`} className="font-semibold text-primary hover:underline">
+                      {customer.name}
+                    </Link>
+                    . Its deals are on the customer page.
+                  </>
+                ) : converted ? (
+                  "Converted. No deal linked to this lead."
+                ) : (
+                  "No deal linked to this lead yet. Converting can create one."
+                )}
+              </div>
+            )}
             {deals.map((d) => (
               <Link key={d.id} href={`/pipeline?deal=${d.id}`} className="flex flex-col gap-2.5 rounded-xl bg-muted p-4 hover:bg-subtle">
                 <div className="text-[13.5px] font-bold">{d.title}</div>
