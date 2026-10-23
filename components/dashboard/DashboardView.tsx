@@ -46,7 +46,7 @@ export default function DashboardView() {
   const leads30 = leads.filter((l) => daysBetween(l.createdAt) <= 30).length;
 
   const stats = [
-    { label: "Total leads", value: String(leads.filter((l) => l.status !== "Converted").length), delta: `${leads30} added in 30 days`, tone: "ok" as const },
+    { label: "Total leads", value: String(leads.length), delta: `${leads30} added in 30 days`, tone: "ok" as const },
     { label: "Active deals", value: String(openDeals.length), delta: newThisWeek ? `+${newThisWeek} this week` : formatCurrency(openDeals.reduce((s, d) => s + d.value, 0)), tone: "ok" as const },
     { label: "Won this month", value: formatCurrency(wonThisMonth), delta: `${deals.filter((d) => d.stage === "Won" && d.closedAt && new Date(d.closedAt) >= monthStart).length} deals`, tone: "ok" as const },
     { label: "Lead conversion", value: `${conversion.toFixed(1)}%`, delta: `${converted} converted`, tone: conversion >= 15 ? ("ok" as const) : ("hot" as const) },
@@ -192,13 +192,13 @@ export default function DashboardView() {
         <div className="flex min-w-0 flex-[999_1_520px] flex-col gap-4">
         <div className={`${card} px-4 py-5 sm:px-6`}>
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-bold">Hot leads</h2>
+            <h2 className="text-base font-bold">Top leads</h2>
             <Link href="/leads" className="text-[13px] font-semibold text-primary">
               See all leads
             </Link>
           </div>
           {hotLeads.length === 0 ? (
-            <div className="py-8 text-center text-sm text-slate-500">No leads yet.</div>
+            <div className="py-8 text-center text-sm text-slate-500">No open leads yet.</div>
           ) : (
             <>
             {/* Phones: one compact card per lead */}

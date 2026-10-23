@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Enums\DealStage;
+use App\Enums\LeadStatus;
+use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\Lead;
 use App\Models\User;
@@ -48,6 +50,22 @@ class DemoDataTest extends TestCase
         $this->assertSame('Ayesha Raza', Lead::orderByDesc('score')->first()->name);
         $this->assertSame(95, Lead::where('name', 'Ayesha Raza')->value('score'));
         $this->assertGreaterThanOrEqual(3, Lead::where('score', '>=', 80)->count());
+    }
+
+    public function test_the_converted_demo_leads_are_linked_both_ways_with_their_steps_in_order(): void
+    {
+        foreach (['Daniyal Ahmed' => 'Orbit Studios', 'Rabia Anwar' => 'Aster Pharma'] as $name => $company) {
+            $lead = Lead::where('name', $name)->firstOrFail();
+            $customer = Customer::where('name', $company)->firstOrFail();
+
+            $this->assertSame(LeadStatus::Converted, $lead->status, "{$name}'s status");
+            $this->assertSame($customer->id, $lead->customer_id, "{$name} should point to {$company}");
+            $this->assertSame($lead->id, $customer->lead_id, "{$company} should point to {$name}");
+            $this->assertTrue(
+                $lead->created_at->lt($lead->contacted_at) && $lead->contacted_at->lt($lead->qualified_at) && $lead->qualified_at->lt($lead->converted_at),
+                "{$name}'s stage dates are out of order"
+            );
+        }
     }
 
     public function test_open_deal_counts_only_come_from_real_deals(): void

@@ -51,14 +51,25 @@ function readCookie(name: string): string | null {
   return match ? decodeURIComponent(match.slice(name.length + 1)) : null;
 }
 
+// The CSRF cookie request in flight, if any. Callers share it, so two changes started at once
+// don't each fetch a token and send one that has already been replaced.
+let csrfRequest: Promise<void> | null = null;
+
 /** Asks Laravel for a fresh CSRF cookie (needed before the first change and after it expires). */
 export async function ensureCsrfCookie(force = false) {
+  if (csrfRequest) return csrfRequest;
   if (!force && readCookie("XSRF-TOKEN")) return;
-  try {
-    await fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include", headers: { Accept: "application/json" } });
-  } catch {
-    throw new NetworkError();
-  }
+  csrfRequest = fetch(`${API_URL}/sanctum/csrf-cookie`, { credentials: "include", headers: { Accept: "application/json" } })
+    .then(
+      () => undefined,
+      () => {
+        throw new NetworkError();
+      }
+    )
+    .finally(() => {
+      csrfRequest = null;
+    });
+  return csrfRequest;
 }
 
 type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";

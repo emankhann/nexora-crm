@@ -80,7 +80,7 @@ Every requirement in the brief, and where to find it.
 ### A. Dashboard
 | Requirement | Where |
 |---|---|
-| Overview of leads, customers, deals and activities | Dashboard: four stats, hot leads, deals closing soon, recent activity |
+| Overview of leads, customers, deals and activities | Dashboard: four stats, top leads, deals closing soon, recent activity |
 | Visual statistics and performance summaries | Revenue chart (12 months), lead funnel, *Team this month* |
 | Upcoming tasks and follow-up reminders | *Your tasks due today*, *Needs attention*, the bell |
 

@@ -12,7 +12,7 @@ import { useErrorToast, useToast } from "@/components/ui/Toast";
 import PageHeader from "@/components/layout/PageHeader";
 import LeadForm from "@/components/leads/LeadForm";
 import { AssignOwnerDialog, ChangeStatusDialog } from "@/components/leads/BulkDialogs";
-import { deleteLeads, importLeads, useCrm } from "@/lib/crm-store";
+import { deleteLeads, importLeads, LEAD_SOURCES, useCrm } from "@/lib/crm-store";
 import { downloadCsv, parseCsv } from "@/lib/csv";
 import { can, canEdit, canSee } from "@/lib/permissions";
 import { useSessionUser } from "@/lib/session";
@@ -75,6 +75,7 @@ export default function LeadsTable() {
     chosenTab && (viewAll || (chosenTab !== "all" && chosenTab !== "unassigned")) ? chosenTab : viewAll ? "all" : "mine";
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
+  const [source, setSource] = useState("All");
   const [owner, setOwner] = useState(ANY_OWNER);
   const [tier, setTier] = useState("Any");
   const [page, setPage] = useState(0);
@@ -104,11 +105,12 @@ export default function LeadsTable() {
           inTab(l, tab, me) &&
           (!q || [l.name, l.company, l.email].some((v) => v.toLowerCase().includes(q))) &&
           (status === "All" || l.status === status) &&
+          (source === "All" || l.source === source) &&
           (owner === ANY_OWNER || l.ownerId === owner) &&
           (tier === "Any" || scoreTier(l.score).label === tier)
       )
       .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt));
-  }, [visibleLeads, tab, me, query, status, owner, tier]);
+  }, [visibleLeads, tab, me, query, status, source, owner, tier]);
 
   if (!crm || !user) return null;
 
@@ -193,7 +195,7 @@ export default function LeadsTable() {
     }
   }
 
-  const hasFilters = query || status !== "All" || owner !== ANY_OWNER || tier !== "Any";
+  const hasFilters = query || status !== "All" || source !== "All" || owner !== ANY_OWNER || tier !== "Any";
 
   return (
     <>
@@ -288,6 +290,22 @@ export default function LeadsTable() {
                 }}
               >
                 {["All", "New", "Contacted", "Qualified", "Unqualified", "Converted"].map((o) => (
+                  <option key={o}>{o}</option>
+                ))}
+              </select>
+            </label>
+            <label className="flex min-w-0 max-w-full items-center gap-2 text-[13px] text-slate-500">
+              Source
+              <select
+                className={selectCls}
+                value={source}
+                onChange={(e) => {
+                  setSource(e.target.value);
+                  resetPage();
+                }}
+              >
+                <option value="All">All sources</option>
+                {LEAD_SOURCES.map((o) => (
                   <option key={o}>{o}</option>
                 ))}
               </select>
@@ -391,6 +409,7 @@ export default function LeadsTable() {
                       onClick={() => {
                         setQuery("");
                         setStatus("All");
+                        setSource("All");
                         setOwner(ANY_OWNER);
                         setTier("Any");
                       }}

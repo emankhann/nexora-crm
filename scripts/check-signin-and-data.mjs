@@ -85,7 +85,7 @@ const browser = await launch();
     await signIn(page, "huma@nexora.example");
     await page.waitForURL(/\/dashboard/, { timeout: 15000 });
     await waitForData(page);
-    await page.getByText("Hot leads").filter({ visible: true }).first().waitFor();
+    await page.getByText("Top leads").filter({ visible: true }).first().waitFor();
     await page.getByText("Ayesha Raza").filter({ visible: true }).first().waitFor({ timeout: 10000 });
   });
 

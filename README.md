@@ -53,7 +53,7 @@ In the terminal, run:
 npm run setup
 ```
 
-It checks your tools, installs everything, and creates the database with demo data. It takes 3 to 7 minutes. **You need an internet connection**: setup downloads the PHP and JavaScript packages the project uses.
+It checks your tools, installs everything, and creates the database with demo data. It takes 5 to 10 minutes (the first time, mostly downloading packages). **You need an internet connection**: setup downloads the PHP and JavaScript packages the project uses.
 
 - If it says **"PHP needs a few extensions turned on"**, press **Y**. It fixes PHP's settings for you and carries on.
 - It's done when it says **"✓ Nexora CRM is ready."**
@@ -251,7 +251,7 @@ and `extension=pdo_mysql` when you use MySQL.
 
 ## What's in the app
 
-- **Dashboard:** live stats, 12-month revenue chart, lead funnel, hot leads, deals closing soon, team results, your tasks due today, *Needs attention* and recent activity.
+- **Dashboard:** live stats, 12-month revenue chart, lead funnel, top leads, deals closing soon, team results, your tasks due today, *Needs attention* and recent activity.
 - **Leads:** create, edit, search, filter, assign, bulk actions, CSV import and export, and an explainable lead score. Log calls, emails and meetings with a follow-up task, and convert a lead into a customer and a deal in one step.
 - **Customers:** company profiles with contacts, the full communication history (including from when they were a lead), deals, open tasks, health and lifetime value.
 - **Pipeline:** six stages from New to Won and Lost, drag and drop, probability by stage, close dates, lost reasons.
@@ -264,7 +264,7 @@ More in the [user guide](docs/USER-GUIDE.md).
 
 ## Tests
 
-**Backend** (57 tests, on an in-memory SQLite database, nothing to set up):
+**Backend** (58 tests, on an in-memory SQLite database, nothing to set up):
 
 ```bash
 cd backend
@@ -287,6 +287,8 @@ Then, in a second terminal in the project root, install Playwright once and run 
 npm install --no-save playwright
 node scripts/check-signin-and-data.mjs
 ```
+
+The scripts use Chrome if it's installed. Without Chrome, run `npx playwright install chromium` once first. They're optional: the app doesn't need them.
 
 | Script | Checks |
 |---|---|

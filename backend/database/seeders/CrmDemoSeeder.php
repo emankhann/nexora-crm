@@ -129,6 +129,40 @@ class CrmDemoSeeder extends Seeder
             ]);
         }
 
+        // Two leads that already became customers, linked both ways, with their stage dates in order.
+        $convertedRows = [
+            // name, email, company (the customer), company size, source, title, phone, owner, created (days ago), converted (days ago)
+            ['Daniyal Ahmed', 'daniyal@orbitstudios.example', 'Orbit Studios', '1–50', LeadSource::Referral, 'Founder', '+92 321 555 0198', $sana, 20, 2],
+            ['Rabia Anwar', 'rabia@asterpharma.example', 'Aster Pharma', '51–200', LeadSource::Event, 'Procurement lead', '+92 300 555 0111', $huma, 25, 7],
+        ];
+        foreach ($convertedRows as [$name, $email, $company, $size, $source, $title, $phone, $owner, $createdAgo, $convertedAgo]) {
+            $created = $at(-$createdAgo, 9);
+            $converted = $at(-$convertedAgo, 12);
+            $scored = $scorer->score($source, LeadStatus::Converted, $title, $size, $phone, $email);
+            $leads[$name] = Lead::create([
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'job_title' => $title,
+                'company' => $company,
+                'company_size' => $size,
+                'source' => $source,
+                'status' => LeadStatus::Converted,
+                'score' => $scored['score'],
+                'score_factors' => $scored['factors'],
+                'auto_score' => true,
+                'owner_id' => $owner->id,
+                'customer_id' => $customers[$company]->id,
+                'contacted_at' => $created->copy()->addDays(2),
+                'qualified_at' => $created->copy()->addDays(5),
+                'converted_at' => $converted,
+                'last_activity_at' => $converted,
+                'created_at' => $created,
+                'updated_at' => $converted,
+            ]);
+            $customers[$company]->update(['lead_id' => $leads[$name]->id]);
+        }
+
         /* ---------------- Deals ---------------- */
 
         $dealRows = [
@@ -248,6 +282,9 @@ class CrmDemoSeeder extends Seeder
 
         $ayesha = $leads['Ayesha Raza'];
         $orbit = $customers['Orbit Studios'];
+        $daniyal = $leads['Daniyal Ahmed'];
+        $aster = $customers['Aster Pharma'];
+        $rabia = $leads['Rabia Anwar'];
         $activityRows = [
             [ActivityType::Proposal, 'Proposal drafted for Fleet tracking portal', 'Attached: proposal v1', $huma, ['lead_id' => $ayesha->id, 'deal_id' => $deals['Fleet tracking portal']->id], now()->subHours(2)],
             [ActivityType::Email, 'Opened email: Fleet tracking proposal outline', 'Opened 3 times · Clicked pricing link', $huma, ['lead_id' => $ayesha->id], now()->subHours(5)],
@@ -258,7 +295,10 @@ class CrmDemoSeeder extends Seeder
             [ActivityType::Email, 'Sent: Social media retainer proposal', 'Opened 3 times', $sana, ['customer_id' => $orbit->id, 'deal_id' => $deals['Social media retainer']->id], now()->subHours(2)],
             [ActivityType::Note, 'Rida handles invoices', 'Send all billing to rida@orbitstudios.example, not the founder.', $huma, ['customer_id' => $orbit->id], $at(-1, 13)],
             [ActivityType::Meeting, 'Kickoff meeting at Orbit office', 'Agreed timeline and deliverables for the brand video.', $sana, ['customer_id' => $orbit->id], $at(-3, 11)],
-            [ActivityType::Converted, 'Became a customer', 'Deal "Brand video package" won · $15,000', $sana, ['customer_id' => $orbit->id, 'deal_id' => $deals['Brand video package']->id], $at(-2, 12)],
+            [ActivityType::Converted, 'Became a customer', 'Deal "Brand video package" won · $15,000', $sana, ['lead_id' => $daniyal->id, 'customer_id' => $orbit->id, 'deal_id' => $deals['Brand video package']->id], $at(-2, 12)],
+            [ActivityType::Call, 'Intro call with Daniyal Ahmed (20 min)', 'Needs a brand video for their relaunch. Referred by a past client.', $sana, ['lead_id' => $daniyal->id, 'customer_id' => $orbit->id], $at(-18, 11)],
+            [ActivityType::Converted, 'Became a customer', 'Deal "Lab booking system" won · $7,600', $huma, ['lead_id' => $rabia->id, 'customer_id' => $aster->id, 'deal_id' => $deals['Lab booking system']->id], $at(-7, 12)],
+            [ActivityType::Call, 'Call with Rabia Anwar (15 min)', 'Met at the healthcare expo. Wants online booking for their labs.', $huma, ['lead_id' => $rabia->id, 'customer_id' => $aster->id], $at(-23, 15)],
             [ActivityType::Assigned, 'Zainab Hussain assigned to Omar T.', 'By Huma K.', $huma, ['lead_id' => $leads['Zainab Hussain']->id, 'assignee_id' => $omar->id], now()->subHours(3)],
         ];
 

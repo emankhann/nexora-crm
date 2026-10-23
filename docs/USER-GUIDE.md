@@ -42,7 +42,7 @@ Everything on the dashboard is worked out from live data, and a sales rep sees o
 - **Four stats:** total leads (and how many were added in the last 30 days), active deals, revenue won this month, and lead conversion rate.
 - **Revenue won:** a bar for each of the last 12 months.
 - **Lead funnel:** how many leads are New, Contacted and Qualified, how many deals are at Proposal, and how many were won in the last 30 days.
-- **Hot leads:** the highest-scoring open leads.
+- **Top leads:** the highest-scoring open leads.
 - **Deals closing soon:** open deals due in the next 30 days, and any that are late.
 - **Team this month** (managers and admins) or **Your month** (sales reps): revenue, deals won, pipeline and tasks done per person.
 - **Your tasks due today:** tick a task to complete it (there's an Undo).
@@ -55,7 +55,7 @@ Everything on the dashboard is worked out from live data, and a sales rep sees o
 
 A lead is someone who might buy but hasn't yet.
 
-**Find leads.** Tabs: *All leads*, *My leads*, *Hot leads*, *Unassigned* and *Converted* (sales reps see *My leads*, *Hot leads* and *Converted*). Search by name, company or email, and filter by status, owner and score.
+**Find leads.** Tabs: *All leads*, *My leads*, *Hot leads*, *Unassigned* and *Converted* (sales reps see *My leads*, *Hot leads* and *Converted*). Search by name, company or email, and filter by status, source, owner and score.
 
 **Add a lead.** *+ New lead* → name, email and company are required; phone, job title, company size, source, status, owner and notes are optional. The same email can't be used twice. Tick *Create another after saving* to keep the form open.
 

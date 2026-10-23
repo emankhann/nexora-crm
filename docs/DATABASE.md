@@ -213,7 +213,7 @@ From the backend folder, `php artisan migrate:fresh --seed` creates:
 | | |
 |---|---|
 | **Users** | Huma Khan (Admin), Omar Tariq (Manager), Sana Mirza (Sales rep), all with password `demo1234`, and Kamran Shah, an invite that hasn't been accepted yet |
-| **Leads** | 9, across every source and status, scored by `LeadScorer` like any new lead: 3 hot (Ayesha Raza 95, Hira Baig 82, Bilal Siddiqui 80), 3 warm and 3 cold |
+| **Leads** | 11, across every source and status, scored by `LeadScorer` like any new lead: 3 hot (Ayesha Raza 95, Hira Baig 82, Bilal Siddiqui 80), 4 warm and 4 cold. Two of them (Daniyal Ahmed and Rabia Anwar) are already converted and linked to the customers they became, Orbit Studios and Aster Pharma |
 | **Customers** | 8, with contacts and a mix of health states |
 | **Deals** | 25, in every stage: 10 open, 1 lost and 14 won (2 this month, and 12 spread over the past year so the revenue chart has history) |
 | **Tasks** | 8, some overdue and some due today, with follow-up history |
